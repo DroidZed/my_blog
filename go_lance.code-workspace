@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"cSpell.words": [
+			"godotenv"
+		],
+		"workbench.colorTheme": "Midnight Purple 2077",
+		"files.autoSave": "afterDelay",
+	}
+}

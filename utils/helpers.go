@@ -7,7 +7,13 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi"
+
 )
+
+type DtoResponse struct {
+	Message string
+	Error string
+}
 
 func JsonResponse(w http.ResponseWriter, code int, payload interface{}) {
 	response, _ := json.Marshal(payload)

@@ -1,5 +1,7 @@
 package controllers
 
+// CRUD: user
+
 import (
 	"fmt"
 	"net/http"

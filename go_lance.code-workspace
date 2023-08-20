@@ -6,10 +6,11 @@
 	],
 	"settings": {
 		"cSpell.words": [
+			"bson",
 			"godotenv",
-			"httplog"
+			"httplog",
+			"middlewares"
 		],
-		"workbench.colorTheme": "Midnight Purple 2077",
-		"files.autoSave": "afterDelay",
+		"workbench.colorTheme": "Midnight Purple 2077"
 	}
 }

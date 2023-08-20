@@ -13,14 +13,14 @@ func GetConnection() *mongo.Client {
 
 	uri := config.EnvDbURI()
 
-	fmt.Printf("MONGO URL = %s\n", uri)
-
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println("Connected to MongoDB")
+	fmt.Printf("Connected to %s\n", client.Database(config.EnvDbName()).Name())
 
 	return client
 }
+
+var Client = GetConnection()

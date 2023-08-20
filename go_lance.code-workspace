@@ -6,7 +6,8 @@
 	],
 	"settings": {
 		"cSpell.words": [
-			"godotenv"
+			"godotenv",
+			"httplog"
 		],
 		"workbench.colorTheme": "Midnight Purple 2077",
 		"files.autoSave": "afterDelay",

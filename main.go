@@ -88,8 +88,9 @@ func service(port int64) http.Handler {
 	router := chi.NewRouter()
 
 	router.Use(middleware.RequestID)
-	router.Use(httplog.LoggerWithName("CHI API"))
+	router.Use(middleware.CleanPath)
 	router.Use(middleware.URLFormat)
+	router.Use(httplog.LoggerWithName("CHI API"))
 
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello World!"))

@@ -11,8 +11,8 @@ import (
 )
 
 type DtoResponse struct {
-	Message string
-	Error string
+	Message string `json:"message"`
+	Error   string `json:"error"`
 }
 
 func JsonResponse(w http.ResponseWriter, code int, payload interface{}) {

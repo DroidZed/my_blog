@@ -80,7 +80,7 @@ func main() {
 	// Wait for server context to be stopped
 	<-serverCtx.Done()
 
-	fmt.Println("All done, thank you and see you soon 👋")
+	fmt.Println("Goodbye 🧩 👋")
 }
 
 func service(port int64) http.Handler {
@@ -102,7 +102,7 @@ func service(port int64) http.Handler {
 	})
 
 	router.Mount("/user", routes.UserRoutes())
-	router.Mount("/dummy", routes.DummyRoute())
+	// router.Mount("/dummy", routes.DummyRoute())
 
 	fmt.Printf("Listening on port: %d\n", port)
 

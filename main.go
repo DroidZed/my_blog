@@ -13,6 +13,9 @@ import (
 
 	"github.com/DroidZed/go_lance/config"
 	"github.com/DroidZed/go_lance/db"
+	"github.com/DroidZed/go_lance/routes"
+
+	utils "github.com/DroidZed/go_lance/utils"
 	"github.com/MadAppGang/httplog"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
@@ -84,17 +87,25 @@ func main() {
 
 func service(port int64) http.Handler {
 
-	r := chi.NewRouter()
+	router := chi.NewRouter()
 
-	r.Use(middleware.RequestID)
-	r.Use(httplog.LoggerWithName("CHI API"))
+	router.Use(middleware.RequestID)
+	router.Use(httplog.LoggerWithName("CHI API"))
 
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello World!"))
 	})
 
+	router.Get("/dev", func(w http.ResponseWriter, r *http.Request) {
+		utils.LogAllRoutes(router)
+		w.Write([]byte("Nothing will be returned. This is just a dummy message. If you're a developer, check your console."))
+
+	})
+
+	router.Mount("/user", routes.UserRoutes())
+
 	fmt.Printf("Listening to port: %d", port)
 
-	return r
+	return router
 
 }

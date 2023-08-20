@@ -15,7 +15,7 @@ import (
 	"github.com/DroidZed/go_lance/db"
 	"github.com/DroidZed/go_lance/routes"
 
-	utils "github.com/DroidZed/go_lance/utils"
+	"github.com/DroidZed/go_lance/utils"
 	"github.com/MadAppGang/httplog"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
@@ -29,10 +29,10 @@ func main() {
 	port, err := config.EnvDbPORT()
 
 	if err != nil {
-		log.Fatal("Could not retrieve port!")
+		log.Fatal("Could not retrieve port!\n")
 	}
 
-	addr := setupHostWithPort("0.0.0.0", port)
+	addr := setupHostWithPort(config.EnvHost(), port)
 
 	// The HTTP Server
 	server := &http.Server{Addr: addr, Handler: service(port)}
@@ -40,11 +40,9 @@ func main() {
 	// Server run context
 	serverCtx, serverStopCtx := context.WithCancel(context.Background())
 
-	client := db.GetConnection()
-
 	// Clean up to disconnect
 	defer func() {
-		if err := client.Disconnect(context.TODO()); err != nil {
+		if err := db.Client.Disconnect(context.TODO()); err != nil {
 			log.Fatal(err)
 		}
 	}()
@@ -61,7 +59,7 @@ func main() {
 		go func() {
 			<-shutdownCtx.Done()
 			if shutdownCtx.Err() == context.DeadlineExceeded {
-				log.Fatal("graceful shutdown timed out.. forcing exit.")
+				log.Fatal("Graceful shutdown timed out.. forcing exit.\n")
 			}
 		}()
 
@@ -91,6 +89,7 @@ func service(port int64) http.Handler {
 
 	router.Use(middleware.RequestID)
 	router.Use(httplog.LoggerWithName("CHI API"))
+	router.Use(middleware.URLFormat)
 
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello World!"))
@@ -103,8 +102,9 @@ func service(port int64) http.Handler {
 	})
 
 	router.Mount("/user", routes.UserRoutes())
+	router.Mount("/dummy", routes.DummyRoute())
 
-	fmt.Printf("Listening to port: %d", port)
+	fmt.Printf("Listening on port: %d\n", port)
 
 	return router
 

@@ -4,6 +4,7 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/DroidZed/go_lance/config"
@@ -12,7 +13,6 @@ import (
 	"github.com/DroidZed/go_lance/utils"
 	"github.com/go-chi/chi"
 	"go.mongodb.org/mongo-driver/bson"
-
 )
 
 func GetAllUsers(w http.ResponseWriter, r *http.Request) {
@@ -23,13 +23,17 @@ func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		utils.JsonResponse(w, 400, utils.DtoResponse{Error: "Could not decode data!"})
+		return
 	}
 
-	var results []models.User = make([]models.User, 0)
+	results := make([]models.User, 0)
 
 	if err = cursor.All(context.TODO(), &results); err != nil {
-		panic(err)
+		utils.JsonResponse(w, 400, utils.DtoResponse{Error: fmt.Sprintf("Could not decode data!\n%s", err.Error())})
+		return
 	}
+
+	defer cursor.Close(context.TODO())
 
 	utils.JsonResponse(w, 200, results)
 
@@ -47,7 +51,8 @@ func GetUserById(w http.ResponseWriter, r *http.Request) {
 	err := coll.FindOne(context.TODO(), filter).Decode(result)
 
 	if err != nil {
-		utils.JsonResponse(w, 400, utils.DtoResponse{Error: "Could not decode data!"})
+		utils.JsonResponse(w, 400, utils.DtoResponse{Error: fmt.Sprintf("Could not decode data!\n%s", err.Error())})
+		return
 	}
 
 	utils.JsonResponse(w, 200, result)

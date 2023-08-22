@@ -3,16 +3,16 @@ module github.com/DroidZed/go_lance
 go 1.21.0
 
 require (
-	github.com/DroidZed/go_lance/config v0.0.0-20230820012215-787dd905c49c
-	github.com/DroidZed/go_lance/db v0.0.0-20230820012215-787dd905c49c
-	github.com/DroidZed/go_lance/routes v0.0.0-20230820012215-787dd905c49c
-	github.com/DroidZed/go_lance/utils v0.0.0-20230820012215-787dd905c49c
 	github.com/MadAppGang/httplog v1.3.0
 	github.com/go-chi/chi v1.5.4
 )
 
 require (
-	github.com/DroidZed/go_lance/controllers v0.0.0-20230820012215-787dd905c49c // indirect
+	github.com/withmandala/go-log v0.1.0 // indirect
+	golang.org/x/term v0.6.0 // indirect
+)
+
+require (
 	github.com/TylerBrock/colorjson v0.0.0-20200706003622-8a50f05110d2 // indirect
 	github.com/fatih/color v1.15.0 // indirect
 	github.com/golang/snappy v0.0.1 // indirect

@@ -6,8 +6,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/DroidZed/go_lance/src/config"
-	log "github.com/withmandala/go-log"
+	"github.com/DroidZed/go_lance/config"
+	"github.com/withmandala/go-log"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )

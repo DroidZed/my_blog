@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="ALL" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="81506aa7-3837-4a7f-bf67-42957c6937ee" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.work.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.work.sum" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/config/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/config/config.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/config/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/config/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/controllers/articlesController.go" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/articlesController.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/controllers/bookmarksController.go" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/bookmarksController.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/controllers/dummyController.go" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/dummyController.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/controllers/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/controllers/userController.go" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/userController.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/db/db.go" beforeDir="false" afterPath="$PROJECT_DIR$/db/db.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/db/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/db/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/db/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/db/go.sum" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/models/UserBookMarks.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/UserBookMarks.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/models/article.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/article.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/models/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/models/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/models/user.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/user.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/routes/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/routes/userRoutes.go" beforeDir="false" afterPath="$PROJECT_DIR$/routes/userRoutes.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/services/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/tests/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/tests/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/utils/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/helpers.go" beforeDir="false" afterPath="$PROJECT_DIR$/utils/helpers.go" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="GOROOT" url="file://$PROJECT_DIR$/../../../../../../Software/Go" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 4
+}</component>
+  <component name="ProjectId" id="2ULJevzZhXIJyx8ITCGu2RDNFCV" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.formatter.settings.were.checked&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.migrated.go.modules.settings&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.modules.automatic.dependencies.download&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.modules.go.list.on.any.changes.was.set&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;feature/userCrud&quot;,
+    &quot;go.import.settings.migrated&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/DroidZed/Documents/Personal_Projects/GO/go_lance&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\DroidZed\Documents\Personal_Projects\GO\go_lance" />
+      <recent name="C:\Users\DroidZed\Documents\Personal_Projects\GO\go_lance\internals" />
+      <recent name="C:\Users\DroidZed\Documents\Personal_Projects\GO\go_lance\cmd" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration default="true" type="GoApplicationRunConfiguration" factoryName="Go Application">
+      <module name="go_lance" />
+      <working_directory value="$PROJECT_DIR$" />
+      <go_parameters value="-i" />
+      <kind value="FILE" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="GoTestRunConfiguration" factoryName="Go Test">
+      <module name="go_lance" />
+      <working_directory value="$PROJECT_DIR$" />
+      <go_parameters value="-i" />
+      <kind value="DIRECTORY" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <method v="2" />
+    </configuration>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="UnknownFeatures">
+    <option featureType="dependencySupport" implementationName="executable:docker" />
+    <option featureType="dependencySupport" implementationName="executable:kubectl" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+  </component>
+  <component name="VgoProject">
+    <settings-migrated>true</settings-migrated>
+  </component>
+</project>

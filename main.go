@@ -14,11 +14,10 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 
-	"github.com/DroidZed/go_lance/src/config"
-	"github.com/DroidZed/go_lance/src/db"
-	"github.com/DroidZed/go_lance/src/routes"
-	"github.com/DroidZed/go_lance/src/utils"
-
+	"github.com/DroidZed/go_lance/config"
+	"github.com/DroidZed/go_lance/db"
+	"github.com/DroidZed/go_lance/routes"
+	"github.com/DroidZed/go_lance/utils"
 )
 
 func setupHostWithPort(host string, port int64) string { return fmt.Sprintf("%s:%d", host, port) }

@@ -5,18 +5,22 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
 	"time"
 
-	"github.com/DroidZed/go_lance/src/config"
-	"github.com/DroidZed/go_lance/src/db"
-	"github.com/DroidZed/go_lance/src/models"
-	"github.com/DroidZed/go_lance/src/utils"
+	"github.com/DroidZed/go_lance/config"
+	"github.com/DroidZed/go_lance/db"
+	"github.com/DroidZed/go_lance/models"
+	"github.com/DroidZed/go_lance/services"
+	"github.com/DroidZed/go_lance/utils"
 	"github.com/go-chi/chi"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func GetAllUsers(w http.ResponseWriter, r *http.Request) {
+func GetAllUsers(w http.ResponseWriter, _ *http.Request) {
+
+	log := services.Logger.LogHandler
 
 	coll := db.Client.Database(config.EnvDbName()).Collection("users")
 
@@ -30,7 +34,12 @@ func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	defer cur.Close(ctx)
+	defer func(cur *mongo.Cursor, ctx context.Context) {
+		err := cur.Close(ctx)
+		if err != nil {
+			log.Errorf("Error closing cursor.\n%s", err.Error())
+		}
+	}(cur, ctx)
 
 	results := make([]models.User, 0)
 
@@ -62,7 +71,7 @@ func GetUserById(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	var result models.User = models.User{}
+	result := models.User{}
 
 	err := coll.FindOne(ctx, filter).Decode(result)
 

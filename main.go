@@ -2,28 +2,59 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"log"
+	"github.com/DroidZed/go_lance/routes"
+	"github.com/DroidZed/go_lance/services"
+	"github.com/DroidZed/go_lance/utils"
+	"github.com/MadAppGang/httplog"
+	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	"github.com/MadAppGang/httplog"
-	"github.com/go-chi/chi"
-	"github.com/go-chi/chi/middleware"
-
 	"github.com/DroidZed/go_lance/config"
 	"github.com/DroidZed/go_lance/db"
-	"github.com/DroidZed/go_lance/routes"
-	"github.com/DroidZed/go_lance/utils"
 )
 
-func setupHostWithPort(host string, port int64) string { return fmt.Sprintf("%s:%d", host, port) }
+type Server struct {
+	Router *chi.Mux
+}
+
+func CreateNewServer() *Server {
+	s := &Server{}
+	s.Router = chi.NewRouter()
+	return s
+}
+
+func (s *Server) MountHandlers() {
+	// Mount all Middleware here
+	s.Router.Use(middleware.RequestID)
+	s.Router.Use(middleware.CleanPath)
+	s.Router.Use(middleware.URLFormat)
+	s.Router.Use(httplog.LoggerWithName("CHI API"))
+
+	// Mount all handlers here
+	s.Router.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		utils.JsonResponse(w, 200, utils.DtoResponse{Message: "Hello World!"})
+	})
+
+	s.Router.Get("/dev", func(w http.ResponseWriter, r *http.Request) {
+		utils.LogAllRoutes(s.Router)
+		utils.JsonResponse(w, 200, utils.DtoResponse{Message: "Nothing will be returned. This is just a dummy message. If you're a developer, check your console."})
+
+	})
+
+	s.Router.Mount("/user", routes.UserRoutes())
+}
 
 // Entry point, setting up chi and graceful shutdown <3
 func main() {
+
+	log := services.Logger.LogHandler
 
 	port, err := config.EnvDbPORT()
 
@@ -31,7 +62,7 @@ func main() {
 		log.Fatal("Could not retrieve port!\n")
 	}
 
-	addr := setupHostWithPort(config.EnvHost(), port)
+	addr := utils.SetupHostWithPort(config.EnvHost(), port)
 
 	// The HTTP Server
 	server := &http.Server{Addr: addr, Handler: service(port)}
@@ -53,11 +84,11 @@ func main() {
 		<-sig
 
 		// Shutdown signal with grace period of 30 seconds
-		shutdownCtx, _ := context.WithTimeout(serverCtx, 30*time.Second)
+		shutdownCtx, cancelFunc := context.WithTimeout(serverCtx, 30*time.Second)
 
 		go func() {
 			<-shutdownCtx.Done()
-			if shutdownCtx.Err() == context.DeadlineExceeded {
+			if errors.Is(shutdownCtx.Err(), context.DeadlineExceeded) {
 				log.Fatal("Graceful shutdown timed out.. forcing exit.\n")
 			}
 		}()
@@ -68,11 +99,12 @@ func main() {
 			log.Fatal(err)
 		}
 		serverStopCtx()
+		cancelFunc()
 	}()
 
 	// Run the server
 	err = server.ListenAndServe()
-	if err != nil && err != http.ErrServerClosed {
+	if err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Fatal(err)
 	}
 
@@ -84,28 +116,12 @@ func main() {
 
 func service(port int64) http.Handler {
 
-	router := chi.NewRouter()
+	s := CreateNewServer()
 
-	router.Use(middleware.RequestID)
-	router.Use(middleware.CleanPath)
-	router.Use(middleware.URLFormat)
-	router.Use(httplog.LoggerWithName("CHI API"))
-
-	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello World!"))
-	})
-
-	router.Get("/dev", func(w http.ResponseWriter, r *http.Request) {
-		utils.LogAllRoutes(router)
-		w.Write([]byte("Nothing will be returned. This is just a dummy message. If you're a developer, check your console."))
-
-	})
-
-	router.Mount("/user", routes.UserRoutes())
-	// router.Mount("/dummy", routes.DummyRoute())
+	s.MountHandlers()
 
 	fmt.Printf("Listening on port: %d\n", port)
 
-	return router
+	return s.Router
 
 }

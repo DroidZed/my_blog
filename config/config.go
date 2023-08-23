@@ -12,7 +12,7 @@ const EnvFile = ".env"
 
 func _LoadEnv() {
 	if err := godotenv.Load(EnvFile); err != nil {
-		log.Fatal("Error loading .env file")
+		log.Fatal("Error loading work environment.")
 	}
 }
 

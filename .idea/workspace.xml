@@ -5,42 +5,49 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="81506aa7-3837-4a7f-bf67-42957c6937ee" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/services/logging.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/main_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/test_init.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/config/config.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/config/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/controllers/dummyController.go" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/controllers/userController.go" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/userController.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db/db.go" beforeDir="false" afterPath="$PROJECT_DIR$/db/db.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/go.work.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.work.sum" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/config/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/config/config.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/config/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/config/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/articlesController.go" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/articlesController.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/bookmarksController.go" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/bookmarksController.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/dummyController.go" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/dummyController.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/userController.go" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/userController.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/db/db.go" beforeDir="false" afterPath="$PROJECT_DIR$/db/db.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/db/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/db/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/db/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/db/go.sum" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/UserBookMarks.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/UserBookMarks.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/article.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/article.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/models/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/user.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/user.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/routes/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/routes/userRoutes.go" beforeDir="false" afterPath="$PROJECT_DIR$/routes/userRoutes.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/services/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tests/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/tests/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utils/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/utils/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utils/helpers.go" beforeDir="false" afterPath="$PROJECT_DIR$/utils/helpers.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/UserBookMarks.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/userBookmarks.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/services/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/helpers.go" beforeDir="false" afterPath="$PROJECT_DIR$/utils/helpers.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Dockerfile" />
+        <option value="Go File" />
+      </list>
+    </option>
+  </component>
   <component name="GOROOT" url="file://$PROJECT_DIR$/../../../../../../Software/Go" />
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/vendor/modules.txt" root0="SKIP_INSPECTION" />
+  </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="ProjectErrors" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 4
@@ -57,13 +64,13 @@
   &quot;keyToString&quot;: {
     &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
     &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;DefaultGoTemplateProperty&quot;: &quot;Go File&quot;,
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.go.formatter.settings.were.checked&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.go.migrated.go.modules.settings&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.go.modules.automatic.dependencies.download&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.go.modules.go.list.on.any.changes.was.set&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
     &quot;git-widget-placeholder&quot;: &quot;feature/userCrud&quot;,
     &quot;go.import.settings.migrated&quot;: &quot;true&quot;,
@@ -75,12 +82,14 @@
 }</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\DroidZed\Documents\Personal_Projects\GO\go_lance\services" />
+      <recent name="C:\Users\DroidZed\Documents\Personal_Projects\GO\go_lance\utils" />
       <recent name="C:\Users\DroidZed\Documents\Personal_Projects\GO\go_lance" />
       <recent name="C:\Users\DroidZed\Documents\Personal_Projects\GO\go_lance\internals" />
       <recent name="C:\Users\DroidZed\Documents\Personal_Projects\GO\go_lance\cmd" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Go Build.go build github.com/DroidZed/go_lance">
     <configuration default="true" type="GoApplicationRunConfiguration" factoryName="Go Application">
       <module name="go_lance" />
       <working_directory value="$PROJECT_DIR$" />
@@ -88,6 +97,26 @@
       <kind value="FILE" />
       <directory value="$PROJECT_DIR$" />
       <filePath value="$PROJECT_DIR$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="go build github.com/DroidZed/go_lance" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="go_lance" />
+      <working_directory value="$PROJECT_DIR$" />
+      <kind value="PACKAGE" />
+      <package value="github.com/DroidZed/go_lance" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$/main.go" />
+      <method v="2" />
+    </configuration>
+    <configuration name="TestHelloWorld in github.com/DroidZed/go_lance/tests" type="GoTestRunConfiguration" factoryName="Go Test" temporary="true" nameIsGenerated="true">
+      <module name="go_lance" />
+      <working_directory value="$PROJECT_DIR$/tests" />
+      <kind value="PACKAGE" />
+      <package value="github.com/DroidZed/go_lance/tests" />
+      <directory value="$PROJECT_DIR$" />
+      <filePath value="$PROJECT_DIR$" />
+      <framework value="gotest" />
+      <pattern value="^\QTestHelloWorld\E$" />
       <method v="2" />
     </configuration>
     <configuration default="true" type="GoTestRunConfiguration" factoryName="Go Test">
@@ -100,6 +129,12 @@
       <framework value="gotest" />
       <method v="2" />
     </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Go Test.TestHelloWorld in github.com/DroidZed/go_lance/tests" />
+        <item itemvalue="Go Build.go build github.com/DroidZed/go_lance" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TypeScriptGeneratedFilesManager">
@@ -108,6 +143,17 @@
   <component name="UnknownFeatures">
     <option featureType="dependencySupport" implementationName="executable:docker" />
     <option featureType="dependencySupport" implementationName="executable:kubectl" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />

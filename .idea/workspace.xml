@@ -5,23 +5,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="81506aa7-3837-4a7f-bf67-42957c6937ee" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/services/logging.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/main_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test_init.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/services/userService.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/config/config.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/config/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controllers/dummyController.go" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/controllers/userController.go" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/userController.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/db/db.go" beforeDir="false" afterPath="$PROJECT_DIR$/db/db.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.work.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.work.sum" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/UserBookMarks.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/userBookmarks.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/article.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/article.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/models/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/user.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/user.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/userBookmarks.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/userBookmarks.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/services/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/services/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/helpers.go" beforeDir="false" afterPath="$PROJECT_DIR$/utils/helpers.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/services/go.sum" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

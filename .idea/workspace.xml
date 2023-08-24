@@ -5,16 +5,20 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="81506aa7-3837-4a7f-bf67-42957c6937ee" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/services/userService.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controllers/userController.go" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/userController.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/config/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/config/go.sum" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db/db.go" beforeDir="false" afterPath="$PROJECT_DIR$/db/db.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/article.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/article.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/models/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/models/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/user.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/user.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/userBookmarks.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/userBookmarks.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/models/go.sum" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/services/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/services/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/services/go.sum" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/logging.go" beforeDir="false" afterPath="$PROJECT_DIR$/config/loggerConfig.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/userService.go" beforeDir="false" afterPath="$PROJECT_DIR$/services/userService.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/helpers.go" beforeDir="false" afterPath="$PROJECT_DIR$/utils/helpers.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -75,11 +79,11 @@
 }</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\DroidZed\Documents\Personal_Projects\GO\go_lance\config" />
       <recent name="C:\Users\DroidZed\Documents\Personal_Projects\GO\go_lance\services" />
       <recent name="C:\Users\DroidZed\Documents\Personal_Projects\GO\go_lance\utils" />
       <recent name="C:\Users\DroidZed\Documents\Personal_Projects\GO\go_lance" />
       <recent name="C:\Users\DroidZed\Documents\Personal_Projects\GO\go_lance\internals" />
-      <recent name="C:\Users\DroidZed\Documents\Personal_Projects\GO\go_lance\cmd" />
     </key>
   </component>
   <component name="RunManager" selected="Go Build.go build github.com/DroidZed/go_lance">

@@ -3,9 +3,7 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/DroidZed/go_lance/routes"
-	"github.com/DroidZed/go_lance/services"
 	"github.com/DroidZed/go_lance/utils"
 	"github.com/MadAppGang/httplog"
 	"github.com/go-chi/chi"
@@ -54,7 +52,7 @@ func (s *Server) MountHandlers() {
 // Entry point, setting up chi and graceful shutdown <3
 func main() {
 
-	log := services.Logger.LogHandler
+	log := config.Logger.LogHandler
 
 	port, err := config.EnvDbPORT()
 
@@ -111,16 +109,18 @@ func main() {
 	// Wait for server context to be stopped
 	<-serverCtx.Done()
 
-	fmt.Println("Goodbye 🧩 👋")
+	log.Info("Goodbye 🧩 👋")
 }
 
 func service(port int64) http.Handler {
+
+	log := config.Logger.LogHandler
 
 	s := CreateNewServer()
 
 	s.MountHandlers()
 
-	fmt.Printf("Listening on port: %d\n", port)
+	log.Infof("Listening on port: %d\n", port)
 
 	return s.Router
 

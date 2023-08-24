@@ -1,14 +1,14 @@
-package services
+package config
 
 import "os"
 import "github.com/withmandala/go-log"
 
-type LogManager struct {
+type LoggerConfig struct {
 	LogHandler *log.Logger
 }
 
-func InitializeLogger() *LogManager {
-	manager := &LogManager{}
+func InitializeLogger() *LoggerConfig {
+	manager := &LoggerConfig{}
 	manager.LogHandler = log.New(os.Stderr)
 	return manager
 }

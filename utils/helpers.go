@@ -3,7 +3,7 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/DroidZed/go_lance/services"
+	"github.com/DroidZed/go_lance/config"
 	"net/http"
 	"strings"
 
@@ -29,7 +29,7 @@ func JsonResponse(w http.ResponseWriter, code int, payload interface{}) {
 
 func LogAllRoutes(r chi.Routes) {
 
-	log := services.Logger.LogHandler
+	log := config.Logger.LogHandler
 
 	walkFunc := func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
 		route = strings.Replace(route, "/*/", "/", -1)

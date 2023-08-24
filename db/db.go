@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"github.com/DroidZed/go_lance/services"
 	"time"
 
 	"github.com/DroidZed/go_lance/config"
@@ -12,21 +11,12 @@ import (
 
 func GetConnection() *mongo.Client {
 
-	log := services.Logger.LogHandler
+	log := config.Logger.LogHandler
 
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
-	loggerOptions := options.
-		Logger().
-		SetComponentLevel(options.LogComponentCommand, options.LogLevelDebug)
-
-	clientOptions := options.
-		Client().
-		ApplyURI(config.EnvDbURI()).
-		SetLoggerOptions(loggerOptions)
-
-	client, err := mongo.Connect(ctx, clientOptions)
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(config.EnvDbURI()))
 	if err != nil {
 		log.Fatal("Could not connect to database.")
 	}

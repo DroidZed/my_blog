@@ -11,7 +11,7 @@ import (
 )
 
 func FindAll() []models.User {
-	log := Logger.LogHandler
+	log := config.Logger.LogHandler
 
 	coll := db.Client.Database(config.EnvDbName()).Collection("users")
 

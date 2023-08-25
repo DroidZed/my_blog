@@ -6,8 +6,8 @@ import (
 	"github.com/DroidZed/go_lance/routes"
 	"github.com/DroidZed/go_lance/utils"
 	"github.com/MadAppGang/httplog"
-	"github.com/go-chi/chi"
-	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"net/http"
 	"os"
 	"os/signal"
@@ -16,6 +16,7 @@ import (
 
 	"github.com/DroidZed/go_lance/config"
 	"github.com/DroidZed/go_lance/db"
+	"github.com/ggicci/httpin"
 )
 
 type Server struct {
@@ -43,10 +44,15 @@ func (s *Server) MountHandlers() {
 	s.Router.Get("/dev", func(w http.ResponseWriter, r *http.Request) {
 		utils.LogAllRoutes(s.Router)
 		utils.JsonResponse(w, 200, utils.DtoResponse{Message: "Nothing will be returned. This is just a dummy message. If you're a developer, check your console."})
-
 	})
 
 	s.Router.Mount("/user", routes.UserRoutes())
+}
+
+func init() {
+	// Register a directive named "path" to retrieve values from `chi.URLParam`,
+	// i.e. decode path variables.
+	httpin.UseGochiURLParam("path", chi.URLParam)
 }
 
 // Entry point, setting up chi and graceful shutdown <3

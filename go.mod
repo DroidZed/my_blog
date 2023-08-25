@@ -13,14 +13,18 @@ require (
 	github.com/MadAppGang/httplog v1.3.0
 	github.com/TylerBrock/colorjson v0.0.0-20200706003622-8a50f05110d2 // indirect
 	github.com/fatih/color v1.15.0 // indirect
-	github.com/go-chi/chi v1.5.4
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
 )
 
-require github.com/DroidZed/go_lance/db v0.0.0-20230820012215-787dd905c49c
+require (
+	github.com/DroidZed/go_lance/db v0.0.0-20230820012215-787dd905c49c
+	github.com/go-chi/chi/v5 v5.0.10
+)
 
 require (
+	github.com/ggicci/httpin v0.11.0 // indirect
+	github.com/go-chi/chi v1.5.4 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect

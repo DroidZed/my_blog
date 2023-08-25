@@ -7,10 +7,11 @@ import (
 	"github.com/DroidZed/go_lance/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 )
 
-func FindAll() []models.User {
+func FindAllUsers() []models.User {
 	log := config.Logger.LogHandler
 
 	coll := db.Client.Database(config.EnvDbName()).Collection("users")
@@ -54,7 +55,7 @@ func FindAll() []models.User {
 	return results
 }
 
-func FindOneById(id string) *models.User {
+func FindUserById(id string) *models.User {
 
 	coll := db.Client.Database(config.EnvDbName()).Collection("users")
 
@@ -74,7 +75,20 @@ func FindOneById(id string) *models.User {
 	return result
 }
 
-func SaveOne() {
+func SaveOne(data *models.User) interface{} {
+
+	coll := db.Client.Database(config.EnvDbName()).Collection("users")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	result, err := coll.InsertOne(ctx, data)
+
+	if err != nil {
+		return nil
+	}
+
+	return result.InsertedID
 
 }
 
@@ -94,4 +108,20 @@ func DeleteOne(id string) bool {
 	}
 
 	return true
+}
+
+func UpdateOne(id string, user *models.User) error {
+
+	coll := db.Client.Database(config.EnvDbName()).Collection("users")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	result, err := coll.UpdateByID(ctx, id, user, options.Update().SetUpsert(false))
+
+	if result.ModifiedCount == 0 || err != nil {
+		return err
+	}
+
+	return nil
 }

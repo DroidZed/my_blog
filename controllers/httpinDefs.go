@@ -5,3 +5,7 @@ type UserIdParam struct {
 }
 
 // TODO: finish using httpin...
+
+type UserIdPath struct {
+	UserId string `in:"query=userId"`
+}

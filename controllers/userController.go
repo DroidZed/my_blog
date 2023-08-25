@@ -9,9 +9,16 @@ import (
 	"github.com/DroidZed/go_lance/models"
 	"github.com/DroidZed/go_lance/services"
 	"github.com/DroidZed/go_lance/utils"
-	"github.com/go-chi/chi/v5"
+	"github.com/ggicci/httpin"
 	"net/http"
 )
+
+type UserController interface {
+	GetAllUsers(w http.ResponseWriter, _ *http.Request)
+	GetUserById(w http.ResponseWriter, _ *http.Request)
+	DeleteUserById(w http.ResponseWriter, r *http.Request)
+	UpdateUserById(w http.ResponseWriter, r *http.Request)
+}
 
 func GetAllUsers(w http.ResponseWriter, _ *http.Request) {
 
@@ -26,7 +33,7 @@ func GetAllUsers(w http.ResponseWriter, _ *http.Request) {
 }
 
 func GetUserById(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
+	id := r.Context().Value(httpin.Input).(*UserIdPath).UserId
 
 	result := services.FindUserById(id)
 
@@ -39,7 +46,7 @@ func GetUserById(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteUserById(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
+	id := r.Context().Value(httpin.Input).(*UserIdPath).UserId
 
 	result := services.DeleteOne(id)
 
@@ -52,7 +59,7 @@ func DeleteUserById(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateUserById(w http.ResponseWriter, r *http.Request) {
-	id := chi.URLParam(r, "id")
+	id := r.Context().Value(httpin.Input).(*UserIdPath).UserId
 
 	log := config.Logger.LogHandler
 

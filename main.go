@@ -3,9 +3,12 @@ package main
 import (
 	"context"
 	"errors"
+	"github.com/DroidZed/go_lance/config"
+	"github.com/DroidZed/go_lance/db"
 	"github.com/DroidZed/go_lance/routes"
 	"github.com/DroidZed/go_lance/utils"
 	"github.com/MadAppGang/httplog"
+	"github.com/ggicci/httpin"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"net/http"
@@ -13,10 +16,6 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-
-	"github.com/DroidZed/go_lance/config"
-	"github.com/DroidZed/go_lance/db"
-	"github.com/ggicci/httpin"
 )
 
 type Server struct {
@@ -24,9 +23,9 @@ type Server struct {
 }
 
 func CreateNewServer() *Server {
-	s := &Server{}
-	s.Router = chi.NewRouter()
-	return s
+	server := &Server{}
+	server.Router = chi.NewRouter()
+	return server
 }
 
 func (s *Server) MountHandlers() {
@@ -74,9 +73,11 @@ func main() {
 	// Server run context
 	serverCtx, serverStopCtx := context.WithCancel(context.Background())
 
+	client := db.GetConnection()
+
 	// Clean up to disconnect
 	defer func() {
-		if err := db.Client.Disconnect(context.TODO()); err != nil {
+		if err := client.Disconnect(context.TODO()); err != nil {
 			log.Fatal(err)
 		}
 	}()
@@ -122,12 +123,12 @@ func service(port int64) http.Handler {
 
 	log := config.Logger.LogHandler
 
-	s := CreateNewServer()
+	server := CreateNewServer()
 
-	s.MountHandlers()
+	server.MountHandlers()
 
 	log.Infof("Listening on port: %d\n", port)
 
-	return s.Router
+	return server.Router
 
 }

@@ -14,7 +14,7 @@ import (
 func FindAllUsers() []models.User {
 	log := config.Logger.LogHandler
 
-	coll := db.Client.Database(config.EnvDbName()).Collection("users")
+	coll := db.GetConnection().Database(config.EnvDbName()).Collection("users")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -57,7 +57,7 @@ func FindAllUsers() []models.User {
 
 func FindUserById(id string) *models.User {
 
-	coll := db.Client.Database(config.EnvDbName()).Collection("users")
+	coll := db.GetConnection().Database(config.EnvDbName()).Collection("users")
 
 	filter := bson.D{{Key: "_id", Value: id}}
 
@@ -77,7 +77,7 @@ func FindUserById(id string) *models.User {
 
 func SaveOne(data *models.User) interface{} {
 
-	coll := db.Client.Database(config.EnvDbName()).Collection("users")
+	coll := db.GetConnection().Database(config.EnvDbName()).Collection("users")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -94,7 +94,7 @@ func SaveOne(data *models.User) interface{} {
 
 func DeleteOne(id string) bool {
 
-	coll := db.Client.Database(config.EnvDbName()).Collection("users")
+	coll := db.GetConnection().Database(config.EnvDbName()).Collection("users")
 
 	filter := bson.D{{Key: "_id", Value: id}}
 
@@ -112,7 +112,7 @@ func DeleteOne(id string) bool {
 
 func UpdateOne(id string, user *models.User) error {
 
-	coll := db.Client.Database(config.EnvDbName()).Collection("users")
+	coll := db.GetConnection().Database(config.EnvDbName()).Collection("users")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()

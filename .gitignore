@@ -19,3 +19,9 @@ vendor/
 
 # Go workspace file
 go.work
+
+# IDE specific things
+*.code-workspace
+
+# ENV
+.env

@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/DroidZed/go_lance/config"
+	"github.com/DroidZed/go_lance/internal/config"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -13,7 +13,7 @@ var dbConnection *mongo.Client
 
 func GetConnection() *mongo.Client {
 
-	log := config.Logger.LogHandler
+	log := config.InitializeLogger().LogHandler
 
 	if dbConnection != nil {
 		return dbConnection

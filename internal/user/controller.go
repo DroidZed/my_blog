@@ -1,16 +1,15 @@
-package controllers
+package user
 
 // CRUD: user
 
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/DroidZed/go_lance/config"
-	"github.com/DroidZed/go_lance/models"
-	"github.com/DroidZed/go_lance/services"
-	"github.com/DroidZed/go_lance/utils"
-	"github.com/ggicci/httpin"
 	"net/http"
+
+	"github.com/DroidZed/go_lance/internal/config"
+	"github.com/DroidZed/go_lance/internal/utils"
+	"github.com/ggicci/httpin"
 )
 
 type UserController interface {
@@ -22,10 +21,10 @@ type UserController interface {
 
 func GetAllUsers(w http.ResponseWriter, _ *http.Request) {
 
-	results := services.FindAllUsers()
+	results := FindAllUsers()
 
 	if results == nil {
-		utils.JsonResponse(w, http.StatusInternalServerError, []models.User{})
+		utils.JsonResponse(w, http.StatusInternalServerError, []User{})
 		return
 	}
 
@@ -33,9 +32,9 @@ func GetAllUsers(w http.ResponseWriter, _ *http.Request) {
 }
 
 func GetUserById(w http.ResponseWriter, r *http.Request) {
-	id := r.Context().Value(httpin.Input).(*UserIdPath).UserId
+	id := r.Context().Value(httpin.Input).(*utils.UserIdPath).UserId
 
-	result := services.FindUserById(id)
+	result := FindUserById(id)
 
 	if result == nil {
 		utils.JsonResponse(w, http.StatusBadRequest, utils.DtoResponse{Error: fmt.Sprintf("User with id %s could not be found.", id)})
@@ -46,9 +45,9 @@ func GetUserById(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteUserById(w http.ResponseWriter, r *http.Request) {
-	id := r.Context().Value(httpin.Input).(*UserIdPath).UserId
+	id := r.Context().Value(httpin.Input).(*utils.UserIdPath).UserId
 
-	result := services.DeleteOne(id)
+	result := DeleteOne(id)
 
 	if !result {
 		utils.JsonResponse(w, http.StatusBadRequest, utils.DtoResponse{Error: fmt.Sprintf("User with id %s could not be found.", id)})
@@ -59,17 +58,17 @@ func DeleteUserById(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateUserById(w http.ResponseWriter, r *http.Request) {
-	id := r.Context().Value(httpin.Input).(*UserIdPath).UserId
+	id := r.Context().Value(httpin.Input).(*utils.UserIdPath).UserId
 
-	log := config.Logger.LogHandler
+	log := config.InitializeLogger().LogHandler
 
-	user := &models.User{}
+	user := &User{}
 
 	if err := json.NewDecoder(r.Body).Decode(user); err != nil {
 		log.Fatal(err)
 	}
 
-	err := services.UpdateOne(id, user)
+	err := UpdateOne(id, user)
 	if err != nil {
 		utils.JsonResponse(w, http.StatusBadRequest, utils.DtoResponse{Error: "Invalid update!"})
 	}

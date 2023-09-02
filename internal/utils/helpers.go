@@ -3,10 +3,11 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/DroidZed/go_lance/config"
-	"github.com/go-chi/chi/v5"
 	"net/http"
 	"strings"
+
+	"github.com/DroidZed/go_lance/internal/config"
+	"github.com/go-chi/chi/v5"
 )
 
 type DtoResponse struct {
@@ -28,7 +29,7 @@ func JsonResponse(w http.ResponseWriter, code int, payload interface{}) {
 
 func LogAllRoutes(r chi.Routes) {
 
-	log := config.Logger.LogHandler
+	log := config.InitializeLogger().LogHandler
 
 	walkFunc := func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
 		route = strings.Replace(route, "/*/", "/", -1)

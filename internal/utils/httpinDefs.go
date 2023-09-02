@@ -1,4 +1,4 @@
-package controllers
+package utils
 
 type UserIdParam struct {
 	UserId string `in:"query=userId"`

@@ -3,19 +3,20 @@ package main
 import (
 	"context"
 	"errors"
-	"github.com/DroidZed/go_lance/config"
-	"github.com/DroidZed/go_lance/db"
-	"github.com/DroidZed/go_lance/routes"
-	"github.com/DroidZed/go_lance/utils"
-	"github.com/MadAppGang/httplog"
-	"github.com/ggicci/httpin"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/DroidZed/go_lance/internal/config"
+	"github.com/DroidZed/go_lance/internal/db"
+	"github.com/DroidZed/go_lance/internal/user"
+	"github.com/DroidZed/go_lance/internal/utils"
+	"github.com/MadAppGang/httplog"
+	"github.com/ggicci/httpin"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 type Server struct {
@@ -45,7 +46,7 @@ func (s *Server) MountHandlers() {
 		utils.JsonResponse(w, 200, utils.DtoResponse{Message: "Nothing will be returned. This is just a dummy message. If you're a developer, check your console."})
 	})
 
-	s.Router.Mount("/user", routes.UserRoutes())
+	s.Router.Mount("/user", user.UserRoutes())
 }
 
 func init() {
@@ -57,7 +58,7 @@ func init() {
 // Entry point, setting up chi and graceful shutdown <3
 func main() {
 
-	log := config.Logger.LogHandler
+	log := config.InitializeLogger().LogHandler
 
 	port, err := config.EnvDbPORT()
 
@@ -77,7 +78,7 @@ func main() {
 
 	// Clean up to disconnect
 	defer func() {
-		if err := client.Disconnect(context.TODO()); err != nil {
+		if err := client.Disconnect(serverCtx); err != nil {
 			log.Fatal(err)
 		}
 	}()
@@ -88,12 +89,14 @@ func main() {
 	go func() {
 		<-sig
 
-		// Shutdown signal with grace period of 30 seconds
-		shutdownCtx, cancelFunc := context.WithTimeout(serverCtx, 30*time.Second)
+		// Shutdown signal with grace period of 3 seconds
+		shutdownCtx, cancelFunc := context.WithTimeout(serverCtx, 3*time.Second)
+		defer cancelFunc()
 
 		go func() {
 			<-shutdownCtx.Done()
 			if errors.Is(shutdownCtx.Err(), context.DeadlineExceeded) {
+
 				log.Fatal("Graceful shutdown timed out.. forcing exit.\n")
 			}
 		}()
@@ -104,7 +107,6 @@ func main() {
 			log.Fatal(err)
 		}
 		serverStopCtx()
-		cancelFunc()
 	}()
 
 	// Run the server
@@ -121,7 +123,7 @@ func main() {
 
 func service(port int64) http.Handler {
 
-	log := config.Logger.LogHandler
+	log := config.InitializeLogger().LogHandler
 
 	server := CreateNewServer()
 

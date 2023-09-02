@@ -1,18 +1,18 @@
-package services
+package user
 
 import (
 	"context"
-	"github.com/DroidZed/go_lance/config"
-	"github.com/DroidZed/go_lance/db"
-	"github.com/DroidZed/go_lance/models"
+	"time"
+
+	"github.com/DroidZed/go_lance/internal/config"
+	"github.com/DroidZed/go_lance/internal/db"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"time"
 )
 
-func FindAllUsers() []models.User {
-	log := config.Logger.LogHandler
+func FindAllUsers() []User {
+	log := config.InitializeLogger().LogHandler
 
 	coll := db.GetConnection().Database(config.EnvDbName()).Collection("users")
 
@@ -21,7 +21,7 @@ func FindAllUsers() []models.User {
 
 	cur, err := coll.Find(ctx, bson.D{})
 
-	results := make([]models.User, 0)
+	results := make([]User, 0)
 
 	if err != nil {
 		return nil
@@ -36,7 +36,7 @@ func FindAllUsers() []models.User {
 
 	for {
 		if cur.TryNext(ctx) {
-			var doc models.User
+			var doc User
 			err := cur.Decode(&doc)
 			if err != nil {
 				return nil
@@ -55,7 +55,7 @@ func FindAllUsers() []models.User {
 	return results
 }
 
-func FindUserById(id string) *models.User {
+func FindUserById(id string) *User {
 
 	coll := db.GetConnection().Database(config.EnvDbName()).Collection("users")
 
@@ -64,7 +64,7 @@ func FindUserById(id string) *models.User {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	result := &models.User{}
+	result := &User{}
 
 	err := coll.FindOne(ctx, filter).Decode(*result)
 
@@ -75,7 +75,7 @@ func FindUserById(id string) *models.User {
 	return result
 }
 
-func SaveOne(data *models.User) interface{} {
+func SaveOne(data *User) interface{} {
 
 	coll := db.GetConnection().Database(config.EnvDbName()).Collection("users")
 
@@ -110,7 +110,7 @@ func DeleteOne(id string) bool {
 	return true
 }
 
-func UpdateOne(id string, user *models.User) error {
+func UpdateOne(id string, user *User) error {
 
 	coll := db.GetConnection().Database(config.EnvDbName()).Collection("users")
 

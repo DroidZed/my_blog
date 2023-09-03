@@ -7,99 +7,100 @@ import (
 	"github.com/DroidZed/go_lance/internal/config"
 	"github.com/DroidZed/go_lance/internal/db"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func FindAllUsers() []User {
+const collectionName = "users"
+const timeOut = 1 * time.Minute
+
+func FindAllUsers() ([]User, error) {
 	log := config.InitializeLogger().LogHandler
 
-	coll := db.GetConnection().Database(config.EnvDbName()).Collection("users")
+	coll := db.GetConnection().Database(config.EnvDbName()).Collection(collectionName)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
 	defer cancel()
 
 	cur, err := coll.Find(ctx, bson.D{})
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+	defer cur.Close(ctx)
 
 	results := make([]User, 0)
 
-	if err != nil {
-		return nil
+	for cur.Next(ctx) {
+		doc := &User{}
+		err := cur.Decode(&doc)
+		if err != nil {
+			log.Error(err)
+			return nil, err
+		}
+		results = append(results, *doc)
 	}
 
-	defer func(cur *mongo.Cursor, ctx context.Context) {
-		err2 := cur.Close(ctx)
-		if err2 != nil {
-			log.Errorf("Error closing cursor.\n%s", err2.Error())
-		}
-	}(cur, ctx)
-
-	for {
-		if cur.TryNext(ctx) {
-			var doc User
-			err := cur.Decode(&doc)
-			if err != nil {
-				return nil
-			}
-			results = append(results, doc)
-		}
-
-		if err := cur.Err(); err != nil {
-			log.Fatal(err)
-		}
-		if cur.ID() == 0 {
-			break
-		}
+	if err := cur.Err(); err != nil {
+		log.Error(err)
+		return nil, err
 	}
 
-	return results
+	return results, nil
 }
 
-func FindUserById(id string) *User {
+func FindUserByID(id string) (*User, error) {
+	coll := db.GetConnection().Database(config.EnvDbName()).Collection(collectionName)
 
-	coll := db.GetConnection().Database(config.EnvDbName()).Collection("users")
-
-	filter := bson.D{{Key: "_id", Value: id}}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
 	defer cancel()
 
 	result := &User{}
 
-	err := coll.FindOne(ctx, filter).Decode(*result)
-
-	if err != nil {
-		return nil
+	objectId, err1 := primitive.ObjectIDFromHex(id)
+	if err1 != nil {
+		return nil, err1
 	}
 
-	return result
+	// Check for errors when executing FindOne
+	err := coll.FindOne(ctx, bson.M{"_id": objectId}).Decode(result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
-func SaveOne(data *User) interface{} {
+func SaveOne(data *User) (interface{}, error) {
 
-	coll := db.GetConnection().Database(config.EnvDbName()).Collection("users")
+	coll := db.GetConnection().Database(config.EnvDbName()).Collection(collectionName)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
 	defer cancel()
 
 	result, err := coll.InsertOne(ctx, data)
 
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
-	return result.InsertedID
+	return result.InsertedID, nil
 
 }
 
 func DeleteOne(id string) bool {
 
-	coll := db.GetConnection().Database(config.EnvDbName()).Collection("users")
+	coll := db.GetConnection().Database(config.EnvDbName()).Collection(collectionName)
 
-	filter := bson.D{{Key: "_id", Value: id}}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
 	defer cancel()
+
+	objectId, err1 := primitive.ObjectIDFromHex(id)
+	if err1 != nil {
+		return false
+	}
+
+	filter := bson.M{"_id": objectId}
 
 	result, err := coll.DeleteOne(ctx, filter)
 
@@ -110,16 +111,30 @@ func DeleteOne(id string) bool {
 	return true
 }
 
-func UpdateOne(id string, user *User) error {
+func UpdateOneUser(user User) error {
 
-	coll := db.GetConnection().Database(config.EnvDbName()).Collection("users")
+	coll := db.GetConnection().Database(config.EnvDbName()).Collection(collectionName)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
 	defer cancel()
 
-	result, err := coll.UpdateByID(ctx, id, user, options.Update().SetUpsert(false))
+	filter := bson.M{"_id": user.ID}
+	opt := options.Update().SetUpsert(false)
 
-	if result.ModifiedCount == 0 || err != nil {
+	log := config.InitializeLogger().LogHandler
+
+	update := bson.M{
+		"$set": bson.M{
+			"fullName": user.FullName,
+			"age":      user.Age,
+		},
+	}
+
+	log.Debug(user)
+
+	_, err := coll.UpdateOne(ctx, filter, update, opt)
+
+	if err != nil {
 		return err
 	}
 

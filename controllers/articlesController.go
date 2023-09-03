@@ -1,3 +1,0 @@
-package controllers
-
-// CRUD: articles

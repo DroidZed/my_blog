@@ -9,17 +9,17 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var dbConnection *mongo.Client
+var dbHandle *mongo.Client
 
 func GetConnection() *mongo.Client {
 
 	log := config.InitializeLogger().LogHandler
 
-	if dbConnection != nil {
-		return dbConnection
+	if dbHandle != nil {
+		return dbHandle
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 
 	dbConnection, err := mongo.Connect(ctx, options.Client().ApplyURI(config.EnvDbURI()))
@@ -35,5 +35,7 @@ func GetConnection() *mongo.Client {
 
 	log.Infof("Connected to %s\n", config.EnvDbName())
 
-	return dbConnection
+	dbHandle = dbConnection
+
+	return dbHandle
 }

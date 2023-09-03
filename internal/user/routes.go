@@ -9,12 +9,16 @@ import (
 func UserRoutes() chi.Router {
 	userRouter := chi.NewRouter()
 
-	userRouter.Get("/", GetAllUsers)
+	userRouter.Route("/", func(r chi.Router) {
+		r.Get("/", GetAllUsers)
+		r.Post("/", CreateUser)
+		r.Put("/", UpdateUser)
 
-	userRouter.With(httpin.NewInput(utils.UserIdParam{})).
-		Route("/{id}", func(r chi.Router) {
+	})
+
+	userRouter.With(httpin.NewInput(utils.UserIdPath{})).
+		Route("/{userId}", func(r chi.Router) {
 			r.Get("/", GetUserById)
-			r.Put("/", UpdateUserById)
 			r.Delete("/", DeleteUserById)
 		})
 

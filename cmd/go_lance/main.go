@@ -41,12 +41,12 @@ func (s *Server) MountHandlers() {
 		utils.JsonResponse(w, 200, utils.DtoResponse{Message: "Hello World!"})
 	})
 
+	s.Router.Mount("/user", user.UserRoutes())
+
 	s.Router.Get("/dev", func(w http.ResponseWriter, r *http.Request) {
 		utils.LogAllRoutes(s.Router)
 		utils.JsonResponse(w, 200, utils.DtoResponse{Message: "Nothing will be returned. This is just a dummy message. If you're a developer, check your console."})
 	})
-
-	s.Router.Mount("/user", user.UserRoutes())
 }
 
 func init() {

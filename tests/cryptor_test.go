@@ -3,7 +3,7 @@ package services
 import (
 	"testing"
 
-	"github.com/DroidZed/go_lance/pkg/cryptor"
+	"github.com/DroidZed/go_lance/internal/cryptor"
 	"github.com/stretchr/testify/assert"
 )
 

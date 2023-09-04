@@ -71,23 +71,6 @@ func FindUserByID(id string) (*User, error) {
 	return result, nil
 }
 
-func SaveOne(data *User) (interface{}, error) {
-
-	coll := db.GetConnection().Database(config.EnvDbName()).Collection(collectionName)
-
-	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
-	defer cancel()
-
-	result, err := coll.InsertOne(ctx, data)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return result.InsertedID, nil
-
-}
-
 func DeleteOne(id string) bool {
 
 	coll := db.GetConnection().Database(config.EnvDbName()).Collection(collectionName)

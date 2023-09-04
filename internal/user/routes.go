@@ -11,7 +11,6 @@ func UserRoutes() chi.Router {
 
 	userRouter.Route("/", func(r chi.Router) {
 		r.Get("/", GetAllUsers)
-		r.Post("/", CreateUser)
 		r.Put("/", UpdateUser)
 
 	})

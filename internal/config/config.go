@@ -35,3 +35,23 @@ func EnvHost() string {
 	_LoadEnv()
 	return os.Getenv("HOST")
 }
+
+func EnvJwtSecret() string {
+	_LoadEnv()
+	return os.Getenv("JWT_SECRET")
+}
+
+func EnvJwtExp() string {
+	_LoadEnv()
+	return os.Getenv("JWT_EXPIRY")
+}
+
+func EnvRefreshSecret() string {
+	_LoadEnv()
+	return os.Getenv("REFRESH_SECRET")
+}
+
+func EnvRefreshExp() string {
+	_LoadEnv()
+	return os.Getenv("REFRESH_EXPIRY")
+}

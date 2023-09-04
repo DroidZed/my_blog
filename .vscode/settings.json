@@ -5,6 +5,7 @@
         "ggicci",
         "httpin",
         "httplog",
+        "jwtauth",
         "Upsert"
     ]
 }

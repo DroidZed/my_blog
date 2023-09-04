@@ -41,3 +41,15 @@ func LogAllRoutes(r chi.Routes) {
 		log.Errorf("Logging err: %s\n", err.Error())
 	}
 }
+
+func StringToBytes(s string) []byte {
+
+	bytes := make([]byte, len(s)+10)
+	defer func() {
+		bytes = nil
+	}()
+
+	copy(bytes, s)
+
+	return bytes
+}

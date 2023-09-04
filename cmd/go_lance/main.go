@@ -17,6 +17,7 @@ import (
 	"github.com/ggicci/httpin"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 )
 
 type Server struct {
@@ -30,29 +31,62 @@ func CreateNewServer() *Server {
 }
 
 func (s *Server) MountHandlers() {
-	// Mount all Middleware here
-	s.Router.Use(middleware.RequestID)
-	s.Router.Use(middleware.CleanPath)
-	s.Router.Use(middleware.URLFormat)
-	s.Router.Use(httplog.LoggerWithName("CHI API"))
 
 	// Mount all handlers here
 	s.Router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		utils.JsonResponse(w, 200, utils.DtoResponse{Message: "Hello World!"})
+		utils.JsonResponse(w, 200, utils.DtoResponse{Message: "Hello Go Lance!"})
 	})
 
 	s.Router.Mount("/user", user.UserRoutes())
+}
 
-	s.Router.Get("/dev", func(w http.ResponseWriter, r *http.Request) {
-		utils.LogAllRoutes(s.Router)
-		utils.JsonResponse(w, 200, utils.DtoResponse{Message: "Nothing will be returned. This is just a dummy message. If you're a developer, check your console."})
-	})
+func (s *Server) ApplyMiddleWares() {
+
+	// Mount all Middleware here
+	s.Router.Use(middleware.RequestID)
+
+	s.Router.Use(middleware.CleanPath)
+
+	s.Router.Use(middleware.URLFormat)
+
+	s.Router.Use(middleware.StripSlashes)
+
+	s.Router.Use(httplog.LoggerWithName("CHI API"))
+
+	s.Router.Use(cors.Handler(cors.Options{
+		// AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts
+		AllowedOrigins: []string{"https://*", "http://*"},
+		// AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: false,
+		MaxAge:           300, // Maximum value not ignored by any of major browsers
+	}))
+
+	s.Router.Use(middleware.Heartbeat("/health"))
+
 }
 
 func init() {
 	// Register a directive named "path" to retrieve values from `chi.URLParam`,
 	// i.e. decode path variables.
 	httpin.UseGochiURLParam("path", chi.URLParam)
+}
+
+func service(port int64) http.Handler {
+
+	log := config.InitializeLogger().LogHandler
+
+	server := CreateNewServer()
+
+	server.ApplyMiddleWares()
+
+	server.MountHandlers()
+
+	log.Infof("Listening on port: %d\n", port)
+
+	return server.Router
 }
 
 // Entry point, setting up chi and graceful shutdown <3
@@ -119,18 +153,4 @@ func main() {
 	<-serverCtx.Done()
 
 	log.Info("Goodbye 🧩 👋")
-}
-
-func service(port int64) http.Handler {
-
-	log := config.InitializeLogger().LogHandler
-
-	server := CreateNewServer()
-
-	server.MountHandlers()
-
-	log.Infof("Listening on port: %d\n", port)
-
-	return server.Router
-
 }

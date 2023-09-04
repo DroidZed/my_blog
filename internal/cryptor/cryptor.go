@@ -1,15 +1,12 @@
 package cryptor
 
-import "golang.org/x/crypto/bcrypt"
+import (
+	"github.com/DroidZed/go_lance/internal/utils"
+	"golang.org/x/crypto/bcrypt"
+)
 
 func HashPassword(txt string) (string, error) {
-
-	bytes := make([]byte, 100)
-	defer func() {
-		bytes = nil
-	}()
-
-	copy(bytes, txt)
+	bytes := utils.StringToBytes(txt)
 
 	result, err := bcrypt.GenerateFromPassword(bytes, 12)
 	if err != nil {
@@ -21,16 +18,8 @@ func HashPassword(txt string) (string, error) {
 
 func CompareSecureToPlain(secure string, plain string) bool {
 
-	secBytes := make([]byte, 100)
-	plainBytes := make([]byte, 100)
-
-	defer func() {
-		secBytes = nil
-		plainBytes = nil
-	}()
-
-	copy(secBytes, secure)
-	copy(plainBytes, plain)
+	secBytes := utils.StringToBytes(secure)
+	plainBytes := utils.StringToBytes(plain)
 
 	return bcrypt.CompareHashAndPassword(secBytes, plainBytes) == nil
 }

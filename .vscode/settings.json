@@ -6,6 +6,7 @@
         "httpin",
         "httplog",
         "jwtauth",
+        "nums",
         "Upsert"
     ]
 }

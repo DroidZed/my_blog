@@ -9,8 +9,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/DroidZed/go_lance/internal/auth"
 	"github.com/DroidZed/go_lance/internal/config"
-	"github.com/DroidZed/go_lance/internal/db"
 	"github.com/DroidZed/go_lance/internal/user"
 	"github.com/DroidZed/go_lance/internal/utils"
 	"github.com/MadAppGang/httplog"
@@ -38,6 +38,7 @@ func (s *Server) MountHandlers() {
 	})
 
 	s.Router.Mount("/user", user.UserRoutes())
+	s.Router.Mount("/auth", auth.AuthRoutes())
 }
 
 func (s *Server) ApplyMiddleWares() {
@@ -108,7 +109,7 @@ func main() {
 	// Server run context
 	serverCtx, serverStopCtx := context.WithCancel(context.Background())
 
-	client := db.GetConnection()
+	client := config.GetConnection()
 
 	// Clean up to disconnect
 	defer func() {

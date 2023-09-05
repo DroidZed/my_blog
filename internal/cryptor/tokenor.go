@@ -6,27 +6,26 @@ import (
 	"time"
 
 	"github.com/DroidZed/go_lance/internal/config"
+	"github.com/DroidZed/go_lance/internal/utils"
 	"github.com/go-chi/jwtauth"
 )
 
-var tokenAuth *jwtauth.JWTAuth
-
 const algorithm = "HS256"
 
-func GenerateAccessToken(claims map[string]interface{}) (string, error) {
+// Set subject ("sub") in the claims
+func setSub(claims map[string]interface{}, sub string) {
+	claims["sub"] = sub
+}
+
+func GenerateAccessToken(sub string) (string, error) {
 
 	daysToAdd, _ := strconv.ParseInt(config.EnvJwtExp(), 10, 64)
 
-	exp, err := createTimestampForToken(daysToAdd, 24*time.Hour)
-	if err != nil {
-		return "", err
-	}
+	exp := getExpiration(daysToAdd)
 
-	claims["exp"] = exp
+	accessClaims := make(map[string]any)
 
-	tokenAuth = jwtauth.New(algorithm, []byte(config.EnvJwtSecret()), nil)
-
-	_, tokenString, err := tokenAuth.Encode(claims)
+	tokenString, err := createToken(accessClaims, sub, exp)
 	if err != nil {
 		return "", err
 	}
@@ -34,20 +33,21 @@ func GenerateAccessToken(claims map[string]interface{}) (string, error) {
 	return tokenString, nil
 }
 
-func GenerateRefreshToken(claims map[string]interface{}) (string, error) {
+func GenerateRefreshToken() (string, error) {
 
 	daysToAdd, _ := strconv.ParseInt(config.EnvRefreshExp(), 10, 64)
 
-	exp, err := createTimestampForToken(daysToAdd, 24*time.Hour)
-	if err != nil {
-		return "", err
-	}
+	exp := getExpiration(daysToAdd)
 
-	claims["exp"] = exp
+	nums := utils.LinearRandomGenerator(89651649874945, 173, 17, 97, 3)
 
-	tokenAuth = jwtauth.New(algorithm, []byte(config.EnvRefreshSecret()), nil)
+	v := utils.RNG(nums[0])
+	v2 := utils.RNG(nums[1])
+	v3 := utils.RNG(nums[2])
 
-	_, tokenString, err := tokenAuth.Encode(claims)
+	refreshClaims := make(map[string]any)
+
+	tokenString, err := createToken(refreshClaims, fmt.Sprintf("0%d1%d2%d", v, v2, v3), exp)
 	if err != nil {
 		return "", err
 	}
@@ -55,21 +55,25 @@ func GenerateRefreshToken(claims map[string]interface{}) (string, error) {
 	return tokenString, nil
 }
 
-type numericValue interface {
-	float64 | int64 | int32 | float32 | int
+func getExpiration(daysToAdd int64) time.Time {
+
+	duration := time.Duration(daysToAdd) * 24 * time.Hour
+
+	return time.Now().Add(duration)
 }
 
-func createTimestampForToken[ValType numericValue](validity ValType, measurement time.Duration) (int64, error) {
+func createToken(claims map[string]interface{}, sub string, expiry time.Time) (string, error) {
 
-	if validity <= 0 {
-		return 0, fmt.Errorf("validity must be greater than zero")
+	tokenAuth := jwtauth.New(algorithm, []byte(config.EnvRefreshSecret()), nil)
+
+	setSub(claims, sub)
+	jwtauth.SetExpiry(claims, expiry)
+	jwtauth.SetIssuedNow(claims)
+
+	_, tokenString, err := tokenAuth.Encode(claims)
+	if err != nil {
+		return "", err
 	}
 
-	duration := time.Duration(validity) * measurement
-
-	expDate := time.Now().Add(duration)
-
-	exp := expDate.Unix()
-
-	return exp, nil
+	return tokenString, nil
 }

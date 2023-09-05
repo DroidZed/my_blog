@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/DroidZed/go_lance/internal/config"
+	"github.com/DroidZed/go_lance/internal/cryptor"
 	"github.com/DroidZed/go_lance/internal/user"
 	"github.com/DroidZed/go_lance/internal/utils"
 
@@ -13,6 +14,42 @@ import (
 )
 
 func Login(w http.ResponseWriter, r *http.Request) {
+
+	log := config.InitializeLogger().LogHandler
+
+	loginBody := &LoginBody{}
+
+	if err := json.NewDecoder(r.Body).Decode(loginBody); err != nil {
+		log.Error(err)
+		utils.JsonResponse(w, http.StatusInternalServerError, LoginResponse{Error: err.Error()})
+		return
+	}
+
+	userId, err := ValidateUser(loginBody)
+
+	if err != nil {
+		utils.JsonResponse(w, http.StatusNotFound, LoginResponse{Error: err.Error()})
+		return
+	}
+
+	access, err := cryptor.GenerateAccessToken(userId)
+	if err != nil {
+		utils.JsonResponse(w, http.StatusNotFound, LoginResponse{Error: err.Error()})
+		return
+	}
+
+	refresh, err := cryptor.GenerateRefreshToken()
+	if err != nil {
+		utils.JsonResponse(w, http.StatusNotFound, LoginResponse{Error: err.Error()})
+		return
+	}
+
+	loginResp := LoginResponse{
+		Jwt:     access,
+		Refresh: refresh,
+	}
+
+	utils.JsonResponse(w, http.StatusOK, loginResp)
 
 }
 
@@ -24,7 +61,9 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	user := &user.User{ID: primitive.NewObjectID()}
 
 	if err := json.NewDecoder(r.Body).Decode(user); err != nil {
-		log.Fatal(err)
+		log.Error(err)
+		utils.JsonResponse(w, http.StatusInternalServerError, LoginResponse{Error: err.Error()})
+		return
 	}
 
 	userId, err := SaveUser(user)

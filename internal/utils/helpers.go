@@ -1,8 +1,10 @@
 package utils
 
 import (
+	"crypto/rand"
 	"encoding/json"
 	"fmt"
+	"math/big"
 	"net/http"
 	"strings"
 
@@ -11,8 +13,8 @@ import (
 )
 
 type DtoResponse struct {
-	Message string `json:"message"`
-	Error   string `json:"error"`
+	Message string `json:"message,omitempty"`
+	Error   string `json:"error,omitempty"`
 }
 
 func SetupHostWithPort(host string, port int64) string { return fmt.Sprintf("%s:%d", host, port) }
@@ -52,4 +54,28 @@ func StringToBytes(s string) []byte {
 	copy(bytes, s)
 
 	return bytes
+}
+
+func LinearRandomGenerator(seed int64, multiplier int64, increment int64, modulus int64, length int) []int64 {
+
+	results := make([]int64, 0)
+	for i := 0; i < length; i++ {
+		seed = (multiplier*seed + increment) % modulus
+		results = append(results, seed)
+	}
+
+	return results
+}
+
+func RNG(outerBound int64) int64 {
+	if outerBound <= 0 {
+		return -1
+	}
+
+	nBig, err := rand.Int(rand.Reader, big.NewInt(outerBound))
+	if err != nil {
+		return -1
+	}
+
+	return nBig.Int64()
 }

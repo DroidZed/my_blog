@@ -1,18 +1,18 @@
 package user
 
 import (
+	customMiddleware "github.com/DroidZed/go_lance/internal/middleware"
 	"github.com/DroidZed/go_lance/internal/utils"
 	"github.com/ggicci/httpin"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/jwtauth"
 )
 
 func UserRoutes() chi.Router {
 	userRouter := chi.NewRouter()
 
 	userRouter.Use(middleware.AllowContentType("application/json"))
-	userRouter.Use(jwtauth.Authenticator)
+	userRouter.Use(customMiddleware.JwtVerify)
 
 	userRouter.Route("/", func(r chi.Router) {
 		r.Get("/", GetAllUsers)

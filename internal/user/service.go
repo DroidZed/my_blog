@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/DroidZed/go_lance/internal/config"
-	"github.com/DroidZed/go_lance/internal/db"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -17,7 +16,7 @@ const timeOut = 1 * time.Minute
 func FindAllUsers() ([]User, error) {
 	log := config.InitializeLogger().LogHandler
 
-	coll := db.GetConnection().Database(config.EnvDbName()).Collection(collectionName)
+	coll := config.GetConnection().Database(config.EnvDbName()).Collection(collectionName)
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
 	defer cancel()
@@ -50,7 +49,7 @@ func FindAllUsers() ([]User, error) {
 }
 
 func FindUserByID(id string) (*User, error) {
-	coll := db.GetConnection().Database(config.EnvDbName()).Collection(collectionName)
+	coll := config.GetConnection().Database(config.EnvDbName()).Collection(collectionName)
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
 	defer cancel()
@@ -62,8 +61,30 @@ func FindUserByID(id string) (*User, error) {
 		return nil, err1
 	}
 
+	filter := bson.M{"_id": objectId}
+
 	// Check for errors when executing FindOne
-	err := coll.FindOne(ctx, bson.M{"_id": objectId}).Decode(result)
+	err := coll.FindOne(ctx, filter).Decode(result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func FindUserByEmail(email string) (*User, error) {
+
+	coll := config.GetConnection().Database(config.EnvDbName()).Collection(collectionName)
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
+	defer cancel()
+
+	result := &User{}
+
+	filter := bson.M{"email": email}
+
+	// Check for errors when executing FindOne
+	err := coll.FindOne(ctx, filter).Decode(result)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +94,7 @@ func FindUserByID(id string) (*User, error) {
 
 func DeleteOne(id string) bool {
 
-	coll := db.GetConnection().Database(config.EnvDbName()).Collection(collectionName)
+	coll := config.GetConnection().Database(config.EnvDbName()).Collection(collectionName)
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
 	defer cancel()
@@ -96,7 +117,7 @@ func DeleteOne(id string) bool {
 
 func UpdateOneUser(user User) error {
 
-	coll := db.GetConnection().Database(config.EnvDbName()).Collection(collectionName)
+	coll := config.GetConnection().Database(config.EnvDbName()).Collection(collectionName)
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
 	defer cancel()

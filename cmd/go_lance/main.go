@@ -93,6 +93,8 @@ func service(port int64) http.Handler {
 // Entry point, setting up chi and graceful shutdown <3
 func main() {
 
+	config.LoadEnv()
+
 	log := config.InitializeLogger().LogHandler
 
 	port, err := config.EnvDbPORT()

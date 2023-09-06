@@ -1,12 +1,15 @@
 {
-    "cSpell.words": [
-        "bson",
-        "cryptor",
-        "ggicci",
-        "httpin",
-        "httplog",
-        "jwtauth",
-        "nums",
-        "Upsert"
-    ]
+        "cSpell.words": [
+                "bson",
+                "cryptor",
+                "ggicci",
+                "httpin",
+                "httplog",
+                "jwtauth",
+                "nums",
+                "ggicci",
+                "httpin",
+                "httplog",
+                "Upsert"
+        ]
 }

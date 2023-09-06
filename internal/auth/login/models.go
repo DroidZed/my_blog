@@ -1,4 +1,4 @@
-package auth
+package login
 
 type LoginBody struct {
 	Email    string `json:"email"`

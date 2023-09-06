@@ -7,15 +7,8 @@ import (
 
 	"github.com/DroidZed/go_lance/internal/config"
 	"github.com/DroidZed/go_lance/internal/utils"
-	"github.com/go-chi/jwtauth"
+	"github.com/golang-jwt/jwt/v5"
 )
-
-const algorithm = "HS256"
-
-// Set subject ("sub") in the claims
-func setSub(claims map[string]interface{}, sub string) {
-	claims["sub"] = sub
-}
 
 func GenerateAccessToken(sub string) (string, error) {
 
@@ -23,9 +16,14 @@ func GenerateAccessToken(sub string) (string, error) {
 
 	exp := getExpiration(daysToAdd)
 
-	accessClaims := make(map[string]any)
+	accessClaims := make(map[string]interface{})
 
-	tokenString, err := createToken(accessClaims, sub, exp)
+	tokenString, err := createToken(
+		accessClaims,
+		sub,
+		exp,
+		config.EnvJwtSecret(),
+	)
 	if err != nil {
 		return "", err
 	}
@@ -39,15 +37,18 @@ func GenerateRefreshToken() (string, error) {
 
 	exp := getExpiration(daysToAdd)
 
-	nums := utils.LinearRandomGenerator(89651649874945, 173, 17, 97, 3)
+	v := utils.RNG(17)
+	v2 := utils.RNG(19)
+	v3 := utils.RNG(149)
 
-	v := utils.RNG(nums[0])
-	v2 := utils.RNG(nums[1])
-	v3 := utils.RNG(nums[2])
+	refreshClaims := make(map[string]interface{})
 
-	refreshClaims := make(map[string]any)
-
-	tokenString, err := createToken(refreshClaims, fmt.Sprintf("0%d1%d2%d", v, v2, v3), exp)
+	tokenString, err := createToken(
+		refreshClaims,
+		fmt.Sprintf("0%d1%d2%d", v, v2, v3),
+		exp,
+		config.EnvRefreshSecret(),
+	)
 	if err != nil {
 		return "", err
 	}
@@ -55,22 +56,22 @@ func GenerateRefreshToken() (string, error) {
 	return tokenString, nil
 }
 
-func getExpiration(daysToAdd int64) time.Time {
-
+func getExpiration(daysToAdd int64) int64 {
 	duration := time.Duration(daysToAdd) * 24 * time.Hour
-
-	return time.Now().Add(duration)
+	return time.Now().Add(duration).UTC().Unix()
 }
 
-func createToken(claims map[string]interface{}, sub string, expiry time.Time) (string, error) {
+func createToken(claims map[string]interface{}, sub string, expiry int64, sec string) (string, error) {
 
-	tokenAuth := jwtauth.New(algorithm, []byte(config.EnvRefreshSecret()), nil)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sub": sub,
+		"exp": expiry,
+		"iat": time.Now().UTC().Unix(),
+	})
 
-	setSub(claims, sub)
-	jwtauth.SetExpiry(claims, expiry)
-	jwtauth.SetIssuedNow(claims)
+	secret := utils.StringToBytes(sec)
 
-	_, tokenString, err := tokenAuth.Encode(claims)
+	tokenString, err := token.SignedString(secret)
 	if err != nil {
 		return "", err
 	}

@@ -6,10 +6,6 @@ import (
 	"fmt"
 	"math/big"
 	"net/http"
-	"strings"
-
-	"github.com/DroidZed/go_lance/internal/config"
-	"github.com/go-chi/chi/v5"
 )
 
 type DtoResponse struct {
@@ -29,24 +25,9 @@ func JsonResponse(w http.ResponseWriter, code int, payload interface{}) {
 	}
 }
 
-func LogAllRoutes(r chi.Routes) {
-
-	log := config.InitializeLogger().LogHandler
-
-	walkFunc := func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
-		route = strings.Replace(route, "/*/", "/", -1)
-		log.Debugf("%s %s\n", method, route)
-		return nil
-	}
-
-	if err := chi.Walk(r, walkFunc); err != nil {
-		log.Errorf("Logging err: %s\n", err.Error())
-	}
-}
-
 func StringToBytes(s string) []byte {
 
-	bytes := make([]byte, len(s)+10)
+	bytes := make([]byte, len(s))
 	defer func() {
 		bytes = nil
 	}()
@@ -54,17 +35,6 @@ func StringToBytes(s string) []byte {
 	copy(bytes, s)
 
 	return bytes
-}
-
-func LinearRandomGenerator(seed int64, multiplier int64, increment int64, modulus int64, length int) []int64 {
-
-	results := make([]int64, 0)
-	for i := 0; i < length; i++ {
-		seed = (multiplier*seed + increment) % modulus
-		results = append(results, seed)
-	}
-
-	return results
 }
 
 func RNG(outerBound int64) int64 {

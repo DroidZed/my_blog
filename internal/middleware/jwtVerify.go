@@ -3,13 +3,12 @@ package middleware
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/DroidZed/go_lance/internal/config"
 	"github.com/DroidZed/go_lance/internal/utils"
-	"github.com/go-chi/jwtauth"
-	"github.com/lestrrat-go/jwx/jwa"
-	"github.com/lestrrat-go/jwx/jwt"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 func JwtVerify(next http.Handler) http.Handler {
@@ -18,25 +17,90 @@ func JwtVerify(next http.Handler) http.Handler {
 
 		log := config.InitializeLogger().LogHandler
 
-		tokenString := jwtauth.TokenFromHeader(r)
+		header := r.Header.Get("Authorization")
 
-		// test the expiration
+		segments := strings.Split(header, " ")
+		if len(segments) != 2 || segments[0] != "Bearer" {
+			// Invalid header format
+			utils.JsonResponse(w,
+				http.StatusUnauthorized,
+				utils.DtoResponse{Error: "Invalid header format."},
+			)
+			return
+		}
+		tokenSegment := segments[1]
 
-		tokenBytes := utils.StringToBytes(tokenString)
+		options := jwt.WithValidMethods([]string{"HS256"})
 
-		validationOpts := jwt.WithVerify(jwa.HS256, config.EnvJwtSecret())
+		token, err := jwt.Parse(tokenSegment, func(token *jwt.Token) (interface{}, error) {
 
-		jwtObj, err := jwt.Parse(tokenBytes, validationOpts) //validationOpts
+			_, ok := token.Method.(*jwt.SigningMethodHMAC)
+
+			if !ok {
+				utils.JsonResponse(
+					w,
+					http.StatusUnauthorized,
+					utils.DtoResponse{Error: "Invalid signature: Algo tempered."},
+				)
+				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			}
+
+			secret := utils.StringToBytes(config.EnvJwtSecret())
+
+			return secret, nil
+		}, options)
+
 		if err != nil {
-			log.Error(err)
-			http.Error(w, fmt.Errorf("invalid token. Could not parse token").Error(), http.StatusUnauthorized)
+			utils.JsonResponse(
+				w,
+				http.StatusUnauthorized,
+				utils.DtoResponse{Error: "Invalid signature."},
+			)
 			return
 		}
 
-		exp := jwtObj.Expiration()
+		claims, ok := token.Claims.(jwt.MapClaims)
 
-		if time.Now().After(exp) {
-			http.Error(w, fmt.Errorf("invalid token. Expired").Error(), http.StatusUnauthorized)
+		if !ok || !token.Valid {
+			log.Error(err)
+			utils.JsonResponse(
+				w,
+				http.StatusUnauthorized,
+				utils.DtoResponse{Error: err.Error()},
+			)
+			return
+		}
+
+		// test the expiration
+		expClaim, ok := claims["exp"]
+
+		if !ok {
+			log.Error(err)
+			utils.JsonResponse(w,
+				http.StatusUnauthorized,
+				utils.DtoResponse{Error: "Token expired."},
+			)
+			return
+		}
+		exp, ok := expClaim.(float64)
+		if !ok {
+			// Handle invalid "exp" claim format
+			utils.JsonResponse(w,
+				http.StatusUnauthorized,
+				utils.DtoResponse{Error: "'exp' claim has an invalid format."},
+			)
+			return
+		}
+
+		expUnixTimestamp := int64(exp)
+
+		expired := time.Unix(expUnixTimestamp, 0).Before(time.Now())
+
+		if expired {
+			utils.JsonResponse(w,
+				http.StatusUnauthorized,
+				utils.DtoResponse{Error: "Token expired."},
+			)
 			return
 		}
 

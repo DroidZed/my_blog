@@ -14,9 +14,11 @@ const collectionName = "users"
 const timeOut = 1 * time.Minute
 
 func FindAllUsers() ([]User, error) {
+	env := config.LoadConfig()
+
 	log := config.InitializeLogger().LogHandler
 
-	coll := config.GetConnection().Database(config.EnvDbName()).Collection(collectionName)
+	coll := config.GetConnection().Database(env.DBName).Collection(collectionName)
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
 	defer cancel()
@@ -49,7 +51,9 @@ func FindAllUsers() ([]User, error) {
 }
 
 func FindUserByID(id string) (*User, error) {
-	coll := config.GetConnection().Database(config.EnvDbName()).Collection(collectionName)
+	env := config.LoadConfig()
+
+	coll := config.GetConnection().Database(env.DBName).Collection(collectionName)
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
 	defer cancel()
@@ -73,8 +77,9 @@ func FindUserByID(id string) (*User, error) {
 }
 
 func FindUserByEmail(email string) (*User, error) {
+	env := config.LoadConfig()
 
-	coll := config.GetConnection().Database(config.EnvDbName()).Collection(collectionName)
+	coll := config.GetConnection().Database(env.DBName).Collection(collectionName)
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
 	defer cancel()
@@ -93,8 +98,9 @@ func FindUserByEmail(email string) (*User, error) {
 }
 
 func DeleteOne(id string) bool {
+	env := config.LoadConfig()
 
-	coll := config.GetConnection().Database(config.EnvDbName()).Collection(collectionName)
+	coll := config.GetConnection().Database(env.DBName).Collection(collectionName)
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
 	defer cancel()
@@ -117,7 +123,9 @@ func DeleteOne(id string) bool {
 
 func UpdateOneUser(user User) error {
 
-	coll := config.GetConnection().Database(config.EnvDbName()).Collection(collectionName)
+	env := config.LoadConfig()
+
+	coll := config.GetConnection().Database(env.DBName).Collection(collectionName)
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
 	defer cancel()

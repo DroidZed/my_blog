@@ -11,15 +11,17 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func JwtAccessVerify(next http.Handler) http.Handler {
-	return jwtVerify(config.EnvJwtSecret(), next)
+func AccessVerify(next http.Handler) http.Handler {
+	env := config.LoadConfig()
+	return tokenVerify(env.AccessSecret, next)
 }
 
-func JwtRefreshVerify(next http.Handler) http.Handler {
-	return jwtVerify(config.EnvRefreshSecret(), next)
+func RefreshVerify(next http.Handler) http.Handler {
+	env := config.LoadConfig()
+	return tokenVerify(env.RefreshSecret, next)
 }
 
-func jwtVerify(secret string, next http.Handler) http.Handler {
+func tokenVerify(secret string, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log := config.InitializeLogger().LogHandler
 

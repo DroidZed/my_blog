@@ -13,7 +13,9 @@ const timeOut = 1 * time.Minute
 
 func SaveUser(data *user.User) (interface{}, error) {
 
-	coll := config.GetConnection().Database(config.EnvDbName()).Collection(collectionName)
+	env := config.LoadConfig()
+
+	coll := config.GetConnection().Database(env.DBName).Collection(collectionName)
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
 	defer cancel()
@@ -24,11 +26,9 @@ func SaveUser(data *user.User) (interface{}, error) {
 	}
 
 	result, err := coll.InsertOne(ctx, modified)
-
 	if err != nil {
 		return nil, err
 	}
 
 	return result.InsertedID, nil
-
 }

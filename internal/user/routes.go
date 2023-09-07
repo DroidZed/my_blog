@@ -12,7 +12,7 @@ func UserRoutes() chi.Router {
 	userRouter := chi.NewRouter()
 
 	userRouter.Use(middleware.AllowContentType("application/json"))
-	userRouter.Use(customMiddleware.JwtAccessVerify)
+	userRouter.Use(customMiddleware.AccessVerify)
 
 	userRouter.Route("/", func(r chi.Router) {
 		r.Get("/", GetAllUsers)

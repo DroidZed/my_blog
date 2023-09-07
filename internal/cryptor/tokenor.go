@@ -12,7 +12,9 @@ import (
 
 func GenerateAccessToken(sub string) (string, error) {
 
-	daysToAdd, _ := strconv.ParseInt(config.EnvJwtExp(), 10, 64)
+	env := config.LoadConfig()
+
+	daysToAdd, _ := strconv.ParseInt(env.AccessExpiry, 10, 64)
 
 	exp := getExpiration(daysToAdd)
 
@@ -22,7 +24,7 @@ func GenerateAccessToken(sub string) (string, error) {
 		accessClaims,
 		sub,
 		exp,
-		config.EnvJwtSecret(),
+		env.AccessSecret,
 	)
 	if err != nil {
 		return "", err
@@ -33,7 +35,9 @@ func GenerateAccessToken(sub string) (string, error) {
 
 func GenerateRefreshToken() (string, error) {
 
-	daysToAdd, _ := strconv.ParseInt(config.EnvRefreshExp(), 10, 64)
+	env := config.LoadConfig()
+
+	daysToAdd, _ := strconv.ParseInt(env.RefreshExpiry, 10, 64)
 
 	exp := getExpiration(daysToAdd)
 
@@ -47,7 +51,7 @@ func GenerateRefreshToken() (string, error) {
 		refreshClaims,
 		fmt.Sprintf("0%d1%d2%d", v, v2, v3),
 		exp,
-		config.EnvRefreshSecret(),
+		env.RefreshSecret,
 	)
 	if err != nil {
 		return "", err

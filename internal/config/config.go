@@ -1,49 +1,55 @@
 package config
 
 import (
-	"log"
 	"os"
 	"strconv"
 
 	"github.com/joho/godotenv"
 )
 
-const EnvFile = ".env"
+type EnvConfig struct {
+	Port          int64
+	Host          string
+	DBUri         string
+	DBName        string
+	AccessSecret  string
+	AccessExpiry  string
+	RefreshSecret string
+	RefreshExpiry string
+}
 
-func LoadEnv() {
-	if err := godotenv.Load(EnvFile); err != nil {
+var config *EnvConfig
+
+func LoadConfig() *EnvConfig {
+
+	if config != nil {
+		return config
+	}
+
+	log := InitializeLogger().LogHandler
+
+	if err := godotenv.Load(".env"); err != nil {
 		log.Fatalf("Error loading work environment.\n %s", err)
 	}
-}
 
-func EnvDbURI() string {
-	return os.Getenv("DB_URI")
-}
+	port, err := strconv.ParseInt(os.Getenv("PORT"), 10, 64)
+	if err != nil {
+		log.Fatalf("Error loading work environment.\n %s", err)
 
-func EnvDbPORT() (int64, error) {
-	return strconv.ParseInt(os.Getenv("PORT"), 10, 64)
-}
+	}
 
-func EnvDbName() string {
-	return os.Getenv("DB_NAME")
-}
+	conf := &EnvConfig{
+		Port:          port,
+		Host:          os.Getenv("HOST"),
+		DBUri:         os.Getenv("DB_URI"),
+		DBName:        os.Getenv("DB_NAME"),
+		AccessSecret:  os.Getenv("ACCESS_SECRET"),
+		AccessExpiry:  os.Getenv("ACCESS_EXPIRY"),
+		RefreshSecret: os.Getenv("REFRESH_SECRET"),
+		RefreshExpiry: os.Getenv("REFRESH_EXPIRY"),
+	}
 
-func EnvHost() string {
-	return os.Getenv("HOST")
-}
+	config = conf
 
-func EnvJwtSecret() string {
-	return os.Getenv("JWT_SECRET")
-}
-
-func EnvJwtExp() string {
-	return os.Getenv("JWT_EXPIRY")
-}
-
-func EnvRefreshSecret() string {
-	return os.Getenv("REFRESH_SECRET")
-}
-
-func EnvRefreshExp() string {
-	return os.Getenv("REFRESH_EXPIRY")
+	return config
 }

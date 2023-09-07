@@ -93,17 +93,13 @@ func service(port int64) http.Handler {
 // Entry point, setting up chi and graceful shutdown <3
 func main() {
 
-	config.LoadEnv()
+	env := config.LoadConfig()
 
 	log := config.InitializeLogger().LogHandler
 
-	port, err := config.EnvDbPORT()
+	port := env.Port
 
-	if err != nil {
-		log.Fatal("Could not retrieve port!\n")
-	}
-
-	addr := utils.SetupHostWithPort(config.EnvHost(), port)
+	addr := utils.SetupHostWithPort(env.Host, port)
 
 	// The HTTP Server
 	server := &http.Server{Addr: addr, Handler: service(port)}
@@ -147,7 +143,7 @@ func main() {
 	}()
 
 	// Run the server
-	err = server.ListenAndServe()
+	err := server.ListenAndServe()
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Fatal(err)
 	}

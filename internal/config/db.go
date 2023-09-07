@@ -12,16 +12,18 @@ var dbHandle *mongo.Client
 
 func GetConnection() *mongo.Client {
 
-	log := InitializeLogger().LogHandler
-
 	if dbHandle != nil {
 		return dbHandle
 	}
 
+	log := InitializeLogger().LogHandler
+
+	env := LoadConfig()
+
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 
-	dbConnection, err := mongo.Connect(ctx, options.Client().ApplyURI(EnvDbURI()))
+	dbConnection, err := mongo.Connect(ctx, options.Client().ApplyURI(env.DBUri))
 	if err != nil {
 		log.Fatal("Could not connect to database.")
 	}
@@ -32,7 +34,7 @@ func GetConnection() *mongo.Client {
 		log.Fatal("Failed to ping the database:", err)
 	}
 
-	log.Infof("Connected to %s\n", EnvDbName())
+	log.Infof("Connected to %s\n", env.DBName)
 
 	dbHandle = dbConnection
 

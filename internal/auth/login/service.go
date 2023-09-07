@@ -7,20 +7,20 @@ import (
 	"github.com/DroidZed/go_lance/internal/user"
 )
 
-func ValidateUser(login *LoginBody) (string, error) {
+func ValidateUser(login *LoginBody) (*user.User, error) {
 
 	data, err := user.FindUserByEmail(login.Email)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	pwdIsValid := cryptor.CompareSecureToPlain(data.Password, login.Password)
 
 	if !pwdIsValid {
-		return "", fmt.Errorf("invalid credentials")
+		return nil, fmt.Errorf("invalid credentials")
 	}
 
-	return data.ID.String(), nil
+	return data, nil
 }
 
 func GenerateLoginTokens(userId string) (string, string, error) {

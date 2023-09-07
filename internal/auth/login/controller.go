@@ -20,12 +20,14 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userId, err := ValidateUser(loginBody)
+	user, err := ValidateUser(loginBody)
 
 	if err != nil {
 		utils.JsonResponse(w, http.StatusNotFound, LoginResponse{Error: err.Error()})
 		return
 	}
+
+	userId := user.ID.Hex()
 
 	access, refresh, err := GenerateLoginTokens(userId)
 
@@ -35,6 +37,12 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.JsonResponse(w, http.StatusOK, LoginResponse{Jwt: access, Refresh: refresh})
+	utils.JsonResponse(w, http.StatusOK, LoginResponse{
+		Jwt:       access,
+		Refresh:   refresh,
+		UserId:    userId,
+		Role:      user.Role,
+		AccStatus: user.AccStatus,
+	})
 
 }

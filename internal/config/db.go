@@ -8,12 +8,12 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var dbHandle *mongo.Client
+var globalDbHandle *mongo.Client
 
 func GetConnection() *mongo.Client {
 
-	if dbHandle != nil {
-		return dbHandle
+	if globalDbHandle != nil {
+		return globalDbHandle
 	}
 
 	log := InitializeLogger().LogHandler
@@ -36,7 +36,7 @@ func GetConnection() *mongo.Client {
 
 	log.Infof("Connected to %s\n", env.DBName)
 
-	dbHandle = dbConnection
+	globalDbHandle = dbConnection
 
-	return dbHandle
+	return globalDbHandle
 }

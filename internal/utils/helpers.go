@@ -3,7 +3,6 @@ package utils
 import (
 	"crypto/rand"
 	"encoding/json"
-	"fmt"
 	"math/big"
 	"net/http"
 )
@@ -12,8 +11,6 @@ type DtoResponse struct {
 	Message string `json:"message,omitempty"`
 	Error   string `json:"error,omitempty"`
 }
-
-func SetupHostWithPort(host string, port int64) string { return fmt.Sprintf("%s:%d", host, port) }
 
 func JsonResponse(w http.ResponseWriter, code int, payload interface{}) {
 	response, _ := json.Marshal(payload)

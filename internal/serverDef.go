@@ -50,7 +50,7 @@ func (s *Server) ApplyMiddleWares() {
 
 	s.Router.Use(middleware.StripSlashes)
 
-	s.Router.Use(httplog.LoggerWithName("CHI API"))
+	s.Router.Use(httplog.LoggerWithName("Go Lance"))
 
 	s.Router.Use(cors.Handler(cors.Options{
 		// AllowedOrigins:   []string{"https://foo.com"}, // Use this to allow specific origin hosts

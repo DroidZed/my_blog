@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"math/big"
 	"net/http"
+	"strings"
 )
 
 type DtoResponse struct {
@@ -45,4 +46,21 @@ func RNG(outerBound int64) int64 {
 	}
 
 	return nBig.Int64()
+}
+
+func GenerateAPICode() string {
+
+	builder := strings.Builder{}
+
+	const alpha = "A4BCD3EFG8HIJ6KLM7NO0PQRS2TUV9WX1YZ5"
+
+	for i := 0; i < 4; i++ {
+		for j := 0; j < 4; j++ {
+			builder.WriteByte(alpha[RNG(int64(j+17))])
+		}
+		if i != 3 {
+			builder.WriteString("-")
+		}
+	}
+	return strings.TrimSuffix(builder.String(), "-")
 }

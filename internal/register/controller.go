@@ -34,3 +34,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	utils.JsonResponse(w, http.StatusCreated, userId)
 
 }
+
+func VerifyEmail(w http.ResponseWriter, r *http.Request) {
+
+}

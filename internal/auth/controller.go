@@ -1,4 +1,4 @@
-package login
+package auth
 
 import (
 	"encoding/json"
@@ -44,5 +44,17 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		Role:      user.Role,
 		AccStatus: user.AccStatus,
 	})
+}
 
+func RefreshTheAccessToken(w http.ResponseWriter, r *http.Request) {
+
+	log := config.InitializeLogger().LogHandler
+
+	loginBody := &RefreshReq{}
+
+	if err := json.NewDecoder(r.Body).Decode(loginBody); err != nil {
+		log.Error(err)
+		utils.JsonResponse(w, http.StatusInternalServerError, utils.DtoResponse{Error: err.Error()})
+		return
+	}
 }

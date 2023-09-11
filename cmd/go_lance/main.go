@@ -40,6 +40,20 @@ func startService() *internal.Server {
 }
 
 // Entry point, setting up chi and graceful shutdown <3
+// @title GoLance API Docs
+// @version 1.0
+// @description This is the GoLance API documentation.
+// @termsOfService http://example.com/terms/
+
+// @contact.name GoLance Support
+// @contact.url http://example.com/support
+// @contact.email joe@example.com
+
+// @license.name MIT
+// @license.url https://opensource.org/license/mit/
+
+// @host golance.io
+// @BasePath /
 func main() {
 
 	log := config.InitializeLogger().LogHandler

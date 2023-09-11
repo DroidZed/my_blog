@@ -1,0 +1,16 @@
+basePath: /
+host: golance.io
+info:
+  contact:
+    email: joe@example.com
+    name: GoLance Support
+    url: http://example.com/support
+  description: This is the GoLance API documentation.
+  license:
+    name: MIT
+    url: https://opensource.org/license/mit/
+  termsOfService: http://example.com/terms/
+  title: GoLance API Docs
+  version: "1.0"
+paths: {}
+swagger: "2.0"

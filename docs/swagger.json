@@ -1,0 +1,21 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This is the GoLance API documentation.",
+        "title": "GoLance API Docs",
+        "termsOfService": "http://example.com/terms/",
+        "contact": {
+            "name": "GoLance Support",
+            "url": "http://example.com/support",
+            "email": "joe@example.com"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://opensource.org/license/mit/"
+        },
+        "version": "1.0"
+    },
+    "host": "golance.io",
+    "basePath": "/",
+    "paths": {}
+}

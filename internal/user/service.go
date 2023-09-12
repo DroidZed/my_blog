@@ -13,7 +13,40 @@ import (
 const collectionName = "users"
 const timeOut = 1 * time.Minute
 
-func FindAllUsers() ([]User, error) {
+type IUserService interface {
+	SaveUser(data *User) (interface{}, error)
+	FindAllUsers() ([]User, error)
+	FindUserByID(id string) (*User, error)
+	FindUserByEmail(email string) (*User, error)
+	UpdateOneUser(user User) error
+	DeleteOne(id string) bool
+}
+
+type UserService struct{}
+
+func (s *UserService) SaveUser(data *User) (interface{}, error) {
+
+	env := config.LoadConfig()
+
+	coll := config.GetConnection().Database(env.DBName).Collection(collectionName)
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
+	defer cancel()
+
+	modified, err := data.HashUserPassword()
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := coll.InsertOne(ctx, modified)
+	if err != nil {
+		return nil, err
+	}
+
+	return result.InsertedID, nil
+}
+
+func (s *UserService) FindAllUsers() ([]User, error) {
 	env := config.LoadConfig()
 
 	log := config.InitializeLogger().LogHandler
@@ -50,7 +83,7 @@ func FindAllUsers() ([]User, error) {
 	return results, nil
 }
 
-func FindUserByID(id string) (*User, error) {
+func (s *UserService) FindUserByID(id string) (*User, error) {
 	env := config.LoadConfig()
 
 	coll := config.GetConnection().Database(env.DBName).Collection(collectionName)
@@ -76,7 +109,7 @@ func FindUserByID(id string) (*User, error) {
 	return result, nil
 }
 
-func FindUserByEmail(email string) (*User, error) {
+func (s *UserService) FindUserByEmail(email string) (*User, error) {
 	env := config.LoadConfig()
 
 	coll := config.GetConnection().Database(env.DBName).Collection(collectionName)
@@ -97,31 +130,7 @@ func FindUserByEmail(email string) (*User, error) {
 	return result, nil
 }
 
-func DeleteOne(id string) bool {
-	env := config.LoadConfig()
-
-	coll := config.GetConnection().Database(env.DBName).Collection(collectionName)
-
-	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
-	defer cancel()
-
-	objectId, err1 := primitive.ObjectIDFromHex(id)
-	if err1 != nil {
-		return false
-	}
-
-	filter := bson.M{"_id": objectId}
-
-	result, err := coll.DeleteOne(ctx, filter)
-
-	if err != nil || result.DeletedCount == 0 {
-		return false
-	}
-
-	return true
-}
-
-func UpdateOneUser(user User) error {
+func (s *UserService) UpdateOneUser(user User) error {
 
 	env := config.LoadConfig()
 
@@ -151,4 +160,28 @@ func UpdateOneUser(user User) error {
 	}
 
 	return nil
+}
+
+func (s *UserService) DeleteOne(id string) bool {
+	env := config.LoadConfig()
+
+	coll := config.GetConnection().Database(env.DBName).Collection(collectionName)
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
+	defer cancel()
+
+	objectId, err1 := primitive.ObjectIDFromHex(id)
+	if err1 != nil {
+		return false
+	}
+
+	filter := bson.M{"_id": objectId}
+
+	result, err := coll.DeleteOne(ctx, filter)
+
+	if err != nil || result.DeletedCount == 0 {
+		return false
+	}
+
+	return true
 }

@@ -10,21 +10,45 @@ import (
 	"github.com/DroidZed/go_lance/internal/config"
 	"github.com/DroidZed/go_lance/internal/utils"
 	"github.com/ggicci/httpin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type UserController interface {
-	GetAllUsers(w http.ResponseWriter, _ *http.Request)
-	GetUserById(w http.ResponseWriter, _ *http.Request)
-	DeleteUserById(w http.ResponseWriter, r *http.Request)
-	UpdateUserById(w http.ResponseWriter, r *http.Request)
-	CreateUser(w http.ResponseWriter, r *http.Request)
+// TODO: Complete this function!
+func Register(w http.ResponseWriter, r *http.Request) {
+
+	log := config.InitializeLogger().LogHandler
+
+	user := &User{ID: primitive.NewObjectID()}
+
+	if err := json.NewDecoder(r.Body).Decode(user); err != nil {
+		log.Error(err)
+		utils.JsonResponse(w, http.StatusInternalServerError, utils.DtoResponse{Error: err.Error()})
+		return
+	}
+
+	userService := &UserService{}
+
+	userId, err := userService.SaveUser(user)
+	if err != nil {
+		utils.JsonResponse(w, http.StatusBadRequest, utils.DtoResponse{Error: fmt.Sprintf("Error creating the user!\n%s", err.Error())})
+		return
+	}
+
+	utils.JsonResponse(w, http.StatusCreated, userId)
+
+}
+
+func VerifyEmail(w http.ResponseWriter, r *http.Request) {
+
 }
 
 func GetAllUsers(w http.ResponseWriter, _ *http.Request) {
 
 	log := config.InitializeLogger().LogHandler
 
-	users, err := FindAllUsers()
+	userService := &UserService{}
+
+	users, err := userService.FindAllUsers()
 
 	if err != nil {
 		log.Error(err)
@@ -43,7 +67,9 @@ func GetUserById(w http.ResponseWriter, r *http.Request) {
 
 	log.Infof("id: %s", id)
 
-	user, err := FindUserByID(id)
+	userService := &UserService{}
+
+	user, err := userService.FindUserByID(id)
 
 	if err != nil {
 		log.Error(err)
@@ -57,7 +83,9 @@ func GetUserById(w http.ResponseWriter, r *http.Request) {
 func DeleteUserById(w http.ResponseWriter, r *http.Request) {
 	id := r.Context().Value(httpin.Input).(*utils.UserIdPath).UserId
 
-	result := DeleteOne(id)
+	userService := &UserService{}
+
+	result := userService.DeleteOne(id)
 
 	if !result {
 		utils.JsonResponse(w, http.StatusNotFound, utils.DtoResponse{Error: fmt.Sprintf("User with id %s could not be found.", id)})
@@ -80,7 +108,9 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	log.Debug(*user)
 
-	err := UpdateOneUser(*user)
+	userService := &UserService{}
+
+	err := userService.UpdateOneUser(*user)
 	if err != nil {
 		utils.JsonResponse(w, http.StatusNotFound, utils.DtoResponse{Error: fmt.Sprintf("Invalid update!\n %s", err.Error())})
 		return

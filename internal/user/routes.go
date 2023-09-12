@@ -2,8 +2,6 @@ package user
 
 import (
 	customMiddleware "github.com/DroidZed/go_lance/internal/middleware"
-	"github.com/DroidZed/go_lance/internal/utils"
-	"github.com/ggicci/httpin"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
@@ -12,19 +10,21 @@ func UserRoutes() chi.Router {
 	userRouter := chi.NewRouter()
 
 	userRouter.Use(middleware.AllowContentType("application/json"))
-	userRouter.Use(customMiddleware.AccessVerify)
 
-	userRouter.Route("/", func(r chi.Router) {
+	userRouter.Group(func(r chi.Router) {
+		r.Use(customMiddleware.AccessVerify)
 		r.Get("/", GetAllUsers)
 		r.Put("/", UpdateUser)
-
-	})
-
-	userRouter.With(httpin.NewInput(utils.UserIdPath{})).
-		Route("/{userId}", func(r chi.Router) {
+		r.Route("/{userId}", func(r chi.Router) {
 			r.Get("/", GetUserById)
 			r.Delete("/", DeleteUserById)
 		})
+	})
+
+	userRouter.Group(func(r chi.Router) {
+		r.Post("/register", Register)
+		r.Get("/verify-email", VerifyEmail)
+	})
 
 	return userRouter
 }

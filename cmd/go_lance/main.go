@@ -64,8 +64,6 @@ func main() {
 	envPort := app.EnvConfig.Port
 	envHost := app.EnvConfig.Host
 
-	// addr := utils.SetupHostWithPort(env.Host, port)
-
 	// The HTTP Server
 	server := &http.Server{
 		Addr:    fmt.Sprintf("%s:%d", envHost, envPort),

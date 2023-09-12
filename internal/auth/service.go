@@ -9,7 +9,9 @@ import (
 
 func ValidateUser(login *LoginBody) (*user.User, error) {
 
-	data, err := user.FindUserByEmail(login.Email)
+	userService := &user.UserService{}
+
+	data, err := userService.FindUserByEmail(login.Email)
 	if err != nil {
 		return nil, err
 	}

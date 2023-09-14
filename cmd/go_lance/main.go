@@ -50,7 +50,7 @@ func startService() *internal.Server {
 // @contact.email joe@example.com
 
 // @license.name MIT
-// @license.url https://opensource.org/license/mit/
+// @license.url https://github.com/DroidZed/go_lance/LICENSE
 
 // @host golance.io
 // @BasePath /

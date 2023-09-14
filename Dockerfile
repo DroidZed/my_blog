@@ -1,15 +1,22 @@
-FROM golang:1.21
+FROM golang as builder
 
 LABEL authors="DroidZed"
 
 WORKDIR /usr/src/app
 
-COPY go.mod go.sum ./
-
+# Retrieve application dependencies.
+# This allows the container build to reuse cached dependencies.
+# Expecting to copy go.mod and if present go.sum.
+COPY go.* ./
 RUN go mod download && go mod verify
 
-COPY . .
+# Copy local code to the container image.
+COPY . ./
 
-RUN go build -v -o /usr/local/bin/app ./...
+# Build the binary.
+RUN go build -v -o bin/golance cmd/go_lance/main.go
 
-CMD ["app"]
+# Run the web service on container startup.
+CMD ["/usr/src/app/bin/golance"]
+
+# TODO: READ THIS: https://www.ardanlabs.com/blog/2020/02/docker-images-part1-reducing-image-size.html

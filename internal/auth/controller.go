@@ -111,5 +111,5 @@ func RefreshTheAccessToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.JsonResponse(w, http.StatusInternalServerError, JwtResponse{Jwt: newAcc, Refresh: newRef})
+	utils.JsonResponse(w, http.StatusOK, JwtResponse{Jwt: newAcc, Refresh: newRef})
 }

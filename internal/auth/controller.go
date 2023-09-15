@@ -8,6 +8,16 @@ import (
 	"github.com/DroidZed/go_lance/internal/utils"
 )
 
+// Auth godoc
+//
+//	@Summary		Auth user
+//	@Description	Get token, user basic data
+//	@Tags			auth
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	LoginBody
+//	@Failure		404	{object}	LoginResponse
+//	@Router			/auth/login [post]
 func Login(w http.ResponseWriter, r *http.Request) {
 
 	log := config.InitializeLogger().LogHandler
@@ -46,6 +56,17 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// Refresh godoc
+//
+//	@Summary		Refresh tokens
+//	@Description	Refresh access + refresh tokens
+//	@Tags			auth
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	LoginBody
+//	@Failure		404	{object}	LoginResponse
+//	@Security		Bearer
+//	@Router			/auth/refresh-token [post]
 func RefreshTheAccessToken(w http.ResponseWriter, r *http.Request) {
 
 	log := config.InitializeLogger().LogHandler

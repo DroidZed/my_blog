@@ -12,6 +12,9 @@ build:
 dev:
 	go run cmd/go_lance/main.go
 
+doc:
+	swag init -g cmd/go_lance/main.go
+
 prod:
 	./bin/golance.exe
 

@@ -9,7 +9,6 @@ import (
 
 type EnvConfig struct {
 	Port          int64
-	Host          string
 	DBUri         string
 	DBName        string
 	AccessSecret  string
@@ -40,7 +39,6 @@ func LoadConfig() *EnvConfig {
 
 	conf := &EnvConfig{
 		Port:          port,
-		Host:          os.Getenv("HOST"),
 		DBUri:         os.Getenv("DB_URI"),
 		DBName:        os.Getenv("DB_NAME"),
 		AccessSecret:  os.Getenv("ACCESS_SECRET"),

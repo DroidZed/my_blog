@@ -62,11 +62,10 @@ func main() {
 
 	dbClient := app.DbClient
 	envPort := app.EnvConfig.Port
-	envHost := app.EnvConfig.Host
 
 	// The HTTP Server
 	server := &http.Server{
-		Addr:    fmt.Sprintf("%s:%d", envHost, envPort),
+		Addr:    fmt.Sprintf(":%d", envPort),
 		Handler: app.Router,
 	}
 

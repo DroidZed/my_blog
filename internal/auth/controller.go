@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/DroidZed/go_lance/internal/config"
+	"github.com/DroidZed/go_lance/internal/cryptor"
 	"github.com/DroidZed/go_lance/internal/utils"
 )
 
@@ -70,12 +71,45 @@ func Login(w http.ResponseWriter, r *http.Request) {
 func RefreshTheAccessToken(w http.ResponseWriter, r *http.Request) {
 
 	log := config.InitializeLogger().LogHandler
+	conf := config.LoadConfig()
 
-	loginBody := &RefreshReq{}
+	refreshBody := &RefreshReq{}
 
-	if err := json.NewDecoder(r.Body).Decode(loginBody); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(refreshBody); err != nil {
 		log.Error(err)
 		utils.JsonResponse(w, http.StatusInternalServerError, utils.DtoResponse{Error: err.Error()})
 		return
 	}
+
+	expiredToken := refreshBody.Expired
+
+	access, err := cryptor.ParseToken(expiredToken, conf.AccessSecret)
+	if err != nil {
+		log.Error(err)
+		utils.JsonResponse(w, http.StatusInternalServerError, utils.DtoResponse{Error: err.Error()})
+		return
+	}
+
+	userId, err := cryptor.ExtractSubFromClaims(access)
+	if err != nil {
+		log.Error(err)
+		utils.JsonResponse(w, http.StatusInternalServerError, utils.DtoResponse{Error: err.Error()})
+		return
+	}
+
+	newAcc, err := cryptor.GenerateAccessToken(userId)
+	if err != nil {
+		log.Error(err)
+		utils.JsonResponse(w, http.StatusInternalServerError, utils.DtoResponse{Error: err.Error()})
+		return
+	}
+
+	newRef, err := cryptor.GenerateRefreshToken()
+	if err != nil {
+		log.Error(err)
+		utils.JsonResponse(w, http.StatusInternalServerError, utils.DtoResponse{Error: err.Error()})
+		return
+	}
+
+	utils.JsonResponse(w, http.StatusInternalServerError, JwtResponse{Jwt: newAcc, Refresh: newRef})
 }

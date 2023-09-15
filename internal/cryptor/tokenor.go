@@ -82,3 +82,73 @@ func createToken(claims map[string]interface{}, sub string, expiry int64, sec st
 
 	return tokenString, nil
 }
+
+func ExtractExpiryFromClaims(token *jwt.Token) (float64, error) {
+	// claims, ok := token.Claims.(jwt.MapClaims)
+	// if !ok || !token.Valid {
+	// 	return 0, fmt.Errorf("no claims")
+	// }
+
+	// expClaim, ok := claims["exp"]
+	// if !ok {
+	// 	return 0, fmt.Errorf("no expiration, claims corrupted")
+	// }
+
+	// return expClaim.(float64), nil
+
+	x, err := extractXFromClaims[float64]("exp", token)
+
+	return *x, err
+}
+
+func ExtractSubFromClaims(token *jwt.Token) (string, error) {
+
+	// claims, ok := token.Claims.(jwt.MapClaims)
+	// if !ok || !token.Valid {
+	// 	return 0, fmt.Errorf("no claims")
+	// }
+
+	// subClaim, ok := claims["sub"]
+	// if !ok {
+	// 	return 0, fmt.Errorf("no subject, claims corrupted")
+	// }
+
+	// return subClaim.(string), nil
+
+	x, err := extractXFromClaims[string]("sub", token)
+
+	return *x, err
+}
+
+func extractXFromClaims[T interface{}](claimId string, token *jwt.Token) (*T, error) {
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok || !token.Valid {
+		return nil, fmt.Errorf("no claims")
+	}
+
+	claim, ok := claims[claimId]
+	if !ok {
+		return nil, fmt.Errorf("no sub, claims corrupted")
+	}
+
+	x, ok := claim.(T)
+	if !ok {
+		return nil, fmt.Errorf("claim type assertion failed")
+	}
+
+	return &x, nil
+}
+
+func ParseToken(token string, secret string) (*jwt.Token, error) {
+	return jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
+
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+
+		secret := utils.StringToBytes(secret)
+
+		return secret, nil
+
+	}, jwt.WithValidMethods([]string{"HS256"}))
+}

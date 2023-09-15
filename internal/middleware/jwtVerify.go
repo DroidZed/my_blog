@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/DroidZed/go_lance/internal/config"
+	"github.com/DroidZed/go_lance/internal/cryptor"
 	"github.com/DroidZed/go_lance/internal/utils"
-	"github.com/golang-jwt/jwt/v5"
 )
 
 func AccessVerify(next http.Handler) http.Handler {
@@ -36,7 +36,7 @@ func tokenVerify(secret string, next http.Handler) http.Handler {
 			return
 		}
 
-		token, err := parseToken(w, tokenString, secret)
+		token, err := cryptor.ParseToken(tokenString, secret)
 		if err != nil {
 			log.Errorf("Unable to parse token.\n%s", err)
 			utils.JsonResponse(
@@ -47,7 +47,7 @@ func tokenVerify(secret string, next http.Handler) http.Handler {
 			return
 		}
 
-		exp, err := extractExpiryFromClaims(token)
+		exp, err := cryptor.ExtractExpiryFromClaims(token)
 		if err != nil {
 			log.Error(err)
 			utils.JsonResponse(w,
@@ -66,20 +66,6 @@ func tokenVerify(secret string, next http.Handler) http.Handler {
 		}
 		next.ServeHTTP(w, r)
 	})
-}
-
-func extractExpiryFromClaims(token *jwt.Token) (float64, error) {
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok || !token.Valid {
-		return 0, fmt.Errorf("no claims")
-	}
-
-	expClaim, ok := claims["exp"]
-	if !ok {
-		return 0, fmt.Errorf("no expiration, claims corrupted")
-	}
-
-	return expClaim.(float64), nil
 }
 
 func retrieveTokenFromHeader(r *http.Request) (string, error) {
@@ -105,18 +91,4 @@ func retrieveTokenFromCookie(r *http.Request) (string, error) {
 	}
 
 	return jwt, nil
-}
-
-func parseToken(w http.ResponseWriter, token string, secret string) (*jwt.Token, error) {
-	return jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
-
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-
-		secret := utils.StringToBytes(secret)
-
-		return secret, nil
-
-	}, jwt.WithValidMethods([]string{"HS256"}))
 }

@@ -27,7 +27,8 @@ func CreateNewServer() *Server {
 	server := &Server{}
 	server.Router = chi.NewRouter()
 	server.DbClient = config.GetConnection()
-	server.EnvConfig = config.LoadConfig()
+	server.EnvConfig = config.LoadEnv()
+	config.GetSmtp()
 	return server
 }
 

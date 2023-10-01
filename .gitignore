@@ -26,4 +26,4 @@ go.work
 *.code-workspace
 
 # ENV
-.env
+*.env*

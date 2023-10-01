@@ -34,3 +34,6 @@ go.work
 
 # IDE specific things
 *.code-workspace
+
+# MISC
+.env.dev

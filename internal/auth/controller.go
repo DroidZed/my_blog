@@ -71,7 +71,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 func RefreshTheAccessToken(w http.ResponseWriter, r *http.Request) {
 
 	log := config.InitializeLogger().LogHandler
-	conf := config.LoadConfig()
+	conf := config.LoadEnv()
 
 	refreshBody := &RefreshReq{}
 

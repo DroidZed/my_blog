@@ -12,12 +12,12 @@ import (
 )
 
 func AccessVerify(next http.Handler) http.Handler {
-	env := config.LoadConfig()
+	env := config.LoadEnv()
 	return tokenVerify(env.AccessSecret, next)
 }
 
 func RefreshVerify(next http.Handler) http.Handler {
-	env := config.LoadConfig()
+	env := config.LoadEnv()
 	return tokenVerify(env.RefreshSecret, next)
 }
 

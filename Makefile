@@ -24,4 +24,7 @@ dockerImage:
 compose:
 	docker compose up -d
 
+decompose:
+	docker compose down
+
 dockerUp: dockerImage compose

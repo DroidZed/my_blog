@@ -12,7 +12,7 @@ import (
 
 func GenerateAccessToken(sub string) (string, error) {
 
-	env := config.LoadConfig()
+	env := config.LoadEnv()
 
 	daysToAdd, _ := strconv.ParseInt(env.AccessExpiry, 10, 64)
 
@@ -35,7 +35,7 @@ func GenerateAccessToken(sub string) (string, error) {
 
 func GenerateRefreshToken() (string, error) {
 
-	env := config.LoadConfig()
+	env := config.LoadEnv()
 
 	daysToAdd, _ := strconv.ParseInt(env.RefreshExpiry, 10, 64)
 

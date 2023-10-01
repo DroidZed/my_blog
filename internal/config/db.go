@@ -18,7 +18,7 @@ func GetConnection() *mongo.Client {
 
 	log := InitializeLogger().LogHandler
 
-	env := LoadConfig()
+	env := LoadEnv()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()

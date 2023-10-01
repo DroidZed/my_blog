@@ -21,10 +21,5 @@ func UserRoutes() chi.Router {
 		})
 	})
 
-	userRouter.Group(func(r chi.Router) {
-		r.Post("/register", Register)
-		r.Get("/verify-email", VerifyEmail)
-	})
-
 	return userRouter
 }

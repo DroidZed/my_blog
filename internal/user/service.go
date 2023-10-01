@@ -14,7 +14,6 @@ const collectionName = "users"
 const timeOut = 1 * time.Minute
 
 type IUserService interface {
-	SaveUser(data *User) (interface{}, error)
 	FindAllUsers() ([]User, error)
 	FindUserByID(id string) (*User, error)
 	FindUserByEmail(email string) (*User, error)
@@ -24,30 +23,8 @@ type IUserService interface {
 
 type UserService struct{}
 
-func (s *UserService) SaveUser(data *User) (interface{}, error) {
-
-	env := config.LoadConfig()
-
-	coll := config.GetConnection().Database(env.DBName).Collection(collectionName)
-
-	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
-	defer cancel()
-
-	modified, err := data.HashUserPassword()
-	if err != nil {
-		return nil, err
-	}
-
-	result, err := coll.InsertOne(ctx, modified)
-	if err != nil {
-		return nil, err
-	}
-
-	return result.InsertedID, nil
-}
-
 func (s *UserService) FindAllUsers() ([]User, error) {
-	env := config.LoadConfig()
+	env := config.LoadEnv()
 
 	log := config.InitializeLogger().LogHandler
 
@@ -84,7 +61,7 @@ func (s *UserService) FindAllUsers() ([]User, error) {
 }
 
 func (s *UserService) FindUserByID(id string) (*User, error) {
-	env := config.LoadConfig()
+	env := config.LoadEnv()
 
 	coll := config.GetConnection().Database(env.DBName).Collection(collectionName)
 
@@ -110,7 +87,7 @@ func (s *UserService) FindUserByID(id string) (*User, error) {
 }
 
 func (s *UserService) FindUserByEmail(email string) (*User, error) {
-	env := config.LoadConfig()
+	env := config.LoadEnv()
 
 	coll := config.GetConnection().Database(env.DBName).Collection(collectionName)
 
@@ -132,7 +109,7 @@ func (s *UserService) FindUserByEmail(email string) (*User, error) {
 
 func (s *UserService) UpdateOneUser(user User) error {
 
-	env := config.LoadConfig()
+	env := config.LoadEnv()
 
 	coll := config.GetConnection().Database(env.DBName).Collection(collectionName)
 
@@ -163,7 +140,7 @@ func (s *UserService) UpdateOneUser(user User) error {
 }
 
 func (s *UserService) DeleteOne(id string) bool {
-	env := config.LoadConfig()
+	env := config.LoadEnv()
 
 	coll := config.GetConnection().Database(env.DBName).Collection(collectionName)
 

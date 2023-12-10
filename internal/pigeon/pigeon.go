@@ -21,7 +21,7 @@ func NewRequest(to []string, subject, body string) *SMTPRequest {
 		to:      to,
 		subject: subject,
 		body:    body,
-		from:    config.LoadEnv().SMTP_USRNAME,
+		from:    config.LoadEnv().SMTP_USERNAME,
 	}
 }
 

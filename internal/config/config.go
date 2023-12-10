@@ -18,7 +18,7 @@ type EnvConfig struct {
 	RefreshExpiry string
 	SMTP_HOST     string
 	SMTP_PORT     string
-	SMTP_USRNAME  string
+	SMTP_USERNAME string
 	SMTP_PASSWORD string
 }
 
@@ -55,7 +55,7 @@ func LoadEnv() *EnvConfig {
 			RefreshExpiry: os.Getenv("REFRESH_EXPIRY"),
 			SMTP_HOST:     os.Getenv("SMTP_HOST"),
 			SMTP_PORT:     os.Getenv("SMTP_PORT"),
-			SMTP_USRNAME:  os.Getenv("SMTP_USRNAME"),
+			SMTP_USERNAME: os.Getenv("SMTP_USERNAME"),
 			SMTP_PASSWORD: os.Getenv("SMTP_PASSWORD"),
 		}
 

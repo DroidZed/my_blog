@@ -64,3 +64,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 func VerifyEmail(w http.ResponseWriter, r *http.Request) {
 
 }
+
+func TestSendingAnEmail(w http.ResponseWriter, r *http.Request) {
+
+}

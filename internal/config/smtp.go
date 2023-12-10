@@ -12,7 +12,7 @@ func GetSmtp() smtp.Auth {
 
 	env := LoadEnv()
 
-	auth = smtp.PlainAuth("", env.SMTP_USRNAME, env.SMTP_PASSWORD, env.SMTP_HOST)
+	auth = smtp.PlainAuth("", env.SMTP_USERNAME, env.SMTP_PASSWORD, env.SMTP_HOST)
 
 	return auth
 }

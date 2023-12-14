@@ -12,6 +12,9 @@ build:
 dev:
 	go run cmd/go_lance/main.go
 
+watch:
+	air
+
 doc:
 	swag init -g cmd/go_lance/main.go
 

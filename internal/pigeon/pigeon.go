@@ -3,18 +3,12 @@ package pigeon
 import (
 	"bytes"
 	"fmt"
+	"html/template"
 	"net/smtp"
-	"text/template"
 
 	"github.com/DroidZed/go_lance/internal/config"
 	"github.com/DroidZed/go_lance/internal/utils"
 )
-
-func ParseHtmlEmail(templateName string) (*template.Template, error) {
-
-	return template.ParseFiles("/public/templates/confirmation_email.html")
-
-}
 
 func NewRequest(to []string, subject, body string) *SMTPRequest {
 	return &SMTPRequest{
@@ -25,26 +19,31 @@ func NewRequest(to []string, subject, body string) *SMTPRequest {
 	}
 }
 
-func (r *SMTPRequest) SendEmail() (bool, error) {
+func (r *SMTPRequest) GetBody() string {
+	return r.body
+}
 
-	smtpAuth := config.GetSmtp()
+func (r *SMTPRequest) SendEmail() error {
+
+	smtpAuth := GetSmtp()
 
 	env := config.LoadEnv()
 
-	mime := "MIME-version: 1.0;\nContent-Type: text/plain; charset=\"UTF-8\";\n\n"
+	mime := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
 
 	msg := utils.StringToBytes(r.subject + mime + "\n" + r.body)
 
-	addr := fmt.Sprintf("%s:%s", env.SMTP_HOST, env.SMTP_PASSWORD)
+	addr := fmt.Sprintf("%s:%s", env.SMTP_HOST, env.SMTP_PORT)
 
 	if err := smtp.SendMail(addr, smtpAuth, r.from, r.to, msg); err != nil {
-		return false, err
+		return err
 	}
-	return true, nil
+	return nil
 }
 
-func (r *SMTPRequest) ParseTemplate(templateFileName string, data interface{}) error {
-	t, err := template.ParseFiles(templateFileName)
+func (r *SMTPRequest) ParseTemplate(templateFileBaseName string, data interface{}) error {
+	fullName := fmt.Sprintf("%s.tmpl", templateFileBaseName)
+	t, err := template.New(fullName).ParseFiles(fmt.Sprintf("public/templates/%s", fullName))
 
 	if err != nil {
 		return err

@@ -42,11 +42,11 @@ func (s *SignUpService) SaveUser(data *user.User) (interface{}, error) {
 	return result.InsertedID, nil
 }
 
-func (s *SignUpService) VerifyEmail(data *user.User) (interface{}, error) {
+func (s *SignUpService) DeleteCode(data *user.User) (interface{}, error) {
 	return nil, nil
 }
 
-func (s *SignUpService) FindCodeByEmail(email string) (interface{}, error) {
+func (s *SignUpService) FindCodeByEmail(email string) (*ConfirmationCode, error) {
 
 	env := config.LoadEnv()
 	coll := config.GetConnection().Database(env.DBName).Collection("confirmationTokens")
@@ -66,6 +66,6 @@ func (s *SignUpService) FindCodeByEmail(email string) (interface{}, error) {
 	return result, nil
 }
 
-func (s *SignUpService) SaveConfirmationCode(data *ConfirmationCode) (interface{}, error) {
+func (s *SignUpService) SaveConfirmationCode(data *ConfirmationCode) (*ConfirmationCode, error) {
 	return nil, nil
 }

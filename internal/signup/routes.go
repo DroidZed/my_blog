@@ -16,5 +16,7 @@ func SignUpRoutes() chi.Router {
 		r.Get("/verify-email", VerifyEmail)
 	})
 
+	signUpRoutes.Post("/test-smtp", deliverEmailToUser)
+
 	return signUpRoutes
 }

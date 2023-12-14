@@ -1,6 +1,12 @@
 {
     "cSpell.words": [
         "bson",
-        "godotenv"
+        "godotenv",
+        "httpin",
+        "httplog",
+        "tmpl",
+        "cryptor",
+        "swaggo",
+        "Infof"
     ]
 }

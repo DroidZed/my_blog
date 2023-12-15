@@ -12,11 +12,9 @@ func SignUpRoutes() chi.Router {
 	signUpRoutes.Use(middleware.AllowContentType("application/json"))
 
 	signUpRoutes.Group(func(r chi.Router) {
-		r.Post("/register", Register)
+		r.Post("/", Register)
 		r.Get("/verify-email", VerifyEmail)
 	})
-
-	signUpRoutes.Post("/test-smtp", deliverEmailToUser)
 
 	return signUpRoutes
 }

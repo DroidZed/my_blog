@@ -2,11 +2,17 @@ package signup
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/DroidZed/go_lance/internal/config"
+	"github.com/DroidZed/go_lance/internal/pigeon"
 	"github.com/DroidZed/go_lance/internal/user"
+	"github.com/DroidZed/go_lance/internal/utils"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type ISignUpService interface {
@@ -20,36 +26,14 @@ type SignUpService struct{}
 
 const timeOut = 1 * time.Minute
 
-func (s *SignUpService) SaveUser(data *user.User) (interface{}, error) {
-
-	env := config.LoadEnv()
-
-	coll := config.GetConnection().Database(env.DBName).Collection("users")
-
-	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
-	defer cancel()
-
-	modified, err := data.HashUserPassword()
-	if err != nil {
-		return nil, err
-	}
-
-	result, err := coll.InsertOne(ctx, modified)
-	if err != nil {
-		return nil, err
-	}
-
-	return result.InsertedID, nil
-}
-
-func (s *SignUpService) DeleteCode(data *user.User) (interface{}, error) {
-	return nil, nil
+func (s *SignUpService) DeleteCode(data *user.User) error {
+	return nil
 }
 
 func (s *SignUpService) FindCodeByEmail(email string) (*ConfirmationCode, error) {
 
 	env := config.LoadEnv()
-	coll := config.GetConnection().Database(env.DBName).Collection("confirmationTokens")
+	coll := config.GetConnection().Database(env.DBName).Collection("confirmationCodes")
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
 	defer cancel()
@@ -66,6 +50,86 @@ func (s *SignUpService) FindCodeByEmail(email string) (*ConfirmationCode, error)
 	return result, nil
 }
 
-func (s *SignUpService) SaveConfirmationCode(data *ConfirmationCode) (*ConfirmationCode, error) {
-	return nil, nil
+func (s *SignUpService) SaveConfirmationCode(email string) (string, error) {
+	env := config.LoadEnv()
+	coll := config.GetConnection().Database(env.DBName).Collection("confirmationCodes")
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
+	defer cancel()
+
+	code := s.GenerateCode(10)
+
+	update := bson.D{
+		{
+			Key: "$set",
+			Value: bson.D{
+				{
+					Key:   "code",
+					Value: code,
+				},
+				{
+					Key:   "email",
+					Value: email,
+				},
+				{
+					Key:   "createdAt",
+					Value: primitive.NewDateTimeFromTime(time.Now()),
+				},
+				{
+					Key:   "expiresAt",
+					Value: primitive.NewDateTimeFromTime(time.Now().Add(time.Duration(time.Duration.Minutes(15)))),
+				},
+			},
+		},
+	}
+
+	filter := bson.M{"email": email}
+
+	opts := options.Update().SetUpsert(true)
+
+	_, updateErr := coll.UpdateOne(ctx, filter, update, opts)
+	if updateErr != nil {
+		return "", updateErr
+	}
+
+	return code, nil
+}
+
+func (s *SignUpService) deliverEmailToUser(
+	to,
+	subject,
+	templateName,
+	confEntity string,
+) error {
+
+	req := pigeon.NewRequest(
+		[]string{to},
+		subject,
+		"",
+	)
+
+	err := req.ParseTemplate(templateName, confEntity)
+
+	if err != nil {
+		return err
+	}
+
+	emailErr := req.SendEmail()
+
+	if emailErr != nil {
+		return emailErr
+
+	}
+
+	return nil
+}
+
+func (s *SignUpService) GenerateCode(bound int64) string {
+	builder := &strings.Builder{}
+
+	for i := 0; i < 4; i++ {
+		builder.WriteString(fmt.Sprintf("%d", utils.RNG(bound)))
+	}
+
+	return builder.String()
 }

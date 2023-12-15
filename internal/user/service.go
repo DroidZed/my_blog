@@ -23,6 +23,28 @@ type IUserService interface {
 
 type UserService struct{}
 
+func (s *UserService) SaveUser(data *User) error {
+
+	env := config.LoadEnv()
+
+	coll := config.GetConnection().Database(env.DBName).Collection("users")
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
+	defer cancel()
+
+	modified, err := data.HashUserPassword()
+	if err != nil {
+		return err
+	}
+
+	_, insertErr := coll.InsertOne(ctx, modified)
+	if insertErr != nil {
+		return insertErr
+	}
+
+	return nil
+}
+
 func (s *UserService) FindAllUsers() ([]User, error) {
 	env := config.LoadEnv()
 
@@ -139,7 +161,7 @@ func (s *UserService) UpdateOneUser(user User) error {
 	return nil
 }
 
-func (s *UserService) DeleteOne(id string) bool {
+func (s *UserService) DeleteOne(id string) error {
 	env := config.LoadEnv()
 
 	coll := config.GetConnection().Database(env.DBName).Collection(collectionName)
@@ -149,7 +171,7 @@ func (s *UserService) DeleteOne(id string) bool {
 
 	objectId, err1 := primitive.ObjectIDFromHex(id)
 	if err1 != nil {
-		return false
+		return err1
 	}
 
 	filter := bson.M{"_id": objectId}
@@ -157,8 +179,8 @@ func (s *UserService) DeleteOne(id string) bool {
 	result, err := coll.DeleteOne(ctx, filter)
 
 	if err != nil || result.DeletedCount == 0 {
-		return false
+		return err
 	}
 
-	return true
+	return nil
 }

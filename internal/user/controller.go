@@ -55,9 +55,7 @@ func DeleteUserById(w http.ResponseWriter, r *http.Request) {
 
 	userService := &UserService{}
 
-	result := userService.DeleteOne(id)
-
-	if !result {
+	if err := userService.DeleteOne(id); err != nil {
 		utils.JsonResponse(w, http.StatusNotFound, utils.DtoResponse{Error: fmt.Sprintf("User with id %s could not be found.", id)})
 		return
 	}

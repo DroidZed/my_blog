@@ -45,9 +45,9 @@ func (s *Server) MountHandlers() {
 		httpSwagger.URL(fmt.Sprintf("http://localhost:%d/swagger/doc.json", s.EnvConfig.Port)), //The url pointing to API definition
 	))
 
-	s.Router.Mount("/user", user.UserRoutes())
-	s.Router.Mount("/auth", auth.AuthRoutes())
 	s.Router.Mount("/signup", signup.SignUpRoutes())
+	s.Router.Mount("/auth", auth.AuthRoutes())
+	s.Router.Mount("/user", user.UserRoutes())
 }
 
 func (s *Server) ApplyMiddleWares() {

@@ -13,7 +13,7 @@ import (
 func NewRequest(to []string, subject, body string) *SMTPRequest {
 	return &SMTPRequest{
 		to:      to,
-		subject: subject,
+		subject: fmt.Sprintf("Subject: %s", subject),
 		body:    body,
 		from:    config.LoadEnv().SMTP_USERNAME,
 	}
@@ -21,6 +21,10 @@ func NewRequest(to []string, subject, body string) *SMTPRequest {
 
 func (r *SMTPRequest) GetBody() string {
 	return r.body
+}
+
+func (r *SMTPRequest) GetSubject() string {
+	return r.subject
 }
 
 func (r *SMTPRequest) SendEmail() error {
@@ -31,7 +35,7 @@ func (r *SMTPRequest) SendEmail() error {
 
 	mime := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
 
-	msg := utils.StringToBytes(r.subject + mime + "\n" + r.body)
+	msg := utils.StringToBytes(fmt.Sprintf("%s\n", r.GetSubject()) + mime + r.GetBody())
 
 	addr := fmt.Sprintf("%s:%s", env.SMTP_HOST, env.SMTP_PORT)
 

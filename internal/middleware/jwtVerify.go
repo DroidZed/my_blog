@@ -78,17 +78,3 @@ func retrieveTokenFromHeader(r *http.Request) (string, error) {
 
 	return segments[1], nil
 }
-
-func retrieveTokenFromCookie(r *http.Request) (string, error) {
-	cookies := r.Cookies()
-
-	jwt := ""
-
-	for _, c := range cookies {
-		if c.Name == "jwt" {
-			jwt = c.Value
-		}
-	}
-
-	return jwt, nil
-}

@@ -7,6 +7,8 @@
         "tmpl",
         "cryptor",
         "swaggo",
-        "Infof"
+        "Infof",
+        "ggicci",
+        "Debugf"
     ]
 }

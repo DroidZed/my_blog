@@ -27,3 +27,11 @@ func (u *User) HashUserPassword() (*User, error) {
 
 	return u, nil
 }
+
+type UserIdParam struct {
+	UserId string `in:"query=userId"`
+}
+
+type UserIdPath struct {
+	UserId string `in:"path=userId"`
+}

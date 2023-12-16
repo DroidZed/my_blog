@@ -1,7 +1,6 @@
 package signup
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -18,9 +17,9 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	signupService := &SignUpService{}
 	userService := &user.UserService{}
 
-	decodedUser, err := decodeBodyToUser(r)
+	decodedUser := &user.User{ID: primitive.NewObjectID()}
 
-	if err != nil {
+	if err := utils.DecodeBody(r, decodedUser); err != nil {
 		log.Error(err)
 		utils.JsonResponse(
 			w,
@@ -31,9 +30,14 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		)
 		return
 	}
-	log.Debug(decodedUser.ID.String())
 
-	found, _ := userService.FindUserByEmail(decodedUser.Email)
+	found, err := userService.FindUserByEmail(decodedUser.Email)
+
+	if err != nil {
+		log.Error(err)
+		utils.JsonResponse(w, http.StatusInternalServerError, utils.DtoResponse{Error: err.Error()})
+		return
+	}
 
 	if found != nil {
 		utils.JsonResponse(
@@ -56,7 +60,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := saveCodeAndSendEmail(signupService, decodedUser); err != nil {
+	if err := signupService.SaveCodeAndSendEmail(decodedUser.Email); err != nil {
 		log.Error(err)
 		utils.JsonResponse(w, http.StatusInternalServerError, utils.DtoResponse{Error: err.Error()})
 		return
@@ -71,36 +75,50 @@ func Register(w http.ResponseWriter, r *http.Request) {
 
 func VerifyEmail(w http.ResponseWriter, r *http.Request) {
 
-}
+	log := config.InitializeLogger().LogHandler
+	signupService := &SignUpService{}
+	userService := &user.UserService{}
+	verifyCode := &VerifyCodeBody{}
 
-func saveCodeAndSendEmail(
-	signupService *SignUpService,
-	u *user.User,
-) error {
-
-	code, err := signupService.SaveConfirmationCode(u.Email)
+	err := utils.DecodeBody(r, verifyCode)
 
 	if err != nil {
-		return err
+		log.Error(err)
+		utils.JsonResponse(w, http.StatusInternalServerError, utils.DtoResponse{Error: err.Error()})
+		return
 	}
 
-	if emailErr := signupService.deliverEmailToUser(
-		u.Email,
-		"CONFIRMATION MAIL",
-		"confirmation_email",
-		code,
-	); emailErr != nil {
-		return emailErr
+	if !signupService.CheckCodeValidity(verifyCode.Email) {
+		utils.JsonResponse(w, http.StatusBadRequest, utils.DtoResponse{Error: "Expired code, please resend for verification."})
+		return
 	}
 
-	return nil
+	if err := userService.ActivateUserAccount(verifyCode.Email); err != nil {
+		log.Error(err)
+		utils.JsonResponse(w, http.StatusInternalServerError, utils.DtoResponse{Error: err.Error()})
+		return
+	}
+
+	utils.JsonResponse(w, http.StatusOK, utils.DtoResponse{Message: "Account activated successfully, please login now!"})
 }
 
-func decodeBodyToUser(r *http.Request) (*user.User, error) {
-	u := &user.User{ID: primitive.NewObjectID()}
-	if err := json.NewDecoder(r.Body).Decode(u); err != nil {
-		return nil, err
+func ResetVerifyCode(w http.ResponseWriter, r *http.Request) {
+
+	resetBody := &ResetCodeBody{}
+	signupService := &SignUpService{}
+	log := config.InitializeLogger().LogHandler
+
+	if err := utils.DecodeBody(r, resetBody); err != nil {
+		log.Error(err)
+		utils.JsonResponse(w, http.StatusInternalServerError, utils.DtoResponse{Error: err.Error()})
+		return
 	}
 
-	return u, nil
+	if err := signupService.SaveCodeAndSendEmail(resetBody.Email); err != nil {
+		log.Error(err)
+		utils.JsonResponse(w, http.StatusInternalServerError, utils.DtoResponse{Error: err.Error()})
+		return
+	}
+
+	utils.JsonResponse(w, http.StatusInternalServerError, utils.DtoResponse{Message: "Check your inbox for your new code!"})
 }

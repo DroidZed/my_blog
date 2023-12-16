@@ -13,7 +13,8 @@ func SignUpRoutes() chi.Router {
 
 	signUpRoutes.Group(func(r chi.Router) {
 		r.Post("/", Register)
-		r.Get("/verify-email", VerifyEmail)
+		r.Post("/verify-email", VerifyEmail)
+		r.Put("/reset-code", ResetVerifyCode)
 	})
 
 	return signUpRoutes

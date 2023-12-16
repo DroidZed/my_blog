@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/DroidZed/go_lance/internal/config"
@@ -120,9 +121,7 @@ func (s *UserService) FindUserByEmail(email string) (*User, error) {
 
 	filter := bson.M{"email": email}
 
-	// Check for errors when executing FindOne
-	err := coll.FindOne(ctx, filter).Decode(result)
-	if err != nil {
+	if err := coll.FindOne(ctx, filter).Decode(result); err != nil {
 		return nil, err
 	}
 
@@ -152,10 +151,14 @@ func (s *UserService) UpdateOneUser(user User) error {
 
 	log.Debug(user)
 
-	_, err := coll.UpdateOne(ctx, filter, update, opt)
+	updateRes, err := coll.UpdateOne(ctx, filter, update, opt)
 
 	if err != nil {
 		return err
+	}
+
+	if updateRes.ModifiedCount == 0 {
+		return fmt.Errorf("0 modifications happened")
 	}
 
 	return nil
@@ -169,9 +172,9 @@ func (s *UserService) DeleteOne(id string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
 	defer cancel()
 
-	objectId, err1 := primitive.ObjectIDFromHex(id)
-	if err1 != nil {
-		return err1
+	objectId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
 	}
 
 	filter := bson.M{"_id": objectId}
@@ -180,6 +183,42 @@ func (s *UserService) DeleteOne(id string) error {
 
 	if err != nil || result.DeletedCount == 0 {
 		return err
+	}
+
+	return nil
+}
+
+func (s *UserService) ActivateUserAccount(email string) error {
+
+	env := config.LoadEnv()
+
+	coll := config.GetConnection().Database(env.DBName).Collection(collectionName)
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
+	defer cancel()
+
+	filter := bson.M{"email": email}
+
+	update := bson.D{
+		{
+			Key: "$set",
+			Value: bson.D{
+				{
+					Key:   "accStatus",
+					Value: true,
+				},
+			},
+		},
+	}
+
+	updateRes, err := coll.UpdateOne(ctx, filter, update)
+
+	if err != nil {
+		return err
+	}
+
+	if updateRes.ModifiedCount == 0 {
+		return fmt.Errorf("0 modifications happened")
 	}
 
 	return nil

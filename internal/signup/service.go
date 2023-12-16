@@ -26,10 +26,6 @@ type SignUpService struct{}
 
 const timeOut = 1 * time.Minute
 
-func (s *SignUpService) DeleteCode(data *user.User) error {
-	return nil
-}
-
 func (s *SignUpService) FindCodeByEmail(email string) (*ConfirmationCode, error) {
 
 	env := config.LoadEnv()
@@ -57,7 +53,7 @@ func (s *SignUpService) SaveConfirmationCode(email string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
 	defer cancel()
 
-	code := s.GenerateCode(10)
+	code := s.GenerateCode(utils.UPPER_CODE_LIMIT)
 
 	update := bson.D{
 		{
@@ -87,12 +83,27 @@ func (s *SignUpService) SaveConfirmationCode(email string) (string, error) {
 
 	opts := options.Update().SetUpsert(true)
 
-	_, updateErr := coll.UpdateOne(ctx, filter, update, opts)
+	updateRes, updateErr := coll.UpdateOne(ctx, filter, update, opts)
 	if updateErr != nil {
 		return "", updateErr
 	}
 
+	if updateRes.ModifiedCount == 0 {
+		return "", fmt.Errorf("0 modifications happened")
+	}
+
 	return code, nil
+}
+
+func (s *SignUpService) CheckCodeValidity(email string) bool {
+
+	verifyCode, err := s.FindCodeByEmail(email)
+
+	if err != nil {
+		return false
+	}
+
+	return time.Now().After(verifyCode.ExpiresAt.Time())
 }
 
 func (s *SignUpService) deliverEmailToUser(
@@ -118,7 +129,6 @@ func (s *SignUpService) deliverEmailToUser(
 
 	if emailErr != nil {
 		return emailErr
-
 	}
 
 	return nil
@@ -132,4 +142,27 @@ func (s *SignUpService) GenerateCode(bound int64) string {
 	}
 
 	return builder.String()
+}
+
+func (s *SignUpService) SaveCodeAndSendEmail(
+
+	email string,
+) error {
+
+	code, err := s.SaveConfirmationCode(email)
+
+	if err != nil {
+		return err
+	}
+
+	if emailErr := s.deliverEmailToUser(
+		email,
+		"CONFIRMATION MAIL",
+		"confirmation_email",
+		code,
+	); emailErr != nil {
+		return emailErr
+	}
+
+	return nil
 }

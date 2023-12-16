@@ -45,7 +45,12 @@ func RNG(outerBound int64) int64 {
 		return -1
 	}
 
-	return nBig.Int64()
+	n := nBig.Int64()
+
+	if n == 0 {
+		return n + 1
+	}
+	return n
 }
 
 func GenerateAPICode() string {
@@ -63,4 +68,11 @@ func GenerateAPICode() string {
 		}
 	}
 	return strings.TrimSuffix(builder.String(), "-")
+}
+
+func DecodeBody[T interface{}](r *http.Request, out *T) error {
+	if err := json.NewDecoder(r.Body).Decode(out); err != nil {
+		return err
+	}
+	return nil
 }

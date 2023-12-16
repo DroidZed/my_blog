@@ -9,3 +9,12 @@ type ConfirmationCode struct {
 	CreatedAt primitive.DateTime `bson:"createdAt"`
 	Email     string             `bson:"email"`
 }
+
+type VerifyCodeBody struct {
+	Code  string
+	Email string
+}
+
+type ResetCodeBody struct {
+	Email string
+}

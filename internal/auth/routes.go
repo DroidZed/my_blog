@@ -10,13 +10,11 @@ func AuthRoutes() chi.Router {
 	authRouter := chi.NewRouter()
 
 	authRouter.Route("/", func(r chi.Router) {
-
 		r.Post("/login", Login)
 	})
 
-	authRouter.Route("/refresh-token", func(r chi.Router) {
-		r.Use(md.RefreshVerify)
-		r.Post("/", RefreshTheAccessToken)
+	authRouter.With(md.RefreshVerify).Group(func(r chi.Router) {
+		r.Post("/refresh-token", RefreshTheAccessToken)
 	})
 
 	return authRouter

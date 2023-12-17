@@ -83,13 +83,9 @@ func (s *SignUpService) SaveConfirmationCode(email string) (string, error) {
 
 	opts := options.Update().SetUpsert(true)
 
-	updateRes, updateErr := coll.UpdateOne(ctx, filter, update, opts)
+	_, updateErr := coll.UpdateOne(ctx, filter, update, opts)
 	if updateErr != nil {
 		return "", updateErr
-	}
-
-	if updateRes.ModifiedCount == 0 {
-		return "", fmt.Errorf("0 modifications happened")
 	}
 
 	return code, nil

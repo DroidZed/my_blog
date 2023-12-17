@@ -3,6 +3,9 @@ package internal
 import (
 	"fmt"
 	"net/http"
+	"os"
+
+	"path/filepath"
 
 	_ "github.com/DroidZed/go_lance/docs"
 	"github.com/DroidZed/go_lance/internal/auth"
@@ -32,6 +35,14 @@ func CreateNewServer() *Server {
 	server.EnvConfig = config.LoadEnv()
 	pigeon.GetSmtp()
 	return server
+}
+
+func (s *Server) MountViewsFolder() {
+	workDir, _ := os.Getwd()
+	filesDir := http.Dir(filepath.Join(workDir, "public/views/*"))
+	dir := http.Dir(filesDir)
+	fs := http.FileServer(dir)
+	s.Router.Handle("/", fs)
 }
 
 func (s *Server) MountHandlers() {

@@ -109,7 +109,7 @@ func (s *UserService) FindUserByID(id string) (*User, error) {
 	return result, nil
 }
 
-func (s *UserService) FindUserByEmail(email string) (*User, error) {
+func (s *UserService) FindUserByEmail(email string) *User {
 	env := config.LoadEnv()
 
 	coll := config.GetConnection().Database(env.DBName).Collection(collectionName)
@@ -122,10 +122,10 @@ func (s *UserService) FindUserByEmail(email string) (*User, error) {
 	filter := bson.M{"email": email}
 
 	if err := coll.FindOne(ctx, filter).Decode(result); err != nil {
-		return nil, err
+		return nil
 	}
 
-	return result, nil
+	return result
 }
 
 func (s *UserService) UpdateOneUser(user User) error {

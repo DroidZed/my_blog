@@ -31,19 +31,13 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	found, err := userService.FindUserByEmail(decodedUser.Email)
-
-	if err != nil {
-		log.Error(err)
-		utils.JsonResponse(w, http.StatusInternalServerError, utils.DtoResponse{Error: err.Error()})
-		return
-	}
+	found := userService.FindUserByEmail(decodedUser.Email)
 
 	if found != nil {
 		utils.JsonResponse(
 			w,
 			http.StatusBadRequest,
-			utils.DtoResponse{Error: "Already exists!"},
+			utils.DtoResponse{Error: "Email already used."},
 		)
 		return
 	}
@@ -80,11 +74,21 @@ func VerifyEmail(w http.ResponseWriter, r *http.Request) {
 	userService := &user.UserService{}
 	verifyCode := &VerifyCodeBody{}
 
-	err := utils.DecodeBody(r, verifyCode)
-
-	if err != nil {
+	if err := utils.DecodeBody(r, verifyCode); err != nil {
 		log.Error(err)
 		utils.JsonResponse(w, http.StatusInternalServerError, utils.DtoResponse{Error: err.Error()})
+		return
+	}
+
+	u := userService.FindUserByEmail(verifyCode.Email)
+
+	if u == nil {
+		utils.JsonResponse(w, http.StatusInternalServerError, utils.DtoResponse{Error: "No user to be found."})
+		return
+	}
+
+	if u.AccStatus == 1 {
+		utils.JsonResponse(w, http.StatusBadRequest, utils.DtoResponse{Error: "Account already verified."})
 		return
 	}
 

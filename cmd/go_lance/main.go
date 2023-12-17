@@ -34,6 +34,8 @@ func startService() *internal.Server {
 
 	server.MountHandlers()
 
+	server.MountViewsFolder()
+
 	log.Infof("Listening on port: %d\n", envPort)
 
 	return server

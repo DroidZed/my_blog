@@ -11,9 +11,9 @@ func ValidateUser(login *LoginBody) (*user.User, error) {
 
 	userService := &user.UserService{}
 
-	data, err := userService.FindUserByEmail(login.Email)
-	if err != nil {
-		return nil, err
+	data := userService.FindUserByEmail(login.Email)
+	if data == nil {
+		return nil, fmt.Errorf("No user found.")
 	}
 
 	pwdIsValid := cryptor.CompareSecureToPlain(data.Password, login.Password)

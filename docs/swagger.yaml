@@ -1,0 +1,79 @@
+basePath: /
+definitions:
+  auth.LoginBody:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  auth.LoginResponse:
+    properties:
+      accStatus:
+        type: integer
+      accessToken:
+        type: string
+      error:
+        type: string
+      refreshToken:
+        type: string
+      role:
+        type: string
+      userId:
+        type: string
+    type: object
+host: golance.io
+info:
+  contact:
+    email: joe@example.com
+    name: GoLance Support
+    url: http://example.com/support
+  description: This is the GoLance API documentation.
+  license:
+    name: MIT
+    url: https://github.com/DroidZed/go_lance/LICENSE
+  termsOfService: http://example.com/terms/
+  title: GoLance API Docs
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Get token, user basic data
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.LoginBody'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/auth.LoginResponse'
+      summary: Auth user
+      tags:
+      - auth
+  /auth/refresh-token:
+    post:
+      consumes:
+      - application/json
+      description: Refresh access + refresh tokens
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.LoginBody'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/auth.LoginResponse'
+      security:
+      - Bearer: []
+      summary: Refresh tokens
+      tags:
+      - auth
+swagger: "2.0"

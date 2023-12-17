@@ -1,0 +1,45 @@
+version: '3.8'
+services:
+  golance_api:
+    image: droidzed/golance:${IMAGE_TAG}
+    container_name: go-lance-api
+    environment:
+      - DB_URI=${DB_URI}
+      - PORT=${PORT}
+      - DB_NAME=${DB_NAME}
+      - ACCESS_SECRET=${ACCESS_SECRET}
+      - ACCESS_EXPIRY=${ACCESS_EXPIRY}
+      - REFRESH_SECRET=${REFRESH_SECRET}
+      - REFRESH_EXPIRY=${REFRESH_EXPIRY}
+    ports:
+      - '${PORT}:${PORT}'
+    networks:
+      - goLanceNetwork
+    depends_on:
+      - golancedb
+    healthcheck:
+      test: ['CMD', 'curl', 'http://localhost:8000/health']
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+  golancedb:
+    image: mongo
+    container_name: go-lance-db
+    healthcheck:
+      test: ['CMD', 'mongosh', '--eval', \"db.runCommand('ping').ok\" --quiet"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+    ports:
+      - '27012:27017'
+    networks:
+      - goLanceNetwork
+    volumes:
+      - database:/var/lib/mongo/data
+volumes:
+  database:
+networks:
+  goLanceNetwork:
+    driver: bridge

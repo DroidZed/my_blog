@@ -19,8 +19,8 @@ func InitializeLogger() *LoggerConfig {
 	}
 
 	manager := &LoggerConfig{}
-	manager.LogHandler = log.New(os.Stderr)
+	manager.LogHandler = log.New(os.Stderr).WithDebug()
 	logger = manager
-	
+
 	return manager
 }

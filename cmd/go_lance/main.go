@@ -3,51 +3,18 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"github.com/DroidZed/go_lance/internal"
 	"github.com/DroidZed/go_lance/internal/config"
-	"github.com/DroidZed/go_lance/internal/db"
-	"github.com/DroidZed/go_lance/internal/user"
-	"github.com/DroidZed/go_lance/internal/utils"
-	"github.com/MadAppGang/httplog"
 	"github.com/ggicci/httpin"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 )
-
-type Server struct {
-	Router *chi.Mux
-}
-
-func CreateNewServer() *Server {
-	server := &Server{}
-	server.Router = chi.NewRouter()
-	return server
-}
-
-func (s *Server) MountHandlers() {
-	// Mount all Middleware here
-	s.Router.Use(middleware.RequestID)
-	s.Router.Use(middleware.CleanPath)
-	s.Router.Use(middleware.URLFormat)
-	s.Router.Use(httplog.LoggerWithName("CHI API"))
-
-	// Mount all handlers here
-	s.Router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		utils.JsonResponse(w, 200, utils.DtoResponse{Message: "Hello World!"})
-	})
-
-	s.Router.Mount("/user", user.UserRoutes())
-
-	s.Router.Get("/dev", func(w http.ResponseWriter, r *http.Request) {
-		utils.LogAllRoutes(s.Router)
-		utils.JsonResponse(w, 200, utils.DtoResponse{Message: "Nothing will be returned. This is just a dummy message. If you're a developer, check your console."})
-	})
-}
 
 func init() {
 	// Register a directive named "path" to retrieve values from `chi.URLParam`,
@@ -55,30 +22,61 @@ func init() {
 	httpin.UseGochiURLParam("path", chi.URLParam)
 }
 
+func startService() *internal.Server {
+
+	log := config.InitializeLogger().LogHandler
+
+	server := internal.CreateNewServer()
+
+	envPort := server.EnvConfig.Port
+
+	server.ApplyMiddleWares()
+
+	server.MountHandlers()
+
+	server.MountViewsFolder()
+
+	log.Infof("Listening on port: %d\n", envPort)
+
+	return server
+}
+
 // Entry point, setting up chi and graceful shutdown <3
+// @title GoLance API Docs
+// @version 1.0
+// @description This is the GoLance API documentation.
+// @termsOfService http://example.com/terms/
+
+// @contact.name GoLance Support
+// @contact.url http://example.com/support
+// @contact.email joe@example.com
+
+// @license.name MIT
+// @license.url https://github.com/DroidZed/go_lance/LICENSE
+
+// @host golance.io
+// @BasePath /
 func main() {
 
 	log := config.InitializeLogger().LogHandler
 
-	port, err := config.EnvDbPORT()
+	app := startService()
 
-	if err != nil {
-		log.Fatal("Could not retrieve port!\n")
-	}
-
-	addr := utils.SetupHostWithPort(config.EnvHost(), port)
+	dbClient := app.DbClient
+	envPort := app.EnvConfig.Port
 
 	// The HTTP Server
-	server := &http.Server{Addr: addr, Handler: service(port)}
+	server := &http.Server{
+		Addr:    fmt.Sprintf(":%d", envPort),
+		Handler: app.Router,
+	}
 
 	// Server run context
 	serverCtx, serverStopCtx := context.WithCancel(context.Background())
 
-	client := db.GetConnection()
-
 	// Clean up to disconnect
 	defer func() {
-		if err := client.Disconnect(serverCtx); err != nil {
+		if err := dbClient.Disconnect(serverCtx); err != nil {
 			log.Fatal(err)
 		}
 	}()
@@ -110,7 +108,7 @@ func main() {
 	}()
 
 	// Run the server
-	err = server.ListenAndServe()
+	err := server.ListenAndServe()
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Fatal(err)
 	}
@@ -119,18 +117,4 @@ func main() {
 	<-serverCtx.Done()
 
 	log.Info("Goodbye 🧩 👋")
-}
-
-func service(port int64) http.Handler {
-
-	log := config.InitializeLogger().LogHandler
-
-	server := CreateNewServer()
-
-	server.MountHandlers()
-
-	log.Infof("Listening on port: %d\n", port)
-
-	return server.Router
-
 }

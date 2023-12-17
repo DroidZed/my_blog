@@ -2,10 +2,10 @@ package user
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/DroidZed/go_lance/internal/config"
-	"github.com/DroidZed/go_lance/internal/db"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -14,10 +14,44 @@ import (
 const collectionName = "users"
 const timeOut = 1 * time.Minute
 
-func FindAllUsers() ([]User, error) {
+type IUserService interface {
+	FindAllUsers() ([]User, error)
+	FindUserByID(id string) (*User, error)
+	FindUserByEmail(email string) (*User, error)
+	UpdateOneUser(user User) error
+	DeleteOne(id string) bool
+}
+
+type UserService struct{}
+
+func (s *UserService) SaveUser(data *User) error {
+
+	env := config.LoadEnv()
+
+	coll := config.GetConnection().Database(env.DBName).Collection("users")
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
+	defer cancel()
+
+	modified, err := data.HashUserPassword()
+	if err != nil {
+		return err
+	}
+
+	_, insertErr := coll.InsertOne(ctx, modified)
+	if insertErr != nil {
+		return insertErr
+	}
+
+	return nil
+}
+
+func (s *UserService) FindAllUsers() ([]User, error) {
+	env := config.LoadEnv()
+
 	log := config.InitializeLogger().LogHandler
 
-	coll := db.GetConnection().Database(config.EnvDbName()).Collection(collectionName)
+	coll := config.GetConnection().Database(env.DBName).Collection(collectionName)
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
 	defer cancel()
@@ -49,8 +83,10 @@ func FindAllUsers() ([]User, error) {
 	return results, nil
 }
 
-func FindUserByID(id string) (*User, error) {
-	coll := db.GetConnection().Database(config.EnvDbName()).Collection(collectionName)
+func (s *UserService) FindUserByID(id string) (*User, error) {
+	env := config.LoadEnv()
+
+	coll := config.GetConnection().Database(env.DBName).Collection(collectionName)
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
 	defer cancel()
@@ -62,8 +98,10 @@ func FindUserByID(id string) (*User, error) {
 		return nil, err1
 	}
 
+	filter := bson.M{"_id": objectId}
+
 	// Check for errors when executing FindOne
-	err := coll.FindOne(ctx, bson.M{"_id": objectId}).Decode(result)
+	err := coll.FindOne(ctx, filter).Decode(result)
 	if err != nil {
 		return nil, err
 	}
@@ -71,49 +109,30 @@ func FindUserByID(id string) (*User, error) {
 	return result, nil
 }
 
-func SaveOne(data *User) (interface{}, error) {
+func (s *UserService) FindUserByEmail(email string) *User {
+	env := config.LoadEnv()
 
-	coll := db.GetConnection().Database(config.EnvDbName()).Collection(collectionName)
-
-	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
-	defer cancel()
-
-	result, err := coll.InsertOne(ctx, data)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return result.InsertedID, nil
-
-}
-
-func DeleteOne(id string) bool {
-
-	coll := db.GetConnection().Database(config.EnvDbName()).Collection(collectionName)
+	coll := config.GetConnection().Database(env.DBName).Collection(collectionName)
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
 	defer cancel()
 
-	objectId, err1 := primitive.ObjectIDFromHex(id)
-	if err1 != nil {
-		return false
+	result := &User{}
+
+	filter := bson.M{"email": email}
+
+	if err := coll.FindOne(ctx, filter).Decode(result); err != nil {
+		return nil
 	}
 
-	filter := bson.M{"_id": objectId}
-
-	result, err := coll.DeleteOne(ctx, filter)
-
-	if err != nil || result.DeletedCount == 0 {
-		return false
-	}
-
-	return true
+	return result
 }
 
-func UpdateOneUser(user User) error {
+func (s *UserService) UpdateOneUser(user User) error {
 
-	coll := db.GetConnection().Database(config.EnvDbName()).Collection(collectionName)
+	env := config.LoadEnv()
+
+	coll := config.GetConnection().Database(env.DBName).Collection(collectionName)
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
 	defer cancel()
@@ -132,10 +151,74 @@ func UpdateOneUser(user User) error {
 
 	log.Debug(user)
 
-	_, err := coll.UpdateOne(ctx, filter, update, opt)
+	updateRes, err := coll.UpdateOne(ctx, filter, update, opt)
 
 	if err != nil {
 		return err
+	}
+
+	if updateRes.ModifiedCount == 0 {
+		return fmt.Errorf("0 modifications happened")
+	}
+
+	return nil
+}
+
+func (s *UserService) DeleteOne(id string) error {
+	env := config.LoadEnv()
+
+	coll := config.GetConnection().Database(env.DBName).Collection(collectionName)
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
+	defer cancel()
+
+	objectId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+
+	filter := bson.M{"_id": objectId}
+
+	result, err := coll.DeleteOne(ctx, filter)
+
+	if err != nil || result.DeletedCount == 0 {
+		return err
+	}
+
+	return nil
+}
+
+func (s *UserService) ActivateUserAccount(email string) error {
+
+	env := config.LoadEnv()
+
+	coll := config.GetConnection().Database(env.DBName).Collection(collectionName)
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
+	defer cancel()
+
+	filter := bson.M{"email": email}
+
+	update := bson.D{
+		{
+			Key: "$set",
+			Value: bson.D{
+				{
+					Key:   "accStatus",
+					Value: true,
+				},
+			},
+		},
+	}
+
+	updateRes, err := coll.UpdateOne(ctx, filter, update)
+
+	if err != nil {
+		return err
+	}
+
+	if updateRes.ModifiedCount == 0 {
+		return fmt.Errorf("0 modifications happened")
 	}
 
 	return nil

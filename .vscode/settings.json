@@ -1,9 +1,20 @@
 {
     "cSpell.words": [
         "bson",
+        "cryptor",
+        "Debugf",
         "ggicci",
+        "Gochi",
+        "godotenv",
+        "golance",
         "httpin",
         "httplog",
+        "Infof",
+        "jwtauth",
+        "nums",
+        "signup",
+        "swaggo",
+        "tmpl",
         "Upsert"
     ]
 }

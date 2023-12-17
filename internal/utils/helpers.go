@@ -1,21 +1,17 @@
 package utils
 
 import (
+	"crypto/rand"
 	"encoding/json"
-	"fmt"
+	"math/big"
 	"net/http"
 	"strings"
-
-	"github.com/DroidZed/go_lance/internal/config"
-	"github.com/go-chi/chi/v5"
 )
 
 type DtoResponse struct {
-	Message string `json:"message"`
-	Error   string `json:"error"`
+	Message string `json:"message,omitempty"`
+	Error   string `json:"error,omitempty"`
 }
-
-func SetupHostWithPort(host string, port int64) string { return fmt.Sprintf("%s:%d", host, port) }
 
 func JsonResponse(w http.ResponseWriter, code int, payload interface{}) {
 	response, _ := json.Marshal(payload)
@@ -27,17 +23,56 @@ func JsonResponse(w http.ResponseWriter, code int, payload interface{}) {
 	}
 }
 
-func LogAllRoutes(r chi.Routes) {
+func StringToBytes(s string) []byte {
 
-	log := config.InitializeLogger().LogHandler
+	bytes := make([]byte, len(s))
+	defer func() {
+		bytes = nil
+	}()
 
-	walkFunc := func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
-		route = strings.Replace(route, "/*/", "/", -1)
-		log.Debugf("%s %s\n", method, route)
-		return nil
+	copy(bytes, s)
+
+	return bytes
+}
+
+func RNG(outerBound int64) int64 {
+	if outerBound <= 0 {
+		return -1
 	}
 
-	if err := chi.Walk(r, walkFunc); err != nil {
-		log.Errorf("Logging err: %s\n", err.Error())
+	nBig, err := rand.Int(rand.Reader, big.NewInt(outerBound))
+	if err != nil {
+		return -1
 	}
+
+	n := nBig.Int64()
+
+	if n == 0 {
+		return n + 1
+	}
+	return n
+}
+
+func GenerateAPICode() string {
+
+	builder := strings.Builder{}
+
+	const alpha = "A4BCD3EFG8HIJ6KLM7NO0PQRS2TUV9WX1YZ5"
+
+	for i := 0; i < 4; i++ {
+		for j := 0; j < 4; j++ {
+			builder.WriteByte(alpha[RNG(int64(j+17))])
+		}
+		if i != 3 {
+			builder.WriteString("-")
+		}
+	}
+	return strings.TrimSuffix(builder.String(), "-")
+}
+
+func DecodeBody[T interface{}](r *http.Request, out *T) error {
+	if err := json.NewDecoder(r.Body).Decode(out); err != nil {
+		return err
+	}
+	return nil
 }

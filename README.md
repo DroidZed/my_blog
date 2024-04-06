@@ -1,6 +1,6 @@
 # Go Lance
 
-My first backend with Go as a practice project.
+Personal website, blog and practice project
 
 Tech used:
 

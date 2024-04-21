@@ -7,7 +7,7 @@ import (
 	"github.com/DroidZed/go_lance/internal/user"
 )
 
-func ValidateUser(login *LoginBody) (*user.User, error) {
+func ValidateUser(login *Login) (*user.User, error) {
 
 	userService := &user.UserService{}
 

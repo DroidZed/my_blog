@@ -1,16 +1,11 @@
 #IMAGE_TAG=latest
 include .env
 
-init_deps:
-	rm go.mod go.sum go.work.sum
-	go mod init github.com/DroidZed/go_lance
+deps:
 	go mod tidy
 
 build:
-	go build -v -o bin/golance cmd/go_lance/main.go
-
-dev:
-	go run cmd/go_lance/main.go
+	docker build -t droidzed/golance:$(IMAGE_TAG) .
 
 watch:
 	air
@@ -18,16 +13,20 @@ watch:
 doc:
 	swag init -g cmd/go_lance/main.go
 
-prod:
-	./bin/golance.exe
-
-dockerImage:
-	docker build -t droidzed/golance:$(IMAGE_TAG) .
-
 compose:
 	docker compose up -d
 
 decompose:
 	docker compose down
 
-dockerUp: dockerImage compose
+dev:
+	build compose
+
+prod:
+	./bin/golance.exe
+
+module:
+	mkdir ./internal/${DIR}
+	echo "package ${DIR}" > ./internal/${DIR}/controller.go
+	echo "package ${DIR}" > ./internal/${DIR}/service.go
+	echo "package ${DIR}" > ./internal/${DIR}/models.go

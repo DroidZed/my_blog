@@ -14,7 +14,7 @@ import (
 
 func GetAllUsers(w http.ResponseWriter, _ *http.Request) {
 
-	log := config.InitializeLogger().LogHandler
+	log := config.GetLogger()
 
 	userService := &UserService{}
 
@@ -33,7 +33,7 @@ func GetUserById(w http.ResponseWriter, r *http.Request) {
 
 	id := r.Context().Value(httpin.Input).(*UserIdPath).UserId
 
-	log := config.InitializeLogger().LogHandler
+	log := config.GetLogger()
 
 	log.Infof("id: %s", id)
 
@@ -65,7 +65,7 @@ func DeleteUserById(w http.ResponseWriter, r *http.Request) {
 
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
 
-	log := config.InitializeLogger().LogHandler
+	log := config.GetLogger()
 
 	user := &User{}
 

@@ -11,6 +11,7 @@ import (
 type EnvConfig struct {
 	Port          int64
 	Env           string
+	Host          string
 	DBUri         string
 	DBName        string
 	AccessSecret  string
@@ -23,74 +24,71 @@ type EnvConfig struct {
 	SMTP_PASSWORD string
 }
 
-var config *EnvConfig
+func LoadEnv() (config *EnvConfig) {
 
-func LoadEnv() *EnvConfig {
-
-	if config != nil {
-		return config
-	}
-
-	log := InitializeLogger().LogHandler
+	log := GetLogger()
 
 	if err := godotenv.Load(".env"); err != nil {
 		log.Fatalf("Error loading work environment.\n %s", err)
 	}
 
-	if port, err := strconv.ParseInt(os.Getenv("PORT"), 10, 64); err != nil {
+	port, err := strconv.ParseInt(os.Getenv("PORT"), 10, 64)
+
+	if err != nil {
 		log.Fatalf("Error loading work environment.\n %s", err)
 
-	} else {
-
-		if err := loadVarsPerEnv(); err != nil {
-			log.Fatalf("Error loading work environment.\n %s", err)
-		}
-
-		conf := &EnvConfig{
-			Port:          port,
-			DBUri:         os.Getenv("DB_URI"),
-			Env:           os.Getenv("ENV"),
-			DBName:        os.Getenv("DB_NAME"),
-			AccessSecret:  os.Getenv("ACCESS_SECRET"),
-			AccessExpiry:  os.Getenv("ACCESS_EXPIRY"),
-			RefreshSecret: os.Getenv("REFRESH_SECRET"),
-			RefreshExpiry: os.Getenv("REFRESH_EXPIRY"),
-			SMTP_HOST:     os.Getenv("SMTP_HOST"),
-			SMTP_PORT:     os.Getenv("SMTP_PORT"),
-			SMTP_USERNAME: os.Getenv("SMTP_USERNAME"),
-			SMTP_PASSWORD: os.Getenv("SMTP_PASSWORD"),
-		}
-
-		config = conf
-
 	}
+
+	if err := loadVarsPerEnv(); err != nil {
+		log.Fatalf("Error loading work environment.\n %s", err)
+	}
+
+	config = &EnvConfig{
+		Port:          port,
+		DBUri:         os.Getenv("DB_URI"),
+		Env:           os.Getenv("ENV"),
+		Host:          os.Getenv("HOST"),
+		DBName:        os.Getenv("DB_NAME"),
+		AccessSecret:  os.Getenv("ACCESS_SECRET"),
+		AccessExpiry:  os.Getenv("ACCESS_EXPIRY"),
+		RefreshSecret: os.Getenv("REFRESH_SECRET"),
+		RefreshExpiry: os.Getenv("REFRESH_EXPIRY"),
+		SMTP_HOST:     os.Getenv("SMTP_HOST"),
+		SMTP_PORT:     os.Getenv("SMTP_PORT"),
+		SMTP_USERNAME: os.Getenv("SMTP_USERNAME"),
+		SMTP_PASSWORD: os.Getenv("SMTP_PASSWORD"),
+	}
+
 	return config
+
 }
 
-func loadVarsPerEnv() error {
+func loadVarsPerEnv() (err error) {
 
-	if env, ok := os.LookupEnv("ENV"); !ok {
+	env, ok := os.LookupEnv("ENV")
+
+	if !ok {
 		return fmt.Errorf("environment not set")
-	} else {
-
-		switch env {
-		case "dev":
-			{
-				if err := godotenv.Load(".env.dev"); err != nil {
-					return err
-				}
-			}
-		case "prod":
-			{
-				if err := godotenv.Load(".env.prod"); err != nil {
-					return err
-				}
-			}
-		default:
-			{
-				return fmt.Errorf("environment not set")
-			}
-		}
 	}
+
+	switch env {
+	case "dev":
+
+		if err := godotenv.Load(".env.dev"); err != nil {
+			return err
+		}
+
+	case "prod":
+
+		if err := godotenv.Load(".env.prod"); err != nil {
+			return err
+		}
+
+	default:
+
+		return fmt.Errorf("environment not set")
+
+	}
+
 	return nil
 }

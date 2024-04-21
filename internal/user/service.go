@@ -49,7 +49,7 @@ func (s *UserService) SaveUser(data *User) error {
 func (s *UserService) FindAllUsers() ([]User, error) {
 	env := config.LoadEnv()
 
-	log := config.InitializeLogger().LogHandler
+	log := config.GetLogger()
 
 	coll := config.GetConnection().Database(env.DBName).Collection(collectionName)
 
@@ -140,7 +140,7 @@ func (s *UserService) UpdateOneUser(user User) error {
 	filter := bson.M{"_id": user.ID}
 	opt := options.Update().SetUpsert(false)
 
-	log := config.InitializeLogger().LogHandler
+	log := config.GetLogger()
 
 	update := bson.M{
 		"$set": bson.M{

@@ -37,3 +37,8 @@ go.work
 
 # MISC
 .env.dev
+LICENSE
+README.md
+Makefile
+VERSION
+.air.toml

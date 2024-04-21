@@ -73,7 +73,7 @@ func createToken(claims map[string]interface{}, sub string, expiry int64, sec st
 		"iat": time.Now().UTC().Unix(),
 	})
 
-	secret := utils.StringToBytes(sec)
+	secret := []byte(sec)
 
 	tokenString, err := token.SignedString(secret)
 	if err != nil {
@@ -146,7 +146,7 @@ func ParseToken(token string, secret string) (*jwt.Token, error) {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 
-		secret := utils.StringToBytes(secret)
+		secret := []byte(secret)
 
 		return secret, nil
 

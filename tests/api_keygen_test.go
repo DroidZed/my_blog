@@ -12,7 +12,7 @@ func TestGenApiKey(t *testing.T) {
 
 	code := utils.GenerateAPICode()
 
-	log := config.InitializeLogger().LogHandler
+	log := config.GetLogger()
 
 	log.Debugf("Code: %s", code)
 

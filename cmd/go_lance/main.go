@@ -12,21 +12,23 @@ import (
 
 	"github.com/DroidZed/go_lance/internal"
 	"github.com/DroidZed/go_lance/internal/config"
-	"github.com/ggicci/httpin"
+	httpin_integration "github.com/ggicci/httpin/integration"
 	"github.com/go-chi/chi/v5"
 )
 
 func init() {
 	// Register a directive named "path" to retrieve values from `chi.URLParam`,
 	// i.e. decode path variables.
-	httpin.UseGochiURLParam("path", chi.URLParam)
+	httpin_integration.UseGochiURLParam("path", chi.URLParam)
 }
 
-func startService() *internal.Server {
+func startService() (server *internal.Server) {
 
-	log := config.InitializeLogger().LogHandler
+	log := config.GetLogger()
 
-	server := internal.CreateNewServer()
+	server = &internal.Server{}
+
+	server = server.New()
 
 	envPort := server.EnvConfig.Port
 
@@ -34,7 +36,11 @@ func startService() *internal.Server {
 
 	server.MountHandlers()
 
-	server.MountViewsFolder()
+	err := server.MountViewsFolder()
+
+	if err != nil {
+		config.GetLogger().Fatalf(err.Error())
+	}
 
 	log.Infof("Listening on port: %d\n", envPort)
 
@@ -57,33 +63,30 @@ func startService() *internal.Server {
 // @host golance.io
 // @BasePath /
 func main() {
-
-	log := config.InitializeLogger().LogHandler
+	log := config.GetLogger()
 
 	app := startService()
 
-	dbClient := app.DbClient
-	envPort := app.EnvConfig.Port
-
 	// The HTTP Server
 	server := &http.Server{
-		Addr:    fmt.Sprintf(":%d", envPort),
+		Addr:    fmt.Sprintf(":%d", app.EnvConfig.Port),
 		Handler: app.Router,
 	}
 
 	// Server run context
 	serverCtx, serverStopCtx := context.WithCancel(context.Background())
 
-	// Clean up to disconnect
-	defer func() {
-		if err := dbClient.Disconnect(serverCtx); err != nil {
-			log.Fatal(err)
-		}
-	}()
-
 	// Listen for syscall signals for process to interrupt/quit
 	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+
+	signal.Notify(
+		sig,
+		syscall.SIGHUP,
+		syscall.SIGINT,
+		syscall.SIGTERM,
+		syscall.SIGQUIT,
+	)
+
 	go func() {
 		<-sig
 

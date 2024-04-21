@@ -7,7 +7,6 @@ import (
 	"net/smtp"
 
 	"github.com/DroidZed/go_lance/internal/config"
-	"github.com/DroidZed/go_lance/internal/utils"
 )
 
 func NewRequest(to []string, subject, body string) *SMTPRequest {
@@ -35,7 +34,7 @@ func (r *SMTPRequest) SendEmail() error {
 
 	mime := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
 
-	msg := utils.StringToBytes(fmt.Sprintf("%s\n", r.GetSubject()) + mime + r.GetBody())
+	msg := []byte(fmt.Sprintf("%s\n", r.GetSubject()) + mime + r.GetBody())
 
 	addr := fmt.Sprintf("%s:%s", env.SMTP_HOST, env.SMTP_PORT)
 

@@ -1,12 +1,12 @@
 package auth
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/DroidZed/go_lance/internal/config"
 	"github.com/DroidZed/go_lance/internal/cryptor"
 	"github.com/DroidZed/go_lance/internal/utils"
+	"github.com/ggicci/httpin"
 )
 
 // Auth godoc
@@ -16,22 +16,16 @@ import (
 //	@Tags			auth
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	LoginBody
+//	@Success		200	{object}	LoginResponse
 //	@Failure		404	{object}	LoginResponse
 //	@Router			/auth/login [post]
-func Login(w http.ResponseWriter, r *http.Request) {
+func LoginReq(w http.ResponseWriter, r *http.Request) {
 
-	log := config.InitializeLogger().LogHandler
+	log := config.GetLogger()
 
-	loginBody := &LoginBody{}
+	loginBody := r.Context().Value(httpin.Input).(*LoginBody)
 
-	if err := json.NewDecoder(r.Body).Decode(loginBody); err != nil {
-		log.Error(err)
-		utils.JsonResponse(w, http.StatusInternalServerError, LoginResponse{Error: err.Error()})
-		return
-	}
-
-	user, err := ValidateUser(loginBody)
+	user, err := ValidateUser(loginBody.Payload)
 
 	if err != nil {
 		utils.JsonResponse(w, http.StatusNotFound, LoginResponse{Error: err.Error()})
@@ -70,18 +64,12 @@ func Login(w http.ResponseWriter, r *http.Request) {
 //	@Router			/auth/refresh-token [post]
 func RefreshTheAccessToken(w http.ResponseWriter, r *http.Request) {
 
-	log := config.InitializeLogger().LogHandler
+	log := config.GetLogger()
 	conf := config.LoadEnv()
 
-	refreshBody := &RefreshReq{}
+	refreshReq := r.Context().Value(httpin.Input).(*RefreshReq)
 
-	if err := json.NewDecoder(r.Body).Decode(refreshBody); err != nil {
-		log.Error(err)
-		utils.JsonResponse(w, http.StatusInternalServerError, utils.DtoResponse{Error: err.Error()})
-		return
-	}
-
-	expiredToken := refreshBody.Expired
+	expiredToken := refreshReq.Payload.Expired
 
 	access, err := cryptor.ParseToken(expiredToken, conf.AccessSecret)
 	if err != nil {

@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"net/http"
 	"strings"
+	"unsafe"
 )
 
 type DtoResponse struct {
@@ -23,16 +24,8 @@ func JsonResponse(w http.ResponseWriter, code int, payload interface{}) {
 	}
 }
 
-func StringToBytes(s string) []byte {
-
-	bytes := make([]byte, len(s))
-	defer func() {
-		bytes = nil
-	}()
-
-	copy(bytes, s)
-
-	return bytes
+func ByteSlice2String(bs []byte) string {
+	return *(*string)(unsafe.Pointer(&bs))
 }
 
 func RNG(outerBound int64) int64 {

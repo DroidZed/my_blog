@@ -10,17 +10,20 @@ type LoggerConfig struct {
 	LogHandler *log.Logger
 }
 
-var logger *LoggerConfig
-
-func InitializeLogger() *LoggerConfig {
-
-	if logger != nil {
-		return logger
-	}
+func GetLogger() *log.Logger {
 
 	manager := &LoggerConfig{}
-	manager.LogHandler = log.New(os.Stderr).WithDebug().WithColor().WithTimestamp().NoQuiet()
-	logger = manager
+	manager.LogHandler = log.
+		New(os.Stderr).
+		WithDebug().
+		WithColor().
+		WithTimestamp().
+		NoQuiet()
 
-	return manager
+	defer func() {
+		manager.LogHandler = nil
+		manager = nil
+	}()
+
+	return manager.LogHandler
 }

@@ -13,7 +13,7 @@ import (
 
 func Register(w http.ResponseWriter, r *http.Request) {
 
-	log := config.InitializeLogger().LogHandler
+	log := config.GetLogger()
 	signupService := &SignUpService{}
 	userService := &user.UserService{}
 
@@ -69,7 +69,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 
 func VerifyEmail(w http.ResponseWriter, r *http.Request) {
 
-	log := config.InitializeLogger().LogHandler
+	log := config.GetLogger()
 	signupService := &SignUpService{}
 	userService := &user.UserService{}
 	verifyCode := &VerifyCodeBody{}
@@ -110,7 +110,7 @@ func ResetVerifyCode(w http.ResponseWriter, r *http.Request) {
 
 	resetBody := &ResetCodeBody{}
 	signupService := &SignUpService{}
-	log := config.InitializeLogger().LogHandler
+	log := config.GetLogger()
 
 	if err := utils.DecodeBody(r, resetBody); err != nil {
 		log.Error(err)

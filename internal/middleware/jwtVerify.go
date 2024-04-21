@@ -23,7 +23,7 @@ func RefreshVerify(next http.Handler) http.Handler {
 
 func tokenVerify(secret string, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log := config.InitializeLogger().LogHandler
+		log := config.GetLogger()
 
 		tokenString, err := retrieveTokenFromHeader(r)
 

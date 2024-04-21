@@ -16,67 +16,83 @@ import (
 	"github.com/DroidZed/go_lance/internal/signup"
 	"github.com/DroidZed/go_lance/internal/user"
 	"github.com/MadAppGang/httplog"
+	"github.com/ggicci/httpin"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/cors"
 	httpSwagger "github.com/swaggo/http-swagger"
-	"github.com/withmandala/go-log"
-	"go.mongodb.org/mongo-driver/mongo"
+
+	"github.com/go-chi/cors"
 )
 
 type Server struct {
 	Router    *chi.Mux
-	DbClient  *mongo.Client
 	EnvConfig *config.EnvConfig
-	Logger    *log.Logger
 }
 
-func CreateNewServer() *Server {
-	server := &Server{}
-	server.Logger = config.InitializeLogger().LogHandler
+type ServerDefinition interface {
+	New() (server *Server)
+	MountViewsFolder() error
+	ApplyMiddleWares()
+	MountHandlers()
+}
+
+func (s *Server) New() (server *Server) {
+	server = &Server{}
 	server.Router = chi.NewRouter()
-	server.DbClient = config.GetConnection()
 	server.EnvConfig = config.LoadEnv()
 	pigeon.GetSmtp()
 	return server
 }
 
-func (s *Server) MountViewsFolder() {
-	if workDir, err := os.Getwd(); err != nil {
-		s.Logger.Errorf(err.Error())
-	} else {
-		filesDir := http.Dir(filepath.Join(workDir, "public/views"))
-		FileServer(s.Router, "/", filesDir)
-	}
-}
+func (s *Server) MountViewsFolder() error {
+	workDir, err := os.Getwd()
 
-// FileServer conveniently sets up a http.FileServer handler to serve
-// static files from a http.FileSystem.
-func FileServer(r chi.Router, path string, root http.FileSystem) {
-	if path != "/" && path[len(path)-1] != '/' {
-		r.Get(path, http.RedirectHandler(path+"/", http.StatusMovedPermanently).ServeHTTP)
-		path += "/"
+	if err != nil {
+		return err
 	}
-	path += "*"
 
-	r.Get(path, func(w http.ResponseWriter, r *http.Request) {
-		routeCtx := chi.RouteContext(r.Context())
-		pathPrefix := string(strings.TrimSuffix(routeCtx.RoutePattern(), "/*"))
-		fs := http.StripPrefix(pathPrefix, http.FileServer(root))
-		fs.ServeHTTP(w, r)
-	})
+	filesDir := http.Dir(filepath.Join(workDir, "public/views"))
+	fileServerSetup(s.Router, "/", filesDir)
+
+	return nil
 }
 
 func (s *Server) MountHandlers() {
-
-	// Mount all handlers here
 	s.Router.Get("/swagger/*", httpSwagger.Handler(
-		httpSwagger.URL(fmt.Sprintf("http://localhost:%d/swagger/doc.json", s.EnvConfig.Port)), //The url pointing to API definition
+		httpSwagger.URL(
+			fmt.Sprintf("http://%s:%d/swagger/doc.json",
+				s.EnvConfig.Host,
+				s.EnvConfig.Port,
+			)),
 	))
 
-	s.Router.Mount("/signup", signup.SignUpRoutes())
-	s.Router.Mount("/auth", auth.AuthRoutes())
-	s.Router.Mount("/user", user.UserRoutes())
+	// Auth
+	s.Router.Route("/auth", func(r chi.Router) {
+		r.Post("/login", auth.LoginReq)
+		r.With(md.RefreshVerify).Group(func(r chi.Router) {
+			r.Post("/refresh-token", auth.RefreshTheAccessToken)
+		})
+	})
+
+	// Sign up
+	s.Router.Route("/signup", func(r chi.Router) {
+		r.Use(middleware.AllowContentType("application/json"))
+		r.Post("/", signup.Register)
+		r.Post("/verify-email", signup.VerifyEmail)
+		r.Put("/reset-code", signup.ResetVerifyCode)
+	})
+
+	// User
+	s.Router.Route("/user", func(r chi.Router) {
+		r.Use(middleware.AllowContentType("application/json"))
+		r.Use(md.AccessVerify)
+		r.Get("/", user.GetAllUsers)
+		r.Put("/", user.UpdateUser)
+		r.With(httpin.NewInput(user.UserIdPath{})).Group(func(ru chi.Router) {
+			ru.Get("/{userId}", user.GetUserById)
+			ru.Delete("/{userId}", user.DeleteUserById)
+		})
+	})
 }
 
 func (s *Server) ApplyMiddleWares() {
@@ -104,4 +120,21 @@ func (s *Server) ApplyMiddleWares() {
 
 	s.Router.Use(middleware.Heartbeat("/health"))
 	s.Router.Use(middleware.Heartbeat("/ping"))
+}
+
+// fileServerSetup conveniently sets up a http.FileServer handler to serve
+// static files from a http.FileSystem.
+func fileServerSetup(r chi.Router, path string, root http.FileSystem) {
+	if path != "/" && path[len(path)-1] != '/' {
+		r.Get(path, http.RedirectHandler(path+"/", http.StatusMovedPermanently).ServeHTTP)
+		path += "/"
+	}
+	path += "*"
+
+	r.Get(path, func(w http.ResponseWriter, r *http.Request) {
+		routeCtx := chi.RouteContext(r.Context())
+		pathPrefix := string(strings.TrimSuffix(routeCtx.RoutePattern(), "/*"))
+		fs := http.StripPrefix(pathPrefix, http.FileServer(root))
+		fs.ServeHTTP(w, r)
+	})
 }

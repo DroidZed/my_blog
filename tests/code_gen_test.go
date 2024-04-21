@@ -12,7 +12,7 @@ func TestGenerate4DigitCode(t *testing.T) {
 	service := &signup.SignUpService{}
 	code := service.GenerateCode(10)
 
-	log := config.InitializeLogger().LogHandler
+	log := config.GetLogger()
 	log.Info(code)
 	assert.Equal(t, 4, len(code))
 }

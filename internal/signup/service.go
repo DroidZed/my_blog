@@ -25,6 +25,7 @@ type ISignUpService interface {
 type SignUpService struct{}
 
 const timeOut = 1 * time.Minute
+const upperCodeLimit = 10
 
 func (s *SignUpService) FindCodeByEmail(email string) (*ConfirmationCode, error) {
 
@@ -53,7 +54,7 @@ func (s *SignUpService) SaveConfirmationCode(email string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
 	defer cancel()
 
-	code := s.GenerateCode(utils.UPPER_CODE_LIMIT)
+	code := s.GenerateCode(upperCodeLimit)
 
 	update := bson.D{
 		{

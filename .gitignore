@@ -28,5 +28,4 @@ go.work
 *.code-workspace
 
 # ENV
-*.env.prod
-.env
+*.env*

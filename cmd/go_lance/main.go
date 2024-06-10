@@ -12,15 +12,7 @@ import (
 
 	"github.com/DroidZed/go_lance/internal"
 	"github.com/DroidZed/go_lance/internal/config"
-	httpin_integration "github.com/ggicci/httpin/integration"
-	"github.com/go-chi/chi/v5"
 )
-
-func init() {
-	// Register a directive named "path" to retrieve values from `chi.URLParam`,
-	// i.e. decode path variables.
-	httpin_integration.UseGochiURLParam("path", chi.URLParam)
-}
 
 func startService() (server *internal.Server) {
 

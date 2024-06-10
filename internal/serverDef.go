@@ -58,6 +58,10 @@ func (s *Server) MountViewsFolder() error {
 }
 
 func (s *Server) MountHandlers() {
+	s.Router.NotFound(func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "public/views/404.tmpl")
+	})
+
 	s.Router.Get("/swagger/*", httpSwagger.Handler(
 		httpSwagger.URL(
 			fmt.Sprintf("http://%s:%d/swagger/doc.json",
@@ -96,16 +100,13 @@ func (s *Server) MountHandlers() {
 }
 
 func (s *Server) ApplyMiddleWares() {
-
-	s.Router.Use(md.FixUrl)
+	s.Router.Use(middleware.StripSlashes)
 
 	s.Router.Use(middleware.RequestID)
 
 	s.Router.Use(middleware.CleanPath)
 
 	s.Router.Use(middleware.URLFormat)
-
-	s.Router.Use(middleware.StripSlashes)
 
 	s.Router.Use(httplog.LoggerWithName("GoLance-Log"))
 
@@ -122,9 +123,15 @@ func (s *Server) ApplyMiddleWares() {
 	s.Router.Use(middleware.Heartbeat("/ping"))
 }
 
-// fileServerSetup conveniently sets up a http.FileServer handler to serve
+// FileServer conveniently sets up a http.FileServer handler to serve
 // static files from a http.FileSystem.
 func fileServerSetup(r chi.Router, path string, root http.FileSystem) {
+	log := config.GetLogger()
+
+	if strings.ContainsAny(path, "{}*") {
+		log.Error("FileServer does not permit any URL parameters.")
+	}
+
 	if path != "/" && path[len(path)-1] != '/' {
 		r.Get(path, http.RedirectHandler(path+"/", http.StatusMovedPermanently).ServeHTTP)
 		path += "/"
@@ -132,8 +139,8 @@ func fileServerSetup(r chi.Router, path string, root http.FileSystem) {
 	path += "*"
 
 	r.Get(path, func(w http.ResponseWriter, r *http.Request) {
-		routeCtx := chi.RouteContext(r.Context())
-		pathPrefix := string(strings.TrimSuffix(routeCtx.RoutePattern(), "/*"))
+		routeContext := chi.RouteContext(r.Context())
+		pathPrefix := strings.TrimSuffix(routeContext.RoutePattern(), "/*")
 		fs := http.StripPrefix(pathPrefix, http.FileServer(root))
 		fs.ServeHTTP(w, r)
 	})

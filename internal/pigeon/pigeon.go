@@ -1,13 +1,18 @@
 package pigeon
 
 import (
-	"bytes"
 	"fmt"
-	"html/template"
 	"net/smtp"
 
 	"github.com/DroidZed/go_lance/internal/config"
 )
+
+type SMTPRequest struct {
+	to      []string
+	from    string
+	subject string
+	body    string
+}
 
 func NewRequest(to []string, subject, body string) *SMTPRequest {
 	return &SMTPRequest{
@@ -44,21 +49,6 @@ func (r *SMTPRequest) SendEmail() error {
 	return nil
 }
 
-func (r *SMTPRequest) ParseTemplate(templateFileBaseName string, data interface{}) error {
-	fullName := fmt.Sprintf("%s.tmpl", templateFileBaseName)
-	t, err := template.New(fullName).ParseFiles(fmt.Sprintf("public/templates/%s", fullName))
-
-	if err != nil {
-		return err
-	}
-
-	buf := new(bytes.Buffer)
-
-	if err = t.Execute(buf, data); err != nil {
-		return err
-	}
-
-	r.body = buf.String()
-
-	return nil
+func (r *SMTPRequest) SetBody(str string) {
+	r.body = str
 }

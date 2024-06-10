@@ -18,10 +18,7 @@ func GenerateAccessToken(sub string) (string, error) {
 
 	exp := getExpiration(daysToAdd)
 
-	accessClaims := make(map[string]interface{})
-
 	tokenString, err := createToken(
-		accessClaims,
 		sub,
 		exp,
 		env.AccessSecret,
@@ -45,10 +42,7 @@ func GenerateRefreshToken() (string, error) {
 	v2 := utils.RNG(19)
 	v3 := utils.RNG(149)
 
-	refreshClaims := make(map[string]interface{})
-
 	tokenString, err := createToken(
-		refreshClaims,
 		fmt.Sprintf("0%d1%d2%d", v, v2, v3),
 		exp,
 		env.RefreshSecret,
@@ -65,7 +59,7 @@ func getExpiration(daysToAdd int64) int64 {
 	return time.Now().Add(duration).UTC().Unix()
 }
 
-func createToken(claims map[string]interface{}, sub string, expiry int64, sec string) (string, error) {
+func createToken(sub string, expiry int64, sec string) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub": sub,
@@ -84,17 +78,6 @@ func createToken(claims map[string]interface{}, sub string, expiry int64, sec st
 }
 
 func ExtractExpiryFromClaims(token *jwt.Token) (float64, error) {
-	// claims, ok := token.Claims.(jwt.MapClaims)
-	// if !ok || !token.Valid {
-	// 	return 0, fmt.Errorf("no claims")
-	// }
-
-	// expClaim, ok := claims["exp"]
-	// if !ok {
-	// 	return 0, fmt.Errorf("no expiration, claims corrupted")
-	// }
-
-	// return expClaim.(float64), nil
 
 	x, err := extractXFromClaims[float64]("exp", token)
 
@@ -102,18 +85,6 @@ func ExtractExpiryFromClaims(token *jwt.Token) (float64, error) {
 }
 
 func ExtractSubFromClaims(token *jwt.Token) (string, error) {
-
-	// claims, ok := token.Claims.(jwt.MapClaims)
-	// if !ok || !token.Valid {
-	// 	return 0, fmt.Errorf("no claims")
-	// }
-
-	// subClaim, ok := claims["sub"]
-	// if !ok {
-	// 	return 0, fmt.Errorf("no subject, claims corrupted")
-	// }
-
-	// return subClaim.(string), nil
 
 	x, err := extractXFromClaims[string]("sub", token)
 

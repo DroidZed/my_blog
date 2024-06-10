@@ -116,11 +116,13 @@ func (s *SignUpService) deliverEmailToUser(
 		"",
 	)
 
-	err := req.ParseTemplate(templateName, confEntity)
+	str, err := utils.ParseTemplate(templateName, confEntity)
 
 	if err != nil {
 		return err
 	}
+
+	req.SetBody(str)
 
 	emailErr := req.SendEmail()
 

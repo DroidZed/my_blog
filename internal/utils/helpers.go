@@ -1,11 +1,8 @@
 package utils
 
 import (
-	"bytes"
 	"crypto/rand"
 	"encoding/json"
-	"fmt"
-	"html/template"
 	"math/big"
 	"net/http"
 	"strings"
@@ -66,27 +63,12 @@ func GenerateAPICode() string {
 	return strings.TrimSuffix(builder.String(), "-")
 }
 
+/*
+Decode the body to the appropriate format, infers type from usage.
+*/
 func DecodeBody[T interface{}](r *http.Request, out *T) error {
 	if err := json.NewDecoder(r.Body).Decode(out); err != nil {
 		return err
 	}
 	return nil
-}
-
-func ParseTemplate(templateFileBaseName string, data interface{}) (string, error) {
-	fullName := fmt.Sprintf("%s.tmpl", templateFileBaseName)
-
-	t, err := template.New(fullName).ParseFiles(fmt.Sprintf("public/templates/%s", fullName))
-
-	if err != nil {
-		return "", err
-	}
-
-	buf := new(bytes.Buffer)
-
-	if err = t.Execute(buf, data); err != nil {
-		return "", err
-	}
-
-	return buf.String(), nil
 }

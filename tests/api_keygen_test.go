@@ -3,8 +3,8 @@ package tests
 import (
 	"testing"
 
-	"github.com/DroidZed/go_lance/internal/config"
-	"github.com/DroidZed/go_lance/internal/utils"
+	"github.com/DroidZed/my_blog/internal/config"
+	"github.com/DroidZed/my_blog/internal/utils"
 	"github.com/stretchr/testify/assert"
 )
 

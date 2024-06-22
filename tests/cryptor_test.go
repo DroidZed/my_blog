@@ -3,7 +3,7 @@ package tests
 import (
 	"testing"
 
-	"github.com/DroidZed/go_lance/internal/cryptor"
+	"github.com/DroidZed/my_blog/internal/cryptor"
 	"github.com/stretchr/testify/assert"
 )
 

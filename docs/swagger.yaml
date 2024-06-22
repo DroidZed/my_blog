@@ -1,11 +1,16 @@
 basePath: /
 definitions:
-  auth.LoginBody:
+  auth.Login:
     properties:
       email:
         type: string
       password:
         type: string
+    type: object
+  auth.LoginBody:
+    properties:
+      payload:
+        $ref: '#/definitions/auth.Login'
     type: object
   auth.LoginResponse:
     properties:
@@ -22,32 +27,39 @@ definitions:
       userId:
         type: string
     type: object
-host: golance.io
+host: droidzed.tn
 info:
   contact:
-    email: joe@example.com
-    name: GoLance Support
-    url: http://example.com/support
+    email: droid.zed77@outlook.com
+    name: Aymen Dhahri
+    url: https://droidzed.tn/support
   description: This is the GoLance API documentation.
   license:
     name: MIT
-    url: https://github.com/DroidZed/go_lance/LICENSE
-  termsOfService: http://example.com/terms/
-  title: GoLance API Docs
+    url: https://github.com/DroidZed/my_blog/LICENSE
+  termsOfService: https://droidzed.tn/terms/
+  title: My Website's API Docs
   version: "1.0"
 paths:
-  /auth/login:
+  /api/auth/login:
     post:
       consumes:
       - application/json
       description: Get token, user basic data
+      parameters:
+      - description: Login User
+        in: body
+        name: login
+        required: true
+        schema:
+          $ref: '#/definitions/auth.LoginBody'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/auth.LoginBody'
+            $ref: '#/definitions/auth.LoginResponse'
         "404":
           description: Not Found
           schema:
@@ -55,7 +67,7 @@ paths:
       summary: Auth user
       tags:
       - auth
-  /auth/refresh-token:
+  /api/auth/refresh-token:
     post:
       consumes:
       - application/json

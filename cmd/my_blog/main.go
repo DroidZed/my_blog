@@ -10,8 +10,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/DroidZed/go_lance/internal"
-	"github.com/DroidZed/go_lance/internal/config"
+	"github.com/DroidZed/my_blog/internal"
+	"github.com/DroidZed/my_blog/internal/config"
 )
 
 func startService() (server *internal.Server) {
@@ -28,31 +28,25 @@ func startService() (server *internal.Server) {
 
 	server.MountHandlers()
 
-	err := server.MountViewsFolder()
-
-	if err != nil {
-		config.GetLogger().Fatalf(err.Error())
-	}
-
 	log.Infof("Listening on port: %d\n", envPort)
 
 	return server
 }
 
 // Entry point, setting up chi and graceful shutdown <3
-// @title GoLance API Docs
+// @title My Website's API Docs
 // @version 1.0
 // @description This is the GoLance API documentation.
-// @termsOfService http://example.com/terms/
+// @termsOfService https://droidzed.tn/terms/
 
-// @contact.name GoLance Support
-// @contact.url http://example.com/support
-// @contact.email joe@example.com
+// @contact.name Aymen Dhahri
+// @contact.url https://droidzed.tn/support
+// @contact.email droid.zed77@outlook.com
 
 // @license.name MIT
-// @license.url https://github.com/DroidZed/go_lance/LICENSE
+// @license.url https://github.com/DroidZed/my_blog/LICENSE
 
-// @host golance.io
+// @host droidzed.tn
 // @BasePath /
 func main() {
 	log := config.GetLogger()

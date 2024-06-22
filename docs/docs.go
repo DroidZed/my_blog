@@ -9,22 +9,22 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "termsOfService": "http://example.com/terms/",
+        "termsOfService": "https://droidzed.tn/terms/",
         "contact": {
-            "name": "GoLance Support",
-            "url": "http://example.com/support",
-            "email": "joe@example.com"
+            "name": "Aymen Dhahri",
+            "url": "https://droidzed.tn/support",
+            "email": "droid.zed77@outlook.com"
         },
         "license": {
             "name": "MIT",
-            "url": "https://github.com/DroidZed/go_lance/LICENSE"
+            "url": "https://github.com/DroidZed/my_blog/LICENSE"
         },
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/auth/login": {
+        "/api/auth/login": {
             "post": {
                 "description": "Get token, user basic data",
                 "consumes": [
@@ -37,11 +37,22 @@ const docTemplate = `{
                     "auth"
                 ],
                 "summary": "Auth user",
+                "parameters": [
+                    {
+                        "description": "Login User",
+                        "name": "login",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.LoginBody"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/auth.LoginBody"
+                            "$ref": "#/definitions/auth.LoginResponse"
                         }
                     },
                     "404": {
@@ -53,7 +64,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/refresh-token": {
+        "/api/auth/refresh-token": {
             "post": {
                 "security": [
                     {
@@ -89,7 +100,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "auth.LoginBody": {
+        "auth.Login": {
             "type": "object",
             "properties": {
                 "email": {
@@ -97,6 +108,14 @@ const docTemplate = `{
                 },
                 "password": {
                     "type": "string"
+                }
+            }
+        },
+        "auth.LoginBody": {
+            "type": "object",
+            "properties": {
+                "payload": {
+                    "$ref": "#/definitions/auth.Login"
                 }
             }
         },
@@ -129,10 +148,10 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "golance.io",
+	Host:             "droidzed.tn",
 	BasePath:         "/",
 	Schemes:          []string{},
-	Title:            "GoLance API Docs",
+	Title:            "My Website's API Docs",
 	Description:      "This is the GoLance API documentation.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,

@@ -1,12 +1,8 @@
 package auth
 
-type Login struct {
+type LoginBody struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
-}
-
-type LoginBody struct {
-	Payload *Login `in:"body=json"`
 }
 
 type LoginResponse struct {
@@ -24,10 +20,6 @@ type JwtResponse struct {
 	Error   string `json:"error,omitempty"`
 }
 
-type Refresh struct {
-	Expired string `json:"expired"`
-}
-
 type RefreshReq struct {
-	Payload *Refresh
+	Expired string `json:"expired"`
 }

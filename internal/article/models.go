@@ -3,7 +3,7 @@ package article
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
 type Article struct {
-	ID       primitive.ObjectID `bson:"_id" json:"_id"`
+	ID       primitive.ObjectID `json:"_id" bson:"_id"`
 	Title    string             `json:"title" bson:"title"`
 	Content  string             `json:"content" bson:"content"`
 	Link     string             `json:"link" bson:"link"`

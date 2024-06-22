@@ -2,23 +2,23 @@
     "swagger": "2.0",
     "info": {
         "description": "This is the GoLance API documentation.",
-        "title": "GoLance API Docs",
-        "termsOfService": "http://example.com/terms/",
+        "title": "My Website's API Docs",
+        "termsOfService": "https://droidzed.tn/terms/",
         "contact": {
-            "name": "GoLance Support",
-            "url": "http://example.com/support",
-            "email": "joe@example.com"
+            "name": "Aymen Dhahri",
+            "url": "https://droidzed.tn/support",
+            "email": "droid.zed77@outlook.com"
         },
         "license": {
             "name": "MIT",
-            "url": "https://github.com/DroidZed/go_lance/LICENSE"
+            "url": "https://github.com/DroidZed/my_blog/LICENSE"
         },
         "version": "1.0"
     },
-    "host": "golance.io",
+    "host": "droidzed.tn",
     "basePath": "/",
     "paths": {
-        "/auth/login": {
+        "/api/auth/login": {
             "post": {
                 "description": "Get token, user basic data",
                 "consumes": [
@@ -31,11 +31,22 @@
                     "auth"
                 ],
                 "summary": "Auth user",
+                "parameters": [
+                    {
+                        "description": "Login User",
+                        "name": "login",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.LoginBody"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/auth.LoginBody"
+                            "$ref": "#/definitions/auth.LoginResponse"
                         }
                     },
                     "404": {
@@ -47,7 +58,7 @@
                 }
             }
         },
-        "/auth/refresh-token": {
+        "/api/auth/refresh-token": {
             "post": {
                 "security": [
                     {
@@ -83,7 +94,7 @@
         }
     },
     "definitions": {
-        "auth.LoginBody": {
+        "auth.Login": {
             "type": "object",
             "properties": {
                 "email": {
@@ -91,6 +102,14 @@
                 },
                 "password": {
                     "type": "string"
+                }
+            }
+        },
+        "auth.LoginBody": {
+            "type": "object",
+            "properties": {
+                "payload": {
+                    "$ref": "#/definitions/auth.Login"
                 }
             }
         },

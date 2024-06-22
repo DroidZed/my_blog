@@ -1,7 +1,7 @@
 package user
 
 import (
-	"github.com/DroidZed/go_lance/internal/cryptor"
+	"github.com/DroidZed/my_blog/internal/cryptor"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -26,12 +26,4 @@ func (u *User) HashUserPassword() (*User, error) {
 	u.Password = hashed
 
 	return u, nil
-}
-
-type UserIdParam struct {
-	UserId string `in:"query=userId"`
-}
-
-type UserIdPath struct {
-	UserId string `in:"path=userId"`
 }

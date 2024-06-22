@@ -3,7 +3,7 @@ package pigeon
 import (
 	"net/smtp"
 
-	"github.com/DroidZed/go_lance/internal/config"
+	"github.com/DroidZed/my_blog/internal/config"
 )
 
 var auth smtp.Auth
@@ -16,7 +16,7 @@ func GetSmtp() smtp.Auth {
 
 	env := config.LoadEnv()
 
-	auth = initAuth(env.SMTP_USERNAME, env.SMTP_PASSWORD)
+	auth = initAuth(env.SmtpUsername, env.SmtpPassword)
 
 	return auth
 }

@@ -1,0 +1,23 @@
+package views
+
+import "personalBlog/internal/views/layouts"
+
+templ Index() {
+	@BaseLayout() {
+		<!DOCTYPE html>
+		<html lang="en">
+			<head>
+				<meta charset="UTF-8"/>
+				<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+				<title>Go Lance Blog</title>
+			</head>
+			<body>
+				<h1>HELLO HTMX !</h1>
+				<div>
+					<p>This is a phrase lol</p>
+					<p>this will trigger a live reload !</p>
+				</div>
+			</body>
+		</html>
+	}
+}

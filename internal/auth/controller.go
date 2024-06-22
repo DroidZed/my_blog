@@ -3,32 +3,38 @@ package auth
 import (
 	"net/http"
 
-	"github.com/DroidZed/go_lance/internal/config"
-	"github.com/DroidZed/go_lance/internal/cryptor"
-	"github.com/DroidZed/go_lance/internal/utils"
-	"github.com/ggicci/httpin"
+	"github.com/DroidZed/my_blog/internal/config"
+	"github.com/DroidZed/my_blog/internal/cryptor"
+	"github.com/DroidZed/my_blog/internal/utils"
 )
 
-// Auth godoc
+// LoginReq Auth godoc
 //
 //	@Summary		Auth user
 //	@Description	Get token, user basic data
 //	@Tags			auth
 //	@Accept			json
+//	@Param			login	body		LoginBody	true	"Login User"
 //	@Produce		json
 //	@Success		200	{object}	LoginResponse
 //	@Failure		404	{object}	LoginResponse
-//	@Router			/auth/login [post]
+//	@Router			/api/auth/login [post]
 func LoginReq(w http.ResponseWriter, r *http.Request) {
 
 	log := config.GetLogger()
 
-	loginBody := r.Context().Value(httpin.Input).(*LoginBody)
+	var loginBody LoginBody
 
-	user, err := ValidateUser(loginBody.Payload)
+	if err := utils.DecodeBody(r, &loginBody); err != nil {
+		utils.JsonResponse(w, http.StatusBadRequest, utils.DtoResponse{Error: "Invalid JSON payload"})
+		return
+	}
+
+	user, err := ValidateUser(&loginBody)
 
 	if err != nil {
-		utils.JsonResponse(w, http.StatusNotFound, LoginResponse{Error: err.Error()})
+		log.Error(err)
+		utils.JsonResponse(w, http.StatusNotFound, LoginResponse{Error: "Invalid credentials"})
 		return
 	}
 
@@ -51,7 +57,7 @@ func LoginReq(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// Refresh godoc
+// RefreshTheAccessToken Refresh godoc
 //
 //	@Summary		Refresh tokens
 //	@Description	Refresh access + refresh tokens
@@ -61,15 +67,21 @@ func LoginReq(w http.ResponseWriter, r *http.Request) {
 //	@Success		200	{object}	LoginBody
 //	@Failure		404	{object}	LoginResponse
 //	@Security		Bearer
-//	@Router			/auth/refresh-token [post]
+//	@Router			/api/auth/refresh-token [post]
 func RefreshTheAccessToken(w http.ResponseWriter, r *http.Request) {
 
 	log := config.GetLogger()
+
 	conf := config.LoadEnv()
 
-	refreshReq := r.Context().Value(httpin.Input).(*RefreshReq)
+	var refreshReq RefreshReq
 
-	expiredToken := refreshReq.Payload.Expired
+	if err := utils.DecodeBody(r, &refreshReq); err != nil {
+		utils.JsonResponse(w, http.StatusBadRequest, utils.DtoResponse{Error: "Invalid JSON payload"})
+		return
+	}
+
+	expiredToken := refreshReq.Expired
 
 	access, err := cryptor.ParseToken(expiredToken, conf.AccessSecret)
 	if err != nil {

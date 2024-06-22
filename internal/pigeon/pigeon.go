@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/smtp"
 
-	"github.com/DroidZed/go_lance/internal/config"
+	"github.com/DroidZed/my_blog/internal/config"
 )
 
 type SMTPRequest struct {
@@ -19,7 +19,7 @@ func NewRequest(to []string, subject, body string) *SMTPRequest {
 		to:      to,
 		subject: fmt.Sprintf("Subject: %s", subject),
 		body:    body,
-		from:    config.LoadEnv().SMTP_USERNAME,
+		from:    config.LoadEnv().SmtpUsername,
 	}
 }
 
@@ -41,7 +41,7 @@ func (r *SMTPRequest) SendEmail() error {
 
 	msg := []byte(fmt.Sprintf("%s\n", r.GetSubject()) + mime + r.GetBody())
 
-	addr := fmt.Sprintf("%s:%s", env.SMTP_HOST, env.SMTP_PORT)
+	addr := fmt.Sprintf("%s:%s", env.SmtpHost, env.SmtpPort)
 
 	if err := smtp.SendMail(addr, smtpAuth, r.from, r.to, msg); err != nil {
 		return err

@@ -18,10 +18,10 @@ type EnvConfig struct {
 	AccessExpiry  string
 	RefreshSecret string
 	RefreshExpiry string
-	SMTP_HOST     string
-	SMTP_PORT     string
-	SMTP_USERNAME string
-	SMTP_PASSWORD string
+	SmtpHost      string
+	SmtpPort      string
+	SmtpUsername  string
+	SmtpPassword  string
 }
 
 func LoadEnv() (config *EnvConfig) {
@@ -53,10 +53,10 @@ func LoadEnv() (config *EnvConfig) {
 		AccessExpiry:  os.Getenv("ACCESS_EXPIRY"),
 		RefreshSecret: os.Getenv("REFRESH_SECRET"),
 		RefreshExpiry: os.Getenv("REFRESH_EXPIRY"),
-		SMTP_HOST:     os.Getenv("SMTP_HOST"),
-		SMTP_PORT:     os.Getenv("SMTP_PORT"),
-		SMTP_USERNAME: os.Getenv("SMTP_USERNAME"),
-		SMTP_PASSWORD: os.Getenv("SMTP_PASSWORD"),
+		SmtpHost:      os.Getenv("SMTP_HOST"),
+		SmtpPort:      os.Getenv("SMTP_PORT"),
+		SmtpUsername:  os.Getenv("SMTP_USERNAME"),
+		SmtpPassword:  os.Getenv("SMTP_PASSWORD"),
 	}
 
 	return config

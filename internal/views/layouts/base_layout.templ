@@ -1,0 +1,23 @@
+package layouts
+
+var (
+	title = "Aymen Dhahri's Blog"
+)
+
+templ BaseLayout() {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<title>{ title }</title>
+			<link rel="icon" type="image/x-icon" href="/public/favicon.ico"/>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<link rel="stylesheet" href={ view.Asset("styles.css") }/>
+			<script src={ view.Asset("index.js") }></script>
+			<script src="https://unpkg.com/htmx.org@2.0.0" integrity="sha384-wS5l5IKJBvK6sPTKa2WZ1js3d947pvWXbPJ1OmWfEuxLgeHcEbjUUA5i9V5ZkpCw" crossorigin="anonymous"></script>
+		</head>
+		<body x-data="{theme: 'dark'}" :class="theme" lang="en">
+			{ children... }
+		</body>
+	</html>
+}

@@ -3,17 +3,17 @@ package auth
 import (
 	"fmt"
 
-	"github.com/DroidZed/go_lance/internal/cryptor"
-	"github.com/DroidZed/go_lance/internal/user"
+	"github.com/DroidZed/my_blog/internal/cryptor"
+	"github.com/DroidZed/my_blog/internal/user"
 )
 
-func ValidateUser(login *Login) (*user.User, error) {
+func ValidateUser(login *LoginBody) (*user.User, error) {
 
 	userService := &user.UserService{}
 
 	data := userService.FindUserByEmail(login.Email)
 	if data == nil {
-		return nil, fmt.Errorf("No user found.")
+		return nil, fmt.Errorf("no user found")
 	}
 
 	pwdIsValid := cryptor.CompareSecureToPlain(data.Password, login.Password)

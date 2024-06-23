@@ -19,8 +19,8 @@ func GenerateAccessToken(sub string) (string, error) {
 	exp := getExpiration(daysToAdd)
 
 	tokenString, err := createToken(
-		sub,
 		exp,
+		sub,
 		env.AccessSecret,
 	)
 	if err != nil {
@@ -43,8 +43,8 @@ func GenerateRefreshToken() (string, error) {
 	v3 := utils.RNG(149)
 
 	tokenString, err := createToken(
-		fmt.Sprintf("0%d1%d2%d", v, v2, v3),
 		exp,
+		fmt.Sprintf("0%d1%d2%d", v, v2, v3),
 		env.RefreshSecret,
 	)
 	if err != nil {
@@ -59,7 +59,7 @@ func getExpiration(daysToAdd int64) int64 {
 	return time.Now().Add(duration).UTC().Unix()
 }
 
-func createToken(sub string, expiry int64, sec string) (string, error) {
+func createToken(expiry int64, sub, sec string) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub": sub,
@@ -117,9 +117,7 @@ func ParseToken(token string, secret string) (*jwt.Token, error) {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 
-		secret := []byte(secret)
-
-		return secret, nil
+		return []byte(secret), nil
 
 	}, jwt.WithValidMethods([]string{"HS256"}))
 }

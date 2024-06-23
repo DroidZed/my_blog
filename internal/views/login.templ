@@ -1,14 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
+package views
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Login</title>
-    </head>
+import "github.com/DroidZed/my_blog/internal/views/layouts"
 
-    <body>
-        <p>Login here</p>
-    </body>
-
-</html>
+templ Login() {
+	@layouts.BaseLayout() {
+		<p>Login here</p>
+	}
+}

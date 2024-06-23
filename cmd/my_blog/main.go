@@ -28,6 +28,8 @@ func startService() (server *internal.Server) {
 
 	server.MountHandlers()
 
+	server.InitOwner()
+
 	log.Infof("Listening on port: %d\n", envPort)
 
 	return server

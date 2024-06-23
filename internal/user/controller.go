@@ -45,7 +45,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	userService := &UserService{}
 
-	if err := userService.UpdateOneUser(user); err != nil {
+	if err := userService.SaveUser(&user); err != nil {
 		utils.JsonResponse(w, http.StatusNotFound, utils.DtoResponse{Error: fmt.Sprintf("Invalid update!\n %s", err.Error())})
 		return
 	}

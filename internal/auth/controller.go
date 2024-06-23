@@ -49,11 +49,8 @@ func LoginReq(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.JsonResponse(w, http.StatusOK, LoginResponse{
-		Jwt:       access,
-		Refresh:   refresh,
-		UserId:    userId,
-		Role:      user.Role,
-		AccStatus: user.AccStatus,
+		Jwt:     access,
+		Refresh: refresh,
 	})
 }
 
@@ -111,5 +108,5 @@ func RefreshTheAccessToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.JsonResponse(w, http.StatusOK, JwtResponse{Jwt: newAcc, Refresh: newRef})
+	utils.JsonResponse(w, http.StatusOK, LoginResponse{Jwt: newAcc, Refresh: newRef})
 }

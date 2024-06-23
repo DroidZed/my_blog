@@ -16,8 +16,8 @@ import (
 type AuthCtxKey struct{}
 
 func AccessVerify(next http.Handler) http.Handler {
-	env := config.LoadEnv()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		env := config.LoadEnv()
 		log := config.GetLogger()
 
 		tokenFromHeader, err := retrieveTokenFromHeader(r)
@@ -59,9 +59,8 @@ func AccessVerify(next http.Handler) http.Handler {
 
 func RefreshVerify(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log := config.GetLogger()
-
 		env := config.LoadEnv()
+		log := config.GetLogger()
 
 		tokenFromHeader, err := retrieveTokenFromHeader(r)
 

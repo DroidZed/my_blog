@@ -6,14 +6,11 @@ import (
 )
 
 type User struct {
-	ID        primitive.ObjectID `bson:"_id" json:"_id"`
-	FullName  string             `json:"fullName" bson:"fullName"`
-	Email     string             `json:"email" bson:"email"`
-	Password  string             `json:"password,omitempty" bson:"password,omitempty"`
-	Photo     string             `json:"photo" bson:"photo"`
-	Age       int                `json:"age" bson:"age"`
-	Role      string             `json:"role,omitempty" bson:"role"`
-	AccStatus int                `json:"accStatus,omitempty" bson:"accStatus"`
+	ID       primitive.ObjectID `bson:"_id" json:"_id"`
+	FullName string             `json:"fullName" bson:"fullName"`
+	Email    string             `json:"email" bson:"email"`
+	Password string             `json:"password,omitempty" bson:"password,omitempty"`
+	Photo    string             `json:"photo" bson:"photo,omitempty"`
 }
 
 func (u *User) HashUserPassword() (*User, error) {

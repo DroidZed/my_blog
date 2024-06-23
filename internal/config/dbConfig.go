@@ -19,7 +19,11 @@ func GetConnection() *mongo.Client {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 
-	dbConnection, err := mongo.Connect(ctx, options.Client().ApplyURI(env.DBUri))
+	clientOptions := options.
+		Client().
+		ApplyURI(env.DBUri)
+
+	dbConnection, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
 		log.Fatal("Could not connect to the database !")
 	}

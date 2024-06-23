@@ -2,22 +2,42 @@ package user
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/DroidZed/my_blog/internal/config"
 	"github.com/DroidZed/my_blog/internal/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type IUserService interface {
+	SaveUser(data *User) error
 	FindUserByID(id string) (*User, error)
-	UpdateOneUser(user User) error
 	FindUserByEmail(email string) *User
 }
 
 type UserService struct{}
+
+func (s *UserService) SaveUser(data *User) error {
+
+	env := config.LoadEnv()
+
+	coll := config.GetConnection().Database(env.DBName).Collection(utils.UserCollection)
+
+	ctx, cancel := context.WithTimeout(context.Background(), utils.ContextTimeOut)
+	defer cancel()
+
+	modified, err := data.HashUserPassword()
+	if err != nil {
+		return err
+	}
+
+	_, insertErr := coll.InsertOne(ctx, modified)
+	if insertErr != nil {
+		return insertErr
+	}
+
+	return nil
+}
 
 func (s *UserService) FindUserByID(id string) (*User, error) {
 	env := config.LoadEnv()
@@ -43,42 +63,6 @@ func (s *UserService) FindUserByID(id string) (*User, error) {
 	}
 
 	return result, nil
-}
-
-func (s *UserService) UpdateOneUser(user User) error {
-
-	env := config.LoadEnv()
-
-	coll := config.GetConnection().Database(env.DBName).Collection(utils.UserCollection)
-
-	ctx, cancel := context.WithTimeout(context.Background(), utils.ContextTimeOut)
-	defer cancel()
-
-	filter := bson.M{"_id": user.ID}
-	opt := options.Update().SetUpsert(false)
-
-	log := config.GetLogger()
-
-	update := bson.M{
-		"$set": bson.M{
-			"fullName": user.FullName,
-			"age":      user.Age,
-		},
-	}
-
-	log.Debug(user)
-
-	updateRes, err := coll.UpdateOne(ctx, filter, update, opt)
-
-	if err != nil {
-		return err
-	}
-
-	if updateRes.ModifiedCount == 0 {
-		return fmt.Errorf("0 modifications happened")
-	}
-
-	return nil
 }
 
 func (s *UserService) FindUserByEmail(email string) *User {

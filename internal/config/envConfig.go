@@ -22,6 +22,8 @@ type EnvConfig struct {
 	SmtpPort      string
 	SmtpUsername  string
 	SmtpPassword  string
+	MASTER_PWD    string
+	MASTER_EMAIL  string
 }
 
 func LoadEnv() (config *EnvConfig) {
@@ -57,6 +59,8 @@ func LoadEnv() (config *EnvConfig) {
 		SmtpPort:      os.Getenv("SMTP_PORT"),
 		SmtpUsername:  os.Getenv("SMTP_USERNAME"),
 		SmtpPassword:  os.Getenv("SMTP_PASSWORD"),
+		MASTER_PWD:    os.Getenv("MASTER_PWD"),
+		MASTER_EMAIL:  os.Getenv("MASTER_EMAIL"),
 	}
 
 	return config

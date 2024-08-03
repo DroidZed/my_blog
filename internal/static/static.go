@@ -2,6 +2,6 @@ package static
 
 import "fmt"
 
-func Asset(name string) string {
-	return fmt.Sprintf("/public/assets/%s", name)
+func Asset(name, folder string) string {
+	return fmt.Sprintf("/static/%s/%s", folder, name)
 }

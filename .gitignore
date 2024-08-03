@@ -29,6 +29,7 @@ go.work
 
 # ENV
 *.env*
+!.env.example
 
 ### Node ignore
 

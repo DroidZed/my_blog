@@ -23,7 +23,7 @@ dev:
 	build compose
 
 prod:
-	./bin/golance.exe
+	./bin/golance
 
 module:
 	mkdir ./internal/${DIR}

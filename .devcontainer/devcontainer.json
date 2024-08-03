@@ -4,14 +4,46 @@
 	"name": "Blog Dev Env",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
 	"image": "mcr.microsoft.com/devcontainers/go:1-1.22-bullseye",
-	"features": {
-		"ghcr.io/wxw-matt/devcontainer-features/command_runner:0": {},
-		"ghcr.io/cirolosapio/devcontainers-features/alpine-bun:0": {},
-		"ghcr.io/cirolosapio/devcontainers-features/alpine-git:0": {},
-		"ghcr.io/nils-geistmann/devcontainers-features/zsh:0": {
-			"theme": "agnoster",
-			"plugins": "git docker",
-			"desiredLocale": "en_US.UTF-8 UTF-8"
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"formulahendry.auto-rename-tag",
+				"divola.ayu-dark-lighter",
+				"alefragnani.Bookmarks",
+				"icrawl.discord-vscode",
+				"usernamehw.errorlens",
+				"PKief.material-icon-theme",
+				"equinusocio.vsc-material-theme-icons",
+				"ElAnandKumar.el-vsc-product-icon-theme",
+				"csstools.postcss",
+				"dbaeumer.vscode-eslint",
+				"biomejs.biome",
+				"oven.bun-vscode",
+				"edwinhuish.better-comments-next",
+				"aladdin.aladdin-chewan-plugin",
+				"patbenatar.advanced-new-file",
+				"streetsidesoftware.code-spell-checker",
+				"brunnerh.file-properties-viewer",
+				"sleistner.vscode-fileutils",
+				"TomRijndorp.find-it-faster",
+				"waderyan.gitblame",
+				"donjayamanne.githistory",
+				"eamodio.gitlens",
+				"golang.go",
+				"otovo-oss.htmx-tags",
+				"mongodb.mongodb-vscode",
+				"42Crunch.vscode-openapi",
+				"Postman.postman-for-vscode",
+				"christian-kohler.path-intellisense",
+				"JoeBerria.statusbarerror",
+				"KalimahApps.tailwind-config-viewer",
+				"bradlc.vscode-tailwindcss",
+				"alfredbirk.tailwind-documentation",
+				"stivo.tailwind-fold",
+				"KalimahApps.tailwindcss-kit",
+				"a-h.templ",
+				"redhat.vscode-yaml"
+			]
 		}
 	},
 	"forwardPorts": [

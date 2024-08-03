@@ -23,6 +23,7 @@ func AccessVerify(next http.Handler) http.Handler {
 		tokenFromHeader, err := retrieveTokenFromHeader(r)
 
 		if err != nil {
+			log.Error(err)
 			log.Errorf("Header corrupted.\n%s", err)
 			utils.JsonResponse(w,
 				http.StatusUnauthorized,
@@ -34,6 +35,7 @@ func AccessVerify(next http.Handler) http.Handler {
 		token, err := validateToken(tokenFromHeader, env.RefreshSecret)
 
 		if err != nil {
+			log.Error(err)
 			utils.JsonResponse(w,
 				http.StatusUnauthorized,
 				utils.DtoResponse{Error: "Invalid token."},
@@ -43,9 +45,10 @@ func AccessVerify(next http.Handler) http.Handler {
 
 		userId, err := cryptor.ExtractSubFromClaims(token)
 		if err != nil {
+			log.Error(err)
 			utils.JsonResponse(w,
 				http.StatusUnauthorized,
-				utils.DtoResponse{Error: "No sub in token."},
+				utils.DtoResponse{Error: "Invalid token."},
 			)
 			return
 		}

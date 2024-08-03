@@ -69,13 +69,13 @@ func (s *Server) MountHandlers() {
 }
 
 func (s *Server) ApplyMiddleWares() {
-	s.Router.Use(middleware.StripSlashes)
-
 	s.Router.Use(middleware.RequestID)
 
-	s.Router.Use(middleware.CleanPath)
-
 	s.Router.Use(middleware.URLFormat)
+
+	s.Router.Use(middleware.StripSlashes)
+
+	s.Router.Use(middleware.CleanPath)
 
 	s.Router.Use(httplog.LoggerWithName("GoLance-Log"))
 

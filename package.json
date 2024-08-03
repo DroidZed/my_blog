@@ -1,13 +1,12 @@
 {
   "name": "personalblog",
-  "version": "1.0.0",
   "license": "MIT",
+  "version": "1.0.0",
   "author": {
     "name": "DroidZed",
     "email": "41507665+DroidZed@users.noreply.github.com",
     "url": "https://droidzed.github.io"
   },
-  "dependencies": {},
   "devDependencies": {
     "@biomejs/biome": "1.8.2",
     "autoprefixer": "10.4.19",

@@ -34,6 +34,9 @@ module:
 templates:
 	templ generate
 
-setup-zsh:
+setup-dev-container:
+	apt-get update && apt-get upgrade -y
+	curl -fsSL https://bun.sh/install | bash
+	go install github.com/a-h/templ/cmd/templ@latest
 	chsh -s $(which zsh) $USER
 	tail -n 2 ~/.bashrc >> ~/.zshrc && source ~/.zshrc

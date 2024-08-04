@@ -32,7 +32,7 @@ func AccessVerify(next http.Handler) http.Handler {
 			return
 		}
 
-		token, err := validateToken(tokenFromHeader, env.RefreshSecret)
+		token, err := validateToken(tokenFromHeader, env.AccessSecret)
 
 		if err != nil {
 			log.Error(err)

@@ -1,9 +1,7 @@
 package config
 
 import (
-	"fmt"
 	"os"
-	"time"
 
 	"github.com/withmandala/go-log"
 )
@@ -14,20 +12,21 @@ type LoggerConfig struct {
 
 func GetLogger() *log.Logger {
 
-	year, month, day := time.Now().UTC().Date()
-	today := fmt.Sprintf("%d-%s-%d", day, month.String(), year)
-	output := fmt.Sprintf("logs/%s.log", today)
+	// year, month, day := time.Now().UTC().Date()
+	// today := fmt.Sprintf("%d-%s-%d", day, month.String(), year)
+	// output := fmt.Sprintf("logs/%s.log", today)
 
-	f, err := os.Create(output)
-	if err != nil {
-		fmt.Println(err)
-		return nil
-	}
+	// f, err := os.Create(output)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return nil
+	// }
 
 	manager := &LoggerConfig{}
 	manager.LogHandler = log.
-		New(f).
+		New(os.Stdout).
 		WithDebug().
+		WithColor().
 		WithTimestamp().
 		NoQuiet()
 

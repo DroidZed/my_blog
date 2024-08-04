@@ -1,8 +1,11 @@
 package internal
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"net/http"
+	"time"
 
 	_ "github.com/DroidZed/my_blog/docs"
 	"github.com/DroidZed/my_blog/internal/auth"
@@ -17,11 +20,15 @@ import (
 	"github.com/go-chi/cors"
 	httpSwagger "github.com/swaggo/http-swagger"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Server struct {
 	Router    *chi.Mux
 	EnvConfig *config.EnvConfig
+	DbClient  *mongo.Client
+	Logger    *log.Logger
 }
 
 type ServerDefinition interface {
@@ -29,12 +36,14 @@ type ServerDefinition interface {
 	ApplyMiddleWares()
 	MountHandlers()
 	InitOwner()
+	GetConnection()
 }
 
 func (s *Server) New() (server *Server) {
 	server = &Server{}
 	server.Router = chi.NewRouter()
 	server.EnvConfig = config.LoadEnv()
+	DbClient = config.GetConnection()
 	pigeon.GetSmtp()
 	return server
 }

@@ -33,3 +33,7 @@ module:
 
 templates:
 	templ generate
+
+setup-zsh:
+	chsh -s $(which zsh) $USER
+	tail -n 2 ~/.bashrc >> ~/.zshrc && source ~/.zshrc

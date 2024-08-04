@@ -4,4 +4,3 @@ RUN apt-get update && apt-get upgrade -y
 RUN curl -fsSL https://bun.sh/install | bash
 RUN go install github.com/a-h/templ/cmd/templ@latest
 RUN chsh -s $(which zsh) $USER
-RUN tail -n 2 ~/.bashrc >> ~/.zshrc && source ~/.zshrc

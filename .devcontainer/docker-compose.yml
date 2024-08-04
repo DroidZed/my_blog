@@ -1,0 +1,20 @@
+services:
+  devcontainer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ../..:/workspaces:cached
+    container_name: blog-api
+    network_mode: service:db
+    depends_on:
+      - db
+  db:
+    image: mongo
+    container_name: blog-dev-db
+    ports:
+      - "27012:27017"
+    volumes:
+      - database:/var/lib/mongo/data
+volumes:
+  database:

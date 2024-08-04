@@ -3,8 +3,8 @@
 {
 	"name": "Blog Dev Env",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"dockerComposeFile": "compose.yml",
-	"service": "blog_dev_service",
+	"dockerComposeFile": "docker-compose.yml",
+	"service": "devcontainer",
 	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
 	"customizations": {
 		"vscode": {
@@ -48,9 +48,7 @@
 			]
 		}
 	},
-	"forwardPorts": [
-		8000
-	]
+	"postAttachCommand": "tail -n 2 ~/.bashrc >> ~/.zshrc && source ~/.zshrc"
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// Use 'postCreateCommand' to run commands after the container is created.

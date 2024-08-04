@@ -3,6 +3,7 @@
     "bson",
     "cryptor",
     "Debugf",
+    "devcontainer",
     "ggicci",
     "Gochi",
     "godotenv",

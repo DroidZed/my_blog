@@ -44,6 +44,14 @@ func (s *Server) MountHandlers() {
 		views.NotFound().Render(r.Context(), w)
 	})
 
+	s.Router.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		views.Index().Render(r.Context(), w)
+	})
+
+	s.Router.Get("/login", func(w http.ResponseWriter, r *http.Request) {
+		views.Login().Render(r.Context(), w)
+	})
+
 	s.Router.Get("/api/swagger/*", httpSwagger.Handler(
 		httpSwagger.URL(
 			fmt.Sprintf("http://%s:%d/api/swagger/doc.json",

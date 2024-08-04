@@ -2,7 +2,7 @@
 include .env
 
 run:
-	go run cmd/my_blog/main.go -o bin/my_blog.exe
+	go run cmd/my_blog/main.go -o bin/my_blog
 
 deps:
 	go mod tidy
@@ -35,8 +35,6 @@ templates:
 	templ generate
 
 setup-dev-container:
-	apt-get update && apt-get upgrade -y
+	sudo apt-get update && sudo apt-get upgrade -y
 	curl -fsSL https://bun.sh/install | bash
 	go install github.com/a-h/templ/cmd/templ@latest
-	chsh -s $(which zsh) $USER
-	tail -n 2 ~/.bashrc >> ~/.zshrc && source ~/.zshrc

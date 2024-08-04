@@ -1,0 +1,29 @@
+version: "3.8"
+services:
+  blog_dev_service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ../..:/workspaces:cached
+    container_name: blog-api
+    network_mode: service:db
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    image: mongo:latest
+    container_name: blog-dev-db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", \"db.runCommand('ping').ok\" --quiet"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+    ports:
+      - "27017:27017"
+    volumes:
+      - database:/var/lib/mongo/data
+volumes:
+  database:

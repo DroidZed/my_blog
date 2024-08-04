@@ -29,7 +29,7 @@ services:
       start_period: 30s
   blog_db:
     image: mongo
-    container_name: go-lance-db
+    container_name: blog-db
     healthcheck:
       test: ["CMD", "mongosh", "--eval", \"db.runCommand('ping').ok\" --quiet"]
       interval: 1m30s

@@ -1,11 +1,10 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net/http"
-	"time"
+	"net/smtp"
 
 	_ "github.com/DroidZed/my_blog/docs"
 	"github.com/DroidZed/my_blog/internal/auth"
@@ -21,7 +20,6 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Server struct {
@@ -29,6 +27,7 @@ type Server struct {
 	EnvConfig *config.EnvConfig
 	DbClient  *mongo.Client
 	Logger    *log.Logger
+	Smtp      smtp.Auth
 }
 
 type ServerDefinition interface {
@@ -43,8 +42,8 @@ func (s *Server) New() (server *Server) {
 	server = &Server{}
 	server.Router = chi.NewRouter()
 	server.EnvConfig = config.LoadEnv()
-	DbClient = config.GetConnection()
-	pigeon.GetSmtp()
+	server.DbClient = config.GetConnection()
+	server.Smtp = pigeon.GetSmtp()
 	return server
 }
 

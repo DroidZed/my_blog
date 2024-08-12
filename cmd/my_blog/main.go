@@ -10,15 +10,15 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/DroidZed/my_blog/internal"
 	"github.com/DroidZed/my_blog/internal/config"
+	"github.com/DroidZed/my_blog/internal/setup"
 )
 
-func startService() (server *internal.Server) {
+func startService() (server *setup.Server) {
 
 	log := config.GetLogger()
 
-	server = &internal.Server{}
+	server = &setup.Server{}
 
 	server = server.New()
 

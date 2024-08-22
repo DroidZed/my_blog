@@ -1,0 +1,15 @@
+meta {
+  name: get user by token
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://127.0.0.1:8000/api/user
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{BLOG_TOKEN}}
+}

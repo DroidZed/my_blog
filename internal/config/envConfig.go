@@ -26,26 +26,24 @@ type EnvConfig struct {
 	MASTER_EMAIL  string
 }
 
-func LoadEnv() (config *EnvConfig) {
-
-	log := GetLogger()
+func LoadEnv() (*EnvConfig, error) {
 
 	if err := godotenv.Load(".env"); err != nil {
-		log.Fatalf("Error loading work environment.\n %s", err)
+		return nil, err
 	}
 
 	port, err := strconv.ParseInt(os.Getenv("PORT"), 10, 64)
 
 	if err != nil {
-		log.Fatalf("Error loading work environment.\n %s", err)
-
+		return nil, err
 	}
 
 	if err := loadVarsPerEnv(); err != nil {
-		log.Fatalf("Error loading work environment.\n %s", err)
+		return nil, err
+
 	}
 
-	config = &EnvConfig{
+	config := &EnvConfig{
 		Port:          port,
 		DBUri:         os.Getenv("DB_URI"),
 		Env:           os.Getenv("ENV"),
@@ -63,7 +61,7 @@ func LoadEnv() (config *EnvConfig) {
 		MASTER_EMAIL:  os.Getenv("MASTER_EMAIL"),
 	}
 
-	return config
+	return config, nil
 
 }
 

@@ -8,15 +8,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func GetConnection() *mongo.Client {
+func GetConnection(baseCtx context.Context, env *EnvConfig) (*mongo.Client, error) {
 
-	log := GetLogger()
-
-	env := LoadEnv()
-
-	log.Info("Opening a database connection...")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	ctx, cancel := context.WithTimeout(baseCtx, 1*time.Minute)
 	defer cancel()
 
 	clientOptions := options.
@@ -25,18 +19,14 @@ func GetConnection() *mongo.Client {
 
 	dbConnection, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
-		log.Fatal("Could not connect to the database !")
+		return nil, err
 	}
 
 	// Ping the MongoDB server.
 	err = dbConnection.Ping(ctx, nil)
 	if err != nil {
-		log.Fatal("Failed to ping the database:", err)
+		return nil, err
 	}
 
-	log.Infof("Connection to %s has been established.\n", env.DBName)
-
-	connectedHandle := dbConnection
-
-	return connectedHandle
+	return dbConnection, nil
 }

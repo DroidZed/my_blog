@@ -4,22 +4,26 @@ package user
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	"github.com/DroidZed/my_blog/internal/config"
-	"github.com/DroidZed/my_blog/internal/middleware"
+	"github.com/DroidZed/my_blog/internal/jwtverify"
 	"github.com/DroidZed/my_blog/internal/utils"
 )
 
-func GetUserById(w http.ResponseWriter, r *http.Request) {
+type Controller struct {
+	UserService *Service
+	Logger      *slog.Logger
+}
 
-	id := r.Context().Value(middleware.AuthCtxKey{}).(string)
+func (c *Controller) GetUserById(w http.ResponseWriter, r *http.Request) {
+
+	id := r.Context().Value(jwtverify.AuthCtxKey{}).(string)
 
 	log := config.GetLogger()
 
-	userService := &UserService{}
-
-	user, err := userService.FindUserByID(id)
+	user, err := c.UserService.FindUserByID(id)
 
 	if err != nil {
 		log.Error(err)
@@ -30,7 +34,7 @@ func GetUserById(w http.ResponseWriter, r *http.Request) {
 	utils.JsonResponse(w, http.StatusOK, user)
 }
 
-func UpdateUser(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	log := config.GetLogger()
 
@@ -43,9 +47,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	log.Debug(user)
 
-	userService := &UserService{}
-
-	if err := userService.SaveUser(&user); err != nil {
+	if err := c.UserService.SaveUser(&user); err != nil {
 		utils.JsonResponse(w, http.StatusNotFound, utils.DtoResponse{Error: fmt.Sprintf("Invalid update!\n %s", err.Error())})
 		return
 	}

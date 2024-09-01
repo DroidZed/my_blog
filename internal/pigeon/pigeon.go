@@ -3,52 +3,41 @@ package pigeon
 import (
 	"fmt"
 	"net/smtp"
-
-	"github.com/DroidZed/my_blog/internal/config"
 )
 
 type SMTPRequest struct {
+	pigeon Pigeon
+
 	to      []string
 	from    string
 	subject string
 	body    string
 }
 
-func NewRequest(to []string, subject, body string) *SMTPRequest {
+type Pigeon struct {
+	Auth smtp.Auth
+	From string
+	Addr string
+}
+
+func (p Pigeon) NewRequest(to []string, subject, body string) *SMTPRequest {
 	return &SMTPRequest{
+		pigeon:  p,
 		to:      to,
 		subject: fmt.Sprintf("Subject: %s", subject),
 		body:    body,
-		from:    config.LoadEnv().SmtpUsername,
+		from:    p.From,
 	}
-}
-
-func (r *SMTPRequest) GetBody() string {
-	return r.body
-}
-
-func (r *SMTPRequest) GetSubject() string {
-	return r.subject
 }
 
 func (r *SMTPRequest) SendEmail() error {
 
-	smtpAuth := GetSmtp()
-
-	env := config.LoadEnv()
-
 	mime := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
 
-	msg := []byte(fmt.Sprintf("%s\n", r.GetSubject()) + mime + r.GetBody())
+	msg := []byte(fmt.Sprintf("%s\n", r.subject) + mime + r.body)
 
-	addr := fmt.Sprintf("%s:%s", env.SmtpHost, env.SmtpPort)
-
-	if err := smtp.SendMail(addr, smtpAuth, r.from, r.to, msg); err != nil {
+	if err := smtp.SendMail(r.pigeon.Addr, r.pigeon.Auth, r.from, r.to, msg); err != nil {
 		return err
 	}
 	return nil
-}
-
-func (r *SMTPRequest) SetBody(str string) {
-	r.body = str
 }

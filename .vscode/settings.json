@@ -9,6 +9,7 @@
     "godotenv",
     "golance",
     "httplog",
+    "httpslog",
     "Infof",
     "jwtauth",
     "nums",
@@ -17,8 +18,10 @@
     "tailwindcss",
     "templ",
     "tmpl",
+    "Tokenor",
     "Upsert",
-    "Vars"
+    "Vars",
+    "withmandala"
   ],
   "editor.formatOnSave": true,
   "[javascript]": {

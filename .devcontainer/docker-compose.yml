@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   blog_api:
-    image: mcr.microsoft.com/devcontainers/go:1-1.23-bullseye
+    image: mcr.microsoft.com/devcontainers/go:1-1.22-bullseye
     container_name: blog-api
     network_mode: service:db
     volumes:

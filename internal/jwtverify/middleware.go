@@ -1,13 +1,13 @@
-package middleware
+package jwtverify
 
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strings"
 	"time"
 
-	"github.com/DroidZed/my_blog/internal/config"
 	"github.com/DroidZed/my_blog/internal/cryptor"
 	"github.com/DroidZed/my_blog/internal/utils"
 	"github.com/golang-jwt/jwt/v5"
@@ -15,16 +15,20 @@ import (
 
 type AuthCtxKey struct{}
 
-func AccessVerify(next http.Handler) http.Handler {
+type JwtVerify struct {
+	AccessSecret  string
+	RefreshSecret string
+	Logger        *slog.Logger
+	CHelper       cryptor.CryptoHelper
+}
+
+func (j JwtVerify) AccessVerify(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		env := config.LoadEnv()
-		log := config.GetLogger()
 
 		tokenFromHeader, err := retrieveTokenFromHeader(r)
 
 		if err != nil {
-			log.Error(err)
-			log.Errorf("Header corrupted.\n%s", err)
+			j.Logger.Error("header corrupted", slog.String("err", err.Error()))
 			utils.JsonResponse(w,
 				http.StatusUnauthorized,
 				utils.DtoResponse{Error: "Invalid token."},
@@ -32,10 +36,15 @@ func AccessVerify(next http.Handler) http.Handler {
 			return
 		}
 
-		token, err := validateToken(tokenFromHeader, env.AccessSecret)
+		token, err := validateToken(
+			tokenFromHeader,
+			j.AccessSecret,
+			j.CHelper.ParseToken,
+			j.CHelper.ExtractExpiryFromClaims,
+		)
 
 		if err != nil {
-			log.Error(err)
+			j.Logger.Error("invalid token", slog.String("err", err.Error()))
 			utils.JsonResponse(w,
 				http.StatusUnauthorized,
 				utils.DtoResponse{Error: "Invalid token."},
@@ -43,9 +52,9 @@ func AccessVerify(next http.Handler) http.Handler {
 			return
 		}
 
-		userId, err := cryptor.ExtractSubFromClaims(token)
+		userId, err := j.CHelper.ExtractSubFromClaims(token)
 		if err != nil {
-			log.Error(err)
+			j.Logger.Error("corrupted sub", slog.String("err", err.Error()))
 			utils.JsonResponse(w,
 				http.StatusUnauthorized,
 				utils.DtoResponse{Error: "Invalid token."},
@@ -60,15 +69,13 @@ func AccessVerify(next http.Handler) http.Handler {
 	})
 }
 
-func RefreshVerify(next http.Handler) http.Handler {
+func (j JwtVerify) RefreshVerify(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		env := config.LoadEnv()
-		log := config.GetLogger()
 
 		tokenFromHeader, err := retrieveTokenFromHeader(r)
 
 		if err != nil {
-			log.Errorf("Header corrupted.\n%s", err)
+			j.Logger.Error("header corrupted", slog.String("err", err.Error()))
 			utils.JsonResponse(w,
 				http.StatusUnauthorized,
 				utils.DtoResponse{Error: "Invalid token."},
@@ -76,7 +83,12 @@ func RefreshVerify(next http.Handler) http.Handler {
 			return
 		}
 
-		_, err = validateToken(tokenFromHeader, env.RefreshSecret)
+		_, err = validateToken(
+			tokenFromHeader,
+			j.RefreshSecret,
+			j.CHelper.ParseToken,
+			j.CHelper.ExtractExpiryFromClaims,
+		)
 
 		if err != nil {
 			utils.JsonResponse(w,
@@ -101,18 +113,18 @@ func retrieveTokenFromHeader(r *http.Request) (string, error) {
 	return segments[1], nil
 }
 
-func validateToken(headerValue, secret string) (*jwt.Token, error) {
-	log := config.GetLogger()
-
-	token, err := cryptor.ParseToken(headerValue, secret)
+func validateToken(
+	headerValue, secret string,
+	ParseToken func(token string, secret string) (*jwt.Token, error),
+	ExtractExpiryFromClaims func(token *jwt.Token) (int64, error),
+) (*jwt.Token, error) {
+	token, err := ParseToken(headerValue, secret)
 	if err != nil {
-		log.Errorf("Unable to parse token.\n%s", err)
 		return nil, err
 	}
 
-	exp, err := cryptor.ExtractExpiryFromClaims(token)
+	exp, err := ExtractExpiryFromClaims(token)
 	if err != nil {
-		log.Error(err)
 		return nil, err
 	}
 

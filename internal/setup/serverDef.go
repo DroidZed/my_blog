@@ -2,65 +2,75 @@ package setup
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
-	"net/smtp"
 
 	_ "github.com/DroidZed/my_blog/docs"
-	"github.com/DroidZed/my_blog/internal/auth"
 	"github.com/DroidZed/my_blog/internal/config"
-	md "github.com/DroidZed/my_blog/internal/middleware"
+	"github.com/DroidZed/my_blog/internal/httpslog"
+	"github.com/DroidZed/my_blog/internal/jwtverify"
 	"github.com/DroidZed/my_blog/internal/pigeon"
-	"github.com/DroidZed/my_blog/internal/user"
 	"github.com/DroidZed/my_blog/internal/views"
-	"github.com/MadAppGang/httplog"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	httpSwagger "github.com/swaggo/http-swagger"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type Server struct {
-	Router    *chi.Mux
-	EnvConfig *config.EnvConfig
-	DbClient  *mongo.Client
-	Logger    *log.Logger
-	Smtp      smtp.Auth
-}
-
 type ServerDefinition interface {
-	New() (server *Server)
 	ApplyMiddleWares()
 	MountHandlers()
 	InitOwner()
-	GetConnection()
 }
 
-func (s *Server) New() (server *Server) {
-	server = &Server{}
-	server.Router = chi.NewRouter()
-	server.EnvConfig = config.LoadEnv()
-	server.DbClient = config.GetConnection()
-	server.Smtp = pigeon.GetSmtp()
-	return server
+type Authenticator interface {
+	LoginReq(w http.ResponseWriter, r *http.Request)
+	RefreshTheAccessToken(w http.ResponseWriter, r *http.Request)
+}
+type UserManager interface {
+	GetUserById(w http.ResponseWriter, r *http.Request)
+	UpdateUser(w http.ResponseWriter, r *http.Request)
 }
 
-func (s *Server) MountHandlers() {
-	s.Router.NotFound(func(w http.ResponseWriter, r *http.Request) {
+type JwtMiddleware interface {
+	AccessVerify(next http.Handler) http.Handler
+	RefreshVerify(next http.Handler) http.Handler
+}
+
+type PasswordManager interface {
+	DoSendMagicLink(w http.ResponseWriter, r *http.Request)
+	DoValidateMagicLink(w http.ResponseWriter, r *http.Request)
+}
+
+type Server struct {
+	EnvConfig *config.EnvConfig
+	DbClient  *mongo.Client
+	Logger    *slog.Logger
+	Smtp      pigeon.Pigeon
+
+	Authenticator   Authenticator
+	UserManager     UserManager
+	PasswordManager PasswordManager
+
+	AuthMiddleware jwtverify.JwtVerify
+}
+
+func (s *Server) MountHandlers(r *chi.Mux) {
+
+	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		views.NotFound().Render(r.Context(), w)
 	})
 
-	s.Router.Get("/", func(w http.ResponseWriter, r *http.Request) {
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		views.Index().Render(r.Context(), w)
 	})
 
-	s.Router.Get("/login", func(w http.ResponseWriter, r *http.Request) {
+	r.Get("/login", func(w http.ResponseWriter, r *http.Request) {
 		views.Login().Render(r.Context(), w)
 	})
 
-	s.Router.Get("/api/swagger/*", httpSwagger.Handler(
+	r.Get("/api/swagger/*", httpSwagger.Handler(
 		httpSwagger.URL(
 			fmt.Sprintf("http://%s:%d/api/swagger/doc.json",
 				s.EnvConfig.Host,
@@ -69,33 +79,39 @@ func (s *Server) MountHandlers() {
 	))
 
 	// Auth
-	s.Router.Route("/api/auth", func(r chi.Router) {
-		r.Post("/login", auth.LoginReq)
-		r.With(md.RefreshVerify).Group(func(r chi.Router) {
-			r.Post("/refresh-token", auth.RefreshTheAccessToken)
+	r.Route("/api/auth", func(r chi.Router) {
+
+		r.Post("/login", s.Authenticator.LoginReq)
+		r.With(s.AuthMiddleware.RefreshVerify).Group(func(r chi.Router) {
+			r.Post("/refresh-token", s.Authenticator.RefreshTheAccessToken)
+		})
+		r.Post("/auth/forgot-pwd", s.PasswordManager.DoSendMagicLink)
+		r.Get("/auth/forgot-pwd", func(w http.ResponseWriter, r *http.Request) {
+			views.ForgotPwd().Render(r.Context(), w)
 		})
 	})
 
 	// User
-	s.Router.Route("/api/user", func(r chi.Router) {
-		r.Use(md.AccessVerify)
-		r.Put("/", user.UpdateUser)
-		r.Get("/", user.GetUserById)
+	r.Route("/api/user", func(r chi.Router) {
+		r.Use(s.AuthMiddleware.AccessVerify)
+		r.Put("/", s.UserManager.UpdateUser)
+		r.Get("/", s.UserManager.GetUserById)
 	})
 }
 
-func (s *Server) ApplyMiddleWares() {
-	s.Router.Use(middleware.RequestID)
+func (s *Server) ApplyMiddleWares(r *chi.Mux) {
+	r.Use(middleware.RequestID)
 
-	s.Router.Use(middleware.URLFormat)
+	r.Use(middleware.URLFormat)
 
-	s.Router.Use(middleware.StripSlashes)
+	r.Use(middleware.StripSlashes)
 
-	s.Router.Use(middleware.CleanPath)
+	r.Use(middleware.CleanPath)
 
-	s.Router.Use(httplog.LoggerWithName("GoLance-Log"))
+	// r.Use(httplog.LoggerWithName("GoLance-Log"))
+	r.Use(httpslog.New(slog.Default()))
 
-	s.Router.Use(cors.Handler(cors.Options{
+	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"https://*", "http://*"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
@@ -104,32 +120,7 @@ func (s *Server) ApplyMiddleWares() {
 		MaxAge:           300,
 	}))
 
-	s.Router.Use(middleware.Heartbeat("/health"))
+	r.Use(middleware.Heartbeat("/health"))
 
-	s.Router.Use(middleware.Heartbeat("/ping"))
-}
-
-func (*Server) InitOwner() {
-
-	log := config.GetLogger()
-
-	userService := &user.UserService{}
-
-	user := &user.User{
-		ID:       primitive.NewObjectID(),
-		FullName: "Aymen DHAHRI",
-		Email:    config.LoadEnv().MASTER_EMAIL,
-		Password: config.LoadEnv().MASTER_PWD,
-		Photo:    "https://github.com/DroidZed.png",
-	}
-
-	if found := userService.FindUserByEmail(user.Email); found != nil {
-		return
-	}
-
-	if err := userService.SaveUser(user); err != nil {
-		log.Fatalf("Error occurred while saving the user to the db\n %s", err.Error())
-	}
-
-	log.Info("Admin created with password from env.")
+	r.Use(middleware.Heartbeat("/ping"))
 }

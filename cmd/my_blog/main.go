@@ -4,35 +4,80 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
+	"net"
 	"net/http"
+	"net/smtp"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"github.com/DroidZed/my_blog/internal/auth"
 	"github.com/DroidZed/my_blog/internal/config"
+	"github.com/DroidZed/my_blog/internal/pigeon"
 	"github.com/DroidZed/my_blog/internal/setup"
+	"github.com/DroidZed/my_blog/internal/user"
+	"github.com/go-chi/chi/v5"
 )
 
-func startService() (server *setup.Server) {
+func startService(ctx context.Context, mux *chi.Mux, logger *slog.Logger) (*setup.Server, error) {
 
-	log := config.GetLogger()
+	env, err := config.LoadEnv()
+	if err != nil {
+		return nil, err
+	}
 
-	server = &setup.Server{}
+	logger.Info("opening a database connection...")
 
-	server = server.New()
+	dbClient, err := config.GetConnection(ctx, env)
+	if err != nil {
+		return nil, err
+	}
+
+	logger.Info("connected to ", slog.String("dbName", env.DBName))
+
+	userService := &user.Service{
+		DbClient: dbClient,
+	}
+
+	authController := &auth.Controller{
+		UserService: userService,
+	}
+
+	pigeon := pigeon.Pigeon{
+		Auth: smtp.PlainAuth(
+			"pigeon",
+			env.SmtpUsername,
+			env.SmtpPassword,
+			env.SmtpHost,
+		),
+		From: env.SmtpUsername,
+		Addr: net.JoinHostPort(env.SmtpHost, env.SmtpPort),
+	}
+
+	server := &setup.Server{
+		EnvConfig:     env,
+		DbClient:      dbClient,
+		Smtp:          pigeon,
+		Logger:        logger,
+		Authenticator: authController,
+		UserManager: &user.Controller{
+			UserService: userService,
+		},
+	}
 
 	envPort := server.EnvConfig.Port
 
-	server.ApplyMiddleWares()
+	server.ApplyMiddleWares(mux)
 
-	server.MountHandlers()
+	server.MountHandlers(mux)
 
-	server.InitOwner()
+	authController.InitOwner()
 
-	log.Infof("Listening on port: %d\n", envPort)
+	logger.Info("listening", slog.Int64("port", envPort))
 
-	return server
+	return server, nil
 }
 
 // Entry point, setting up chi and graceful shutdown <3
@@ -51,61 +96,58 @@ func startService() (server *setup.Server) {
 // @host droidzed.tn
 // @BasePath /
 func main() {
-	log := config.GetLogger()
+	code := run()
 
-	app := startService()
+	os.Exit(code)
+}
 
-	// The HTTP Server
-	server := &http.Server{
-		Addr:    fmt.Sprintf(":%d", app.EnvConfig.Port),
-		Handler: app.Router,
+func run() int {
+
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer cancel()
+
+	mux := chi.NewRouter()
+
+	logHandler := slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{})
+
+	l := slog.New(logHandler)
+
+	app, err := startService(ctx, mux, l)
+	if err != nil {
+		l.Error("error with server startup", slog.String("err", err.Error()))
+		return -1
 	}
 
-	// Server run context
-	serverCtx, serverStopCtx := context.WithCancel(context.Background())
+	server := &http.Server{
+		Addr:     fmt.Sprintf(":%d", app.EnvConfig.Port),
+		Handler:  mux,
+		ErrorLog: slog.NewLogLogger(l.Handler(), slog.LevelError),
+	}
 
-	// Listen for syscall signals for process to interrupt/quit
-	sig := make(chan os.Signal, 1)
-
-	signal.Notify(
-		sig,
-		syscall.SIGHUP,
-		syscall.SIGINT,
-		syscall.SIGTERM,
-		syscall.SIGQUIT,
-	)
-
+	// Run the server in a separate goroutine.
 	go func() {
-		<-sig
+		defer cancel()
 
-		// Shutdown signal with grace period of 3 seconds
-		shutdownCtx, cancelFunc := context.WithTimeout(serverCtx, 3*time.Second)
-		defer cancelFunc()
-
-		go func() {
-			<-shutdownCtx.Done()
-			if errors.Is(shutdownCtx.Err(), context.DeadlineExceeded) {
-
-				log.Fatal("Graceful shutdown timed out.. forcing exit.\n")
-			}
-		}()
-
-		// Trigger graceful shutdown
-		err := server.Shutdown(shutdownCtx)
-		if err != nil {
-			log.Fatal(err)
-		}
-		serverStopCtx()
+		// Ignore the error returned because it'll always be [http.ErrServerClosed].
+		_ = server.ListenAndServe()
 	}()
 
-	// Run the server
-	err := server.ListenAndServe()
+	// Wait for context to be cancelled.
+	<-ctx.Done()
+
+	// Start the shutdown procedure.
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer shutdownCancel()
+
+	err = server.Shutdown(shutdownCtx)
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
-		log.Fatal(err)
+		l.Error("something went wrong during shutdown",
+			slog.Any("error", err),
+		)
+
+		return -1
 	}
 
-	// Wait for server context to be stopped
-	<-serverCtx.Done()
-
-	log.Info("Goodbye 🧩 👋")
+	l.Info("goodbye 🧩 👋")
+	return 0
 }

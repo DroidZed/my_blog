@@ -1,12 +1,10 @@
 package utils
 
 import (
-	"crypto/rand"
 	"encoding/json"
-	"math/big"
 	"net/http"
-	"strings"
-	"unsafe"
+
+	"github.com/google/uuid"
 )
 
 type DtoResponse struct {
@@ -24,43 +22,15 @@ func JsonResponse(w http.ResponseWriter, code int, payload interface{}) {
 	}
 }
 
-func ByteSlice2String(bs []byte) string {
-	return *(*string)(unsafe.Pointer(&bs))
-}
+func GenUUID() string {
 
-func RNG(outerBound int64) int64 {
-	if outerBound <= 0 {
-		return -1
-	}
+	code, err := uuid.NewRandom()
 
-	nBig, err := rand.Int(rand.Reader, big.NewInt(outerBound))
 	if err != nil {
-		return -1
+		panic(err)
 	}
 
-	n := nBig.Int64()
-
-	if n == 0 {
-		return n + 1
-	}
-	return n
-}
-
-func GenerateAPICode() string {
-
-	builder := strings.Builder{}
-
-	const alpha = "A4BCD3EFG8HIJ6KLM7NO0PQRS2TUV9WX1YZ5"
-
-	for i := 0; i < 4; i++ {
-		for j := 0; j < 4; j++ {
-			builder.WriteByte(alpha[RNG(int64(j+17))])
-		}
-		if i != 3 {
-			builder.WriteString("-")
-		}
-	}
-	return strings.TrimSuffix(builder.String(), "-")
+	return code.String()
 }
 
 /*

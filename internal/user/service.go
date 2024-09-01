@@ -3,25 +3,26 @@ package user
 import (
 	"context"
 
-	"github.com/DroidZed/my_blog/internal/config"
 	"github.com/DroidZed/my_blog/internal/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type IUserService interface {
+type UserProvider interface {
 	SaveUser(data *User) error
 	FindUserByID(id string) (*User, error)
 	FindUserByEmail(email string) *User
 }
 
-type UserService struct{}
+type Service struct {
+	DbClient *mongo.Client
+	DBName   string
+}
 
-func (s *UserService) SaveUser(data *User) error {
+func (s *Service) SaveUser(data *User) error {
 
-	env := config.LoadEnv()
-
-	coll := config.GetConnection().Database(env.DBName).Collection(utils.UserCollection)
+	coll := s.DbClient.Database(s.DBName).Collection(utils.UserCollection)
 
 	ctx, cancel := context.WithTimeout(context.Background(), utils.ContextTimeOut)
 	defer cancel()
@@ -39,10 +40,9 @@ func (s *UserService) SaveUser(data *User) error {
 	return nil
 }
 
-func (s *UserService) FindUserByID(id string) (*User, error) {
-	env := config.LoadEnv()
+func (s *Service) FindUserByID(id string) (*User, error) {
 
-	coll := config.GetConnection().Database(env.DBName).Collection(utils.UserCollection)
+	coll := s.DbClient.Database(s.DBName).Collection(utils.UserCollection)
 
 	ctx, cancel := context.WithTimeout(context.Background(), utils.ContextTimeOut)
 	defer cancel()
@@ -65,10 +65,9 @@ func (s *UserService) FindUserByID(id string) (*User, error) {
 	return result, nil
 }
 
-func (s *UserService) FindUserByEmail(email string) *User {
-	env := config.LoadEnv()
+func (s *Service) FindUserByEmail(email string) *User {
 
-	coll := config.GetConnection().Database(env.DBName).Collection(utils.UserCollection)
+	coll := s.DbClient.Database(s.DBName).Collection(utils.UserCollection)
 
 	ctx, cancel := context.WithTimeout(context.Background(), utils.ContextTimeOut)
 	defer cancel()

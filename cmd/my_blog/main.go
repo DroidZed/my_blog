@@ -15,6 +15,7 @@ import (
 
 	"github.com/DroidZed/my_blog/internal/auth"
 	"github.com/DroidZed/my_blog/internal/config"
+	"github.com/DroidZed/my_blog/internal/cryptor"
 	"github.com/DroidZed/my_blog/internal/pigeon"
 	"github.com/DroidZed/my_blog/internal/setup"
 	"github.com/DroidZed/my_blog/internal/user"
@@ -28,6 +29,24 @@ func startService(ctx context.Context, mux *chi.Mux, logger *slog.Logger) (*setu
 		return nil, err
 	}
 
+	pigeon := pigeon.Pigeon{
+		Auth: smtp.PlainAuth(
+			"pigeon",
+			env.SmtpUsername,
+			env.SmtpPassword,
+			env.SmtpHost,
+		),
+		From: env.SmtpUsername,
+		Addr: net.JoinHostPort(env.SmtpHost, env.SmtpPort),
+	}
+
+	cHelper := &cryptor.Cryptor{
+		AccessExpiry:  env.AccessExpiry,
+		AccessSecret:  env.AccessSecret,
+		RefreshExpiry: env.RefreshExpiry,
+		RefreshSecret: env.RefreshSecret,
+	}
+
 	logger.Info("opening a database connection...")
 
 	dbClient, err := config.GetConnection(ctx, env)
@@ -39,22 +58,19 @@ func startService(ctx context.Context, mux *chi.Mux, logger *slog.Logger) (*setu
 
 	userService := &user.Service{
 		DbClient: dbClient,
+		DBName:   env.DBName,
 	}
 
 	authController := &auth.Controller{
-		UserService: userService,
+		UserService:   userService,
+		Logger:        logger,
+		CHelper:       cHelper,
+		MASTER_EMAIL:  env.MASTER_EMAIL,
+		MASTER_PWD:    env.MASTER_PWD,
+		RefreshSecret: env.RefreshSecret,
 	}
 
-	pigeon := pigeon.Pigeon{
-		Auth: smtp.PlainAuth(
-			"pigeon",
-			env.SmtpUsername,
-			env.SmtpPassword,
-			env.SmtpHost,
-		),
-		From: env.SmtpUsername,
-		Addr: net.JoinHostPort(env.SmtpHost, env.SmtpPort),
-	}
+
 
 	server := &setup.Server{
 		EnvConfig:     env,

@@ -3,6 +3,7 @@ package forgotPwd
 import (
 	"log/slog"
 	"net/http"
+	"strconv"
 
 	"github.com/DroidZed/my_blog/internal/pigeon"
 	"github.com/DroidZed/my_blog/internal/user"
@@ -11,7 +12,7 @@ import (
 
 type Controller struct {
 	UserService user.UserProvider
-	Pigeon      *pigeon.Pigeon
+	Pigeon      pigeon.Pigeon
 	Logger      *slog.Logger
 }
 
@@ -27,15 +28,24 @@ func (c Controller) DoSendMagicLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// resend := r.URL.Query().Get("resend")
+	val := 0
 
-	user := c.UserService.FindUserByEmail(body.Email)
+	resend := r.URL.Query().Get("resend")
+
+	val, err = strconv.Atoi(resend)
+
+	if val == 1 {
+
+	}
+
+	user, err := c.UserService.FindUserByEmail(r.Context(), body.Email)
 
 	if user == nil {
 		c.Logger.Error("invalid user", slog.String("err", err.Error()))
 		utils.JsonResponse(w, http.StatusBadRequest, utils.DtoResponse{Error: "Invalid email"})
 		return
 	}
+
 }
 
 func (c Controller) DoValidateMagicLink(w http.ResponseWriter, r *http.Request) {

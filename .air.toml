@@ -5,17 +5,29 @@ tmp_dir = "tmp"
 [build]
 args_bin = []
 bin = "./tmp/main"
-cmd = "go build -o ./tmp/main ."
+cmd = "templ generate && go build -o ./tmp/main ."
 delay = 1000
-exclude_dir = ["assets", "tmp", "vendor", "testdata"]
+exclude_dir = ["assets", "tmp", "testdata"]
 exclude_file = []
-exclude_regex = ["_test.go"]
+exclude_regex = ["_test.go", ".*_templ.go"]
 exclude_unchanged = false
 follow_symlink = false
 full_bin = ""
-include_dir = ["internal", "cmd", "docs"]
-include_ext = ["go", "templ", "css", "html", "mdx", "md", "js", "json", "yaml"]
-include_file = []
+include_dir = ["internal", "cmd", "docs", "my_blog"]
+include_ext = [
+  "go",
+  "templ",
+  "css",
+  "html",
+  "mdx",
+  "md",
+  "js",
+  "json",
+  "yaml",
+  "tpl",
+  "tmpl",
+]
+include_file = ["cmd/my_blog/main.go"]
 kill_delay = "0s"
 log = "build-errors.log"
 poll = false
@@ -25,7 +37,7 @@ pre_cmd = []
 rerun = false
 rerun_delay = 500
 send_interrupt = false
-stop_on_error = false
+stop_on_error = true
 
 [color]
 app = ""

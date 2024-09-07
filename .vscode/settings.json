@@ -38,5 +38,7 @@
   },
   "emmet.includeLanguages": {
     "templ": "html"
-  }
+  },
+  "editor.formatOnSaveMode": "modifications",
+  "files.autoSave": "afterDelay"
 }

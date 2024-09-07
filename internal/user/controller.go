@@ -18,15 +18,13 @@ func (c *Controller) GetUserById(w http.ResponseWriter, r *http.Request) {
 
 	id := r.Context().Value(jwtverify.AuthCtxKey{}).(string)
 
-	user, err := c.UserService.FindUserByID(id)
+	user, err := c.UserService.FindUserByID(r.Context(), id)
 
 	if err != nil {
 		c.Logger.Error("failed to find user", slog.String("err", err.Error()))
 		utils.JsonResponse(w, http.StatusNotFound, utils.DtoResponse{Error: fmt.Sprintf("User with id %s could not be found.", id)})
 		return
 	}
-
-	c.Logger.Info("user found")
 
 	utils.JsonResponse(w, http.StatusOK, user)
 }
@@ -41,13 +39,11 @@ func (c *Controller) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := c.UserService.SaveUser(&user); err != nil {
+	if err := c.UserService.SaveUser(r.Context(), &user); err != nil {
 		c.Logger.Error("failed to save user", slog.String("err", err.Error()))
 		utils.JsonResponse(w, http.StatusNotFound, utils.DtoResponse{Error: fmt.Sprintf("Invalid update!\n %s", err.Error())})
 		return
 	}
-
-	c.Logger.Info("user updated")
 
 	utils.JsonResponse(w, http.StatusOK, utils.DtoResponse{Message: "Success !!"})
 }

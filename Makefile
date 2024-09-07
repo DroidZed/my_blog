@@ -20,7 +20,7 @@ decompose:
 	docker compose down
 
 dev:
-	build compose
+	air
 
 prod:
 	./bin/golance

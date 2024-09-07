@@ -13,7 +13,7 @@ func TestCompareSecureToPlain(t *testing.T) {
 
 	c := &cryptor.Cryptor{}
 
-	hashedPassword, err := c.HashPassword(dummyPwd)
+	hashedPassword, err := c.HashPlain(dummyPwd)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -30,7 +30,7 @@ func BenchmarkHashPassword(b *testing.B) {
 
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		c.HashPassword(dummyPwd)
+		c.HashPlain(dummyPwd)
 	}
 }
 

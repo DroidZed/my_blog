@@ -23,10 +23,12 @@ type ServerDefinition interface {
 	MountHandlers()
 	InitOwner()
 }
+
 type Authenticator interface {
 	LoginReq(w http.ResponseWriter, r *http.Request)
 	RefreshTheAccessToken(w http.ResponseWriter, r *http.Request)
 }
+
 type UserManager interface {
 	GetUserById(w http.ResponseWriter, r *http.Request)
 	UpdateUser(w http.ResponseWriter, r *http.Request)
@@ -41,6 +43,7 @@ type PasswordManager interface {
 	DoSendMagicLink(w http.ResponseWriter, r *http.Request)
 	DoValidateMagicLink(w http.ResponseWriter, r *http.Request)
 }
+
 type Server struct {
 	EnvConfig *config.EnvConfig
 	DbClient  *mongo.Client

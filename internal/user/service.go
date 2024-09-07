@@ -3,82 +3,39 @@ package user
 import (
 	"context"
 
-	"github.com/DroidZed/my_blog/internal/utils"
+	"github.com/DroidZed/my_blog/internal/cryptor"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type UserProvider interface {
-	SaveUser(data *User) error
-	FindUserByID(id string) (*User, error)
-	FindUserByEmail(email string) *User
+	SaveUser(ctx context.Context, data *User) error
+	FindUserByID(ctx context.Context, id string) (*User, error)
+	FindUserByEmail(ctx context.Context, email string) (*User, error)
 }
 
 type Service struct {
-	DbClient *mongo.Client
-	DBName   string
+	Hasher   cryptor.CryptoHelper
+	UserRepo UserRepoProvider
 }
 
-func (s *Service) SaveUser(data *User) error {
+func (s *Service) SaveUser(ctx context.Context, data *User) error {
 
-	coll := s.DbClient.Database(s.DBName).Collection(utils.UserCollection)
-
-	ctx, cancel := context.WithTimeout(context.Background(), utils.ContextTimeOut)
-	defer cancel()
-
-	modified, err := data.HashUserPassword()
+	modified, err := s.Hasher.HashPlain(data.Password)
 	if err != nil {
 		return err
 	}
 
-	_, insertErr := coll.InsertOne(ctx, modified)
-	if insertErr != nil {
-		return insertErr
-	}
+	data.Password = modified
 
-	return nil
+	return s.UserRepo.Save(ctx, data)
 }
 
-func (s *Service) FindUserByID(id string) (*User, error) {
+func (s *Service) FindUserByID(ctx context.Context, id string) (*User, error) {
 
-	coll := s.DbClient.Database(s.DBName).Collection(utils.UserCollection)
-
-	ctx, cancel := context.WithTimeout(context.Background(), utils.ContextTimeOut)
-	defer cancel()
-
-	result := &User{}
-
-	objectId, err1 := primitive.ObjectIDFromHex(id)
-	if err1 != nil {
-		return nil, err1
-	}
-
-	filter := bson.M{"_id": objectId}
-
-	// Check for errors when executing FindOne
-	err := coll.FindOne(ctx, filter).Decode(result)
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
+	return s.UserRepo.FindById(ctx, id)
 }
 
-func (s *Service) FindUserByEmail(email string) *User {
+func (s *Service) FindUserByEmail(ctx context.Context, email string) (*User, error) {
 
-	coll := s.DbClient.Database(s.DBName).Collection(utils.UserCollection)
-
-	ctx, cancel := context.WithTimeout(context.Background(), utils.ContextTimeOut)
-	defer cancel()
-
-	result := &User{}
-
-	filter := bson.M{"email": email}
-
-	if err := coll.FindOne(ctx, filter).Decode(result); err != nil {
-		return nil
-	}
-
-	return result
+	return s.UserRepo.FindOne(ctx, bson.M{"email": email}, nil)
 }

@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -41,7 +42,7 @@ func (c *Controller) LoginReq(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := c.validateUser(&loginBody)
+	user, err := c.validateUser(r.Context(), &loginBody)
 
 	if err != nil {
 		c.Logger.Error("validation failed with", slog.String("err", err.Error()))
@@ -51,11 +52,17 @@ func (c *Controller) LoginReq(w http.ResponseWriter, r *http.Request) {
 
 	userId := user.ID.Hex()
 
-	access, _ := c.CHelper.GenerateAccessToken(userId)
-	refresh, _ := c.CHelper.GenerateRefreshToken()
+	access, err := c.CHelper.GenerateAccessToken(userId)
+	if err != nil {
+		c.Logger.Error("token gen failed with", slog.String("err", err.Error()))
+	}
+
+	refresh, err1 := c.CHelper.GenerateRefreshToken()
+	if err1 != nil {
+		c.Logger.Error("token gen failed with", slog.String("err", err1.Error()))
+	}
 
 	if access == "" || refresh == "" {
-		c.Logger.Error("token gen failed with", slog.String("err", err.Error()))
 		utils.JsonResponse(w, http.StatusNotFound, LoginResponse{Error: err.Error()})
 		return
 	}
@@ -102,11 +109,18 @@ func (c *Controller) RefreshTheAccessToken(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	newAcc, _ := c.CHelper.GenerateAccessToken(userId)
-	newRef, _ := c.CHelper.GenerateRefreshToken()
+	newAcc, err := c.CHelper.GenerateAccessToken(userId)
+	if err != nil {
+		c.Logger.Error("token gen failed with", slog.String("err", err.Error()))
+
+	}
+
+	newRef, err1 := c.CHelper.GenerateRefreshToken()
+	if err1 != nil {
+		c.Logger.Error("token gen failed with", slog.String("err", err1.Error()))
+	}
 
 	if newAcc != "" || newRef != "" {
-		c.Logger.Error("token gen failed with", slog.String("err", err.Error()))
 		utils.JsonResponse(w, http.StatusInternalServerError, utils.DtoResponse{Error: err.Error()})
 		return
 	}
@@ -114,23 +128,7 @@ func (c *Controller) RefreshTheAccessToken(w http.ResponseWriter, r *http.Reques
 	utils.JsonResponse(w, http.StatusOK, LoginResponse{Jwt: newAcc, Refresh: newRef})
 }
 
-func (c *Controller) validateUser(login *LoginBody) (*user.User, error) {
-
-	data := c.UserService.FindUserByEmail(login.Email)
-	if data == nil {
-		return nil, fmt.Errorf("no user found")
-	}
-
-	pwdIsValid := c.CHelper.CompareSecureToPlain(data.Password, login.Password)
-
-	if !pwdIsValid {
-		return nil, fmt.Errorf("invalid credentials")
-	}
-
-	return data, nil
-}
-
-func (c *Controller) InitOwner() error {
+func (c *Controller) InitOwner(ctx context.Context) error {
 
 	user := &user.User{
 		ID:       primitive.NewObjectID(),
@@ -140,14 +138,36 @@ func (c *Controller) InitOwner() error {
 		Photo:    "https://github.com/DroidZed.png",
 	}
 
-	if found := c.UserService.FindUserByEmail(user.Email); found != nil {
-		return fmt.Errorf("invalid email")
+	found, err := c.UserService.FindUserByEmail(ctx, user.Email)
+
+	if err != nil {
+		return err
 	}
 
-	if err := c.UserService.SaveUser(user); err != nil {
+	if found != nil {
+		return nil
+	}
+
+	if err := c.UserService.SaveUser(ctx, user); err != nil {
 		return err
 	}
 
 	c.Logger.Info("admin created.")
 	return nil
+}
+
+func (c *Controller) validateUser(ctx context.Context, login *LoginBody) (*user.User, error) {
+
+	data, err := c.UserService.FindUserByEmail(ctx, login.Email)
+	if err != nil {
+		return nil, err
+	}
+
+	pwdIsValid := c.CHelper.CompareSecureToPlain(data.Password, login.Password)
+
+	if !pwdIsValid {
+		return nil, fmt.Errorf("invalid credentials")
+	}
+
+	return data, nil
 }

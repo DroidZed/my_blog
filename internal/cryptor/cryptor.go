@@ -11,7 +11,7 @@ import (
 )
 
 type CryptoHelper interface {
-	HashPassword(txt string) (string, error)
+	HashPlain(txt string) (string, error)
 	CompareSecureToPlain(secure string, plain string) bool
 	GenerateAccessToken(sub string) (string, error)
 	GenerateRefreshToken() (string, error)
@@ -27,7 +27,7 @@ type Cryptor struct {
 	RefreshSecret string
 }
 
-func (Cryptor) HashPassword(txt string) (string, error) {
+func (c Cryptor) HashPlain(txt string) (string, error) {
 	bytes := []byte(txt)
 
 	result, err := bcrypt.GenerateFromPassword(bytes, 12)
@@ -38,7 +38,7 @@ func (Cryptor) HashPassword(txt string) (string, error) {
 	return string(result), nil
 }
 
-func (Cryptor) CompareSecureToPlain(secure string, plain string) bool {
+func (c Cryptor) CompareSecureToPlain(secure string, plain string) bool {
 
 	secBytes := []byte(secure)
 	plainBytes := []byte(plain)
@@ -46,16 +46,16 @@ func (Cryptor) CompareSecureToPlain(secure string, plain string) bool {
 	return bcrypt.CompareHashAndPassword(secBytes, plainBytes) == nil
 }
 
-func (t *Cryptor) GenerateAccessToken(sub string) (string, error) {
+func (c *Cryptor) GenerateAccessToken(sub string) (string, error) {
 
-	daysToAdd, _ := strconv.ParseInt(t.AccessExpiry, 10, 64)
+	daysToAdd, _ := strconv.ParseInt(c.AccessExpiry, 10, 64)
 
 	exp := getExpiration(daysToAdd)
 
 	tokenString, err := createToken(
 		exp,
 		sub,
-		t.AccessSecret,
+		c.AccessSecret,
 	)
 	if err != nil {
 		return "", err
@@ -64,16 +64,16 @@ func (t *Cryptor) GenerateAccessToken(sub string) (string, error) {
 	return tokenString, nil
 }
 
-func (t *Cryptor) GenerateRefreshToken() (string, error) {
+func (c *Cryptor) GenerateRefreshToken() (string, error) {
 
-	daysToAdd, _ := strconv.ParseInt(t.RefreshExpiry, 10, 64)
+	daysToAdd, _ := strconv.ParseInt(c.RefreshExpiry, 10, 64)
 
 	exp := getExpiration(daysToAdd)
 
 	tokenString, err := createToken(
 		exp,
 		utils.GenUUID(),
-		t.RefreshSecret,
+		c.RefreshSecret,
 	)
 	if err != nil {
 		return "", err
@@ -82,21 +82,21 @@ func (t *Cryptor) GenerateRefreshToken() (string, error) {
 	return tokenString, nil
 }
 
-func (t *Cryptor) ExtractExpiryFromClaims(token *jwt.Token) (int64, error) {
+func (c *Cryptor) ExtractExpiryFromClaims(token *jwt.Token) (int64, error) {
 
 	x, err := extractXFromClaims[int64]("exp", token)
 
 	return *x, err
 }
 
-func (t *Cryptor) ExtractSubFromClaims(token *jwt.Token) (string, error) {
+func (c *Cryptor) ExtractSubFromClaims(token *jwt.Token) (string, error) {
 
 	x, err := extractXFromClaims[string]("sub", token)
 
 	return *x, err
 }
 
-func (t *Cryptor) ParseToken(token string, secret string) (*jwt.Token, error) {
+func (c *Cryptor) ParseToken(token string, secret string) (*jwt.Token, error) {
 	return jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {

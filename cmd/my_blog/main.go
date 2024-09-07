@@ -16,6 +16,7 @@ import (
 	"github.com/DroidZed/my_blog/internal/auth"
 	"github.com/DroidZed/my_blog/internal/config"
 	"github.com/DroidZed/my_blog/internal/cryptor"
+	"github.com/DroidZed/my_blog/internal/forgotPwd"
 	"github.com/DroidZed/my_blog/internal/pigeon"
 	"github.com/DroidZed/my_blog/internal/setup"
 	"github.com/DroidZed/my_blog/internal/user"
@@ -56,9 +57,14 @@ func startService(ctx context.Context, mux *chi.Mux, logger *slog.Logger) (*setu
 
 	logger.Info("connected to ", slog.String("dbName", env.DBName))
 
-	userService := &user.Service{
+	userRepo := &user.UserRepo{
 		DbClient: dbClient,
 		DBName:   env.DBName,
+	}
+
+	userService := &user.Service{
+		UserRepo: userRepo,
+		Hasher:   cHelper,
 	}
 
 	authController := &auth.Controller{
@@ -70,17 +76,25 @@ func startService(ctx context.Context, mux *chi.Mux, logger *slog.Logger) (*setu
 		RefreshSecret: env.RefreshSecret,
 	}
 
+	userController := &user.Controller{
+		UserService: userService,
+		Logger:      logger,
+	}
 
+	forgotPwdController := &forgotPwd.Controller{
+		UserService: userService,
+		Pigeon:      pigeon,
+		Logger:      logger,
+	}
 
 	server := &setup.Server{
-		EnvConfig:     env,
-		DbClient:      dbClient,
-		Smtp:          pigeon,
-		Logger:        logger,
-		Authenticator: authController,
-		UserManager: &user.Controller{
-			UserService: userService,
-		},
+		EnvConfig:       env,
+		DbClient:        dbClient,
+		Smtp:            pigeon,
+		Logger:          logger,
+		Authenticator:   authController,
+		UserManager:     userController,
+		PasswordManager: forgotPwdController,
 	}
 
 	envPort := server.EnvConfig.Port
@@ -89,7 +103,7 @@ func startService(ctx context.Context, mux *chi.Mux, logger *slog.Logger) (*setu
 
 	server.MountHandlers(mux)
 
-	authController.InitOwner()
+	authController.InitOwner(ctx)
 
 	logger.Info("listening", slog.Int64("port", envPort))
 

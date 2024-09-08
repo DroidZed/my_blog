@@ -9,13 +9,11 @@ import (
 	"github.com/DroidZed/my_blog/internal/config"
 	"github.com/DroidZed/my_blog/internal/httpslog"
 	"github.com/DroidZed/my_blog/internal/jwtverify"
-	"github.com/DroidZed/my_blog/internal/pigeon"
 	"github.com/DroidZed/my_blog/internal/views"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	httpSwagger "github.com/swaggo/http-swagger"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type ServerDefinition interface {
@@ -46,9 +44,6 @@ type PasswordManager interface {
 
 type Server struct {
 	EnvConfig *config.EnvConfig
-	DbClient  *mongo.Client
-	Logger    *slog.Logger
-	Smtp      pigeon.Pigeon
 
 	Authenticator   Authenticator
 	UserManager     UserManager

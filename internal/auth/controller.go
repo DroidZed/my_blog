@@ -9,6 +9,7 @@ import (
 	"github.com/DroidZed/my_blog/internal/cryptor"
 	"github.com/DroidZed/my_blog/internal/user"
 	"github.com/DroidZed/my_blog/internal/utils"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -130,7 +131,7 @@ func (c *Controller) RefreshTheAccessToken(w http.ResponseWriter, r *http.Reques
 
 func (c *Controller) InitOwner(ctx context.Context) error {
 
-	user := &user.User{
+	u := &user.User{
 		ID:       primitive.NewObjectID(),
 		FullName: "Aymen DHAHRI",
 		Email:    c.MASTER_EMAIL,
@@ -138,7 +139,7 @@ func (c *Controller) InitOwner(ctx context.Context) error {
 		Photo:    "https://github.com/DroidZed.png",
 	}
 
-	found, err := c.UserService.FindUserByEmail(ctx, user.Email)
+	found, err := c.UserService.GetOne(ctx, bson.M{"email": u.Email}, nil)
 
 	if err != nil {
 		return err
@@ -148,7 +149,7 @@ func (c *Controller) InitOwner(ctx context.Context) error {
 		return nil
 	}
 
-	if err := c.UserService.SaveUser(ctx, user); err != nil {
+	if err := c.UserService.Add(ctx, u); err != nil {
 		return err
 	}
 
@@ -158,7 +159,7 @@ func (c *Controller) InitOwner(ctx context.Context) error {
 
 func (c *Controller) validateUser(ctx context.Context, login *LoginBody) (*user.User, error) {
 
-	data, err := c.UserService.FindUserByEmail(ctx, login.Email)
+	data, err := c.UserService.GetOne(ctx, bson.M{"email": login.Email}, nil)
 	if err != nil {
 		return nil, err
 	}

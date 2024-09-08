@@ -17,13 +17,18 @@ import (
 	"github.com/DroidZed/my_blog/internal/config"
 	"github.com/DroidZed/my_blog/internal/cryptor"
 	"github.com/DroidZed/my_blog/internal/forgotPwd"
+	"github.com/DroidZed/my_blog/internal/jwtverify"
 	"github.com/DroidZed/my_blog/internal/pigeon"
 	"github.com/DroidZed/my_blog/internal/setup"
 	"github.com/DroidZed/my_blog/internal/user"
 	"github.com/go-chi/chi/v5"
 )
 
-func startService(ctx context.Context, mux *chi.Mux, logger *slog.Logger) (*setup.Server, error) {
+func startService(
+	ctx context.Context,
+	mux *chi.Mux,
+	logger *slog.Logger,
+) (*setup.Server, error) {
 
 	env, err := config.LoadEnv()
 	if err != nil {
@@ -57,14 +62,11 @@ func startService(ctx context.Context, mux *chi.Mux, logger *slog.Logger) (*setu
 
 	logger.Info("connected to ", slog.String("dbName", env.DBName))
 
-	userRepo := &user.UserRepo{
-		DbClient: dbClient,
-		DBName:   env.DBName,
-	}
+	db := dbClient.Database(env.DBName)
 
 	userService := &user.Service{
-		UserRepo: userRepo,
-		Hasher:   cHelper,
+		Hasher: cHelper,
+		Db:     db,
 	}
 
 	authController := &auth.Controller{
@@ -76,25 +78,23 @@ func startService(ctx context.Context, mux *chi.Mux, logger *slog.Logger) (*setu
 		RefreshSecret: env.RefreshSecret,
 	}
 
-	userController := &user.Controller{
-		UserService: userService,
-		Logger:      logger,
-	}
-
-	forgotPwdController := &forgotPwd.Controller{
-		UserService: userService,
-		Pigeon:      pigeon,
-		Logger:      logger,
-	}
-
 	server := &setup.Server{
-		EnvConfig:       env,
-		DbClient:        dbClient,
-		Smtp:            pigeon,
-		Logger:          logger,
-		Authenticator:   authController,
-		UserManager:     userController,
-		PasswordManager: forgotPwdController,
+		Authenticator: authController,
+		UserManager: &user.Controller{
+			UserService: userService,
+			Logger:      logger,
+		},
+		PasswordManager: &forgotPwd.Controller{
+			UserService: userService,
+			Pigeon:      pigeon,
+			Logger:      logger,
+		},
+		AuthMiddleware: jwtverify.JwtVerify{
+			Logger:        logger,
+			CHelper:       cHelper,
+			AccessSecret:  env.AccessSecret,
+			RefreshSecret: env.RefreshSecret,
+		},
 	}
 
 	envPort := server.EnvConfig.Port

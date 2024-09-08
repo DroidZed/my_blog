@@ -2,7 +2,7 @@
 include .env
 
 run:
-	go run cmd/my_blog/main.go -o bin/my_blog
+	go run cmd/my_blog/main.go
 
 deps:
 	go mod tidy

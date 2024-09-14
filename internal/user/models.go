@@ -1,6 +1,7 @@
 package user
 
 import (
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -10,4 +11,9 @@ type User struct {
 	Email    string             `json:"email" bson:"email"`
 	Password string             `json:"-" bson:"password,omitempty"`
 	Photo    string             `json:"photo" bson:"photo,omitempty"`
+}
+
+type GetInput struct {
+	Filter     bson.M
+	Projection any
 }

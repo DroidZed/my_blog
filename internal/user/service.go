@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/DroidZed/my_blog/internal/cryptor"
 	"go.mongodb.org/mongo-driver/bson"
@@ -10,16 +11,12 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type GetInput struct {
-	filter     bson.M
-	projection any
-}
-
 type UserProvider interface {
 	Add(ctx context.Context, e *User) error
 	GetByIdProj(ctx context.Context, id string, proj interface{}) (*User, error)
 	GetById(ctx context.Context, id string) (*User, error)
 	GetOne(ctx context.Context, in GetInput) (*User, error)
+	Validate(ctx context.Context, email, password string) (*User, error)
 }
 
 type Service struct {
@@ -27,7 +24,7 @@ type Service struct {
 	db     *mongo.Database
 }
 
-func New(hasher cryptor.CryptoHelper, db *mongo.Database) *Service {
+func NewService(hasher cryptor.CryptoHelper, db *mongo.Database) *Service {
 	return &Service{
 		hasher: hasher,
 		db:     db,
@@ -67,8 +64,8 @@ func (s *Service) GetByIdProj(
 	return s.GetOne(
 		ctx,
 		GetInput{
-			filter: bson.M{"_id": objectId},
-			projection: &options.FindOneOptions{
+			Filter: bson.M{"_id": objectId},
+			Projection: &options.FindOneOptions{
 				Projection: projection,
 			},
 		})
@@ -81,7 +78,7 @@ func (s *Service) GetById(ctx context.Context, id string) (*User, error) {
 		return nil, err
 	}
 
-	return s.GetOne(ctx, GetInput{filter: bson.M{"_id": objectId}})
+	return s.GetOne(ctx, GetInput{Filter: bson.M{"_id": objectId}})
 }
 
 func (s *Service) GetOne(ctx context.Context, input GetInput) (*User, error) {
@@ -91,13 +88,35 @@ func (s *Service) GetOne(ctx context.Context, input GetInput) (*User, error) {
 	result := &User{}
 
 	if err := coll.FindOne(ctx,
-		input.filter,
+		input.Filter,
 		&options.FindOneOptions{
-			Projection: input.projection,
+			Projection: input.Projection,
 		},
 	).Decode(result); err != nil {
 		return nil, err
 	}
 
 	return result, nil
+}
+
+func (s *Service) Validate(ctx context.Context, email, password string) (*User, error) {
+
+	data, err := s.GetOne(
+		ctx,
+		GetInput{
+			Filter: bson.M{"email": email},
+		},
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	pwdIsValid := s.hasher.CompareSecureToPlain(data.Password, password)
+
+	if !pwdIsValid {
+		return nil, fmt.Errorf("invalid credentials")
+	}
+
+	return data, nil
 }

@@ -8,7 +8,6 @@ import (
 	_ "github.com/DroidZed/my_blog/docs"
 	"github.com/DroidZed/my_blog/internal/config"
 	"github.com/DroidZed/my_blog/internal/httpslog"
-	"github.com/DroidZed/my_blog/internal/jwtverify"
 	"github.com/DroidZed/my_blog/internal/views"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -19,7 +18,6 @@ import (
 type ServerDefinition interface {
 	ApplyMiddleWares()
 	MountHandlers()
-	InitOwner()
 }
 
 type Authenticator interface {
@@ -29,7 +27,6 @@ type Authenticator interface {
 
 type UserManager interface {
 	GetUserById(w http.ResponseWriter, r *http.Request)
-	UpdateUser(w http.ResponseWriter, r *http.Request)
 }
 
 type JwtMiddleware interface {
@@ -37,19 +34,27 @@ type JwtMiddleware interface {
 	RefreshVerify(next http.Handler) http.Handler
 }
 
-type PasswordManager interface {
-	DoSendMagicLink(w http.ResponseWriter, r *http.Request)
-	DoValidateMagicLink(w http.ResponseWriter, r *http.Request)
+type Server struct {
+	env *config.EnvConfig
+
+	authProvider Authenticator
+	userProvider UserManager
+
+	authMiddleware JwtMiddleware
 }
 
-type Server struct {
-	EnvConfig *config.EnvConfig
-
-	Authenticator   Authenticator
-	UserManager     UserManager
-	PasswordManager PasswordManager
-
-	AuthMiddleware jwtverify.JwtVerify
+func NewServer(
+	env *config.EnvConfig,
+	auth Authenticator,
+	userProvider UserManager,
+	authMiddleware JwtMiddleware,
+) *Server {
+	return &Server{
+		env:            env,
+		authProvider:   auth,
+		userProvider:   userProvider,
+		authMiddleware: authMiddleware,
+	}
 }
 
 func (s *Server) MountHandlers(r *chi.Mux) {
@@ -69,29 +74,23 @@ func (s *Server) MountHandlers(r *chi.Mux) {
 	r.Get("/api/swagger/*", httpSwagger.Handler(
 		httpSwagger.URL(
 			fmt.Sprintf("http://%s:%d/api/swagger/doc.json",
-				s.EnvConfig.Host,
-				s.EnvConfig.Port,
+				s.env.Host,
+				s.env.Port,
 			)),
 	))
 
 	// Auth
 	r.Route("/api/auth", func(r chi.Router) {
-
-		r.Post("/login", s.Authenticator.LoginReq)
-		r.With(s.AuthMiddleware.RefreshVerify).Group(func(r chi.Router) {
-			r.Post("/refresh-token", s.Authenticator.RefreshTheAccessToken)
-		})
-		r.Post("/auth/forgot-pwd", s.PasswordManager.DoSendMagicLink)
-		r.Get("/auth/forgot-pwd", func(w http.ResponseWriter, r *http.Request) {
-			views.ForgotPwd().Render(r.Context(), w)
+		r.Post("/login", s.authProvider.LoginReq)
+		r.With(s.authMiddleware.RefreshVerify).Group(func(r chi.Router) {
+			r.Post("/refresh-token", s.authProvider.RefreshTheAccessToken)
 		})
 	})
 
 	// User
 	r.Route("/api/user", func(r chi.Router) {
-		r.Use(s.AuthMiddleware.AccessVerify)
-		r.Put("/", s.UserManager.UpdateUser)
-		r.Get("/", s.UserManager.GetUserById)
+		r.Use(s.authMiddleware.AccessVerify)
+		r.Get("/", s.userProvider.GetUserById)
 	})
 }
 

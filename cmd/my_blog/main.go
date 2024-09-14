@@ -5,9 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"net"
 	"net/http"
-	"net/smtp"
 	"os"
 	"os/signal"
 	"syscall"
@@ -16,9 +14,7 @@ import (
 	"github.com/DroidZed/my_blog/internal/auth"
 	"github.com/DroidZed/my_blog/internal/config"
 	"github.com/DroidZed/my_blog/internal/cryptor"
-	"github.com/DroidZed/my_blog/internal/forgotPwd"
 	"github.com/DroidZed/my_blog/internal/jwtverify"
-	"github.com/DroidZed/my_blog/internal/pigeon"
 	"github.com/DroidZed/my_blog/internal/setup"
 	"github.com/DroidZed/my_blog/internal/user"
 	"github.com/go-chi/chi/v5"
@@ -27,87 +23,82 @@ import (
 func startService(
 	ctx context.Context,
 	mux *chi.Mux,
+	env *config.EnvConfig,
 	logger *slog.Logger,
-) (*setup.Server, error) {
+) error {
 
-	env, err := config.LoadEnv()
-	if err != nil {
-		return nil, err
-	}
+	// pigeon := pigeon.New(
+	// 	env.SmtpUsername,
+	// 	env.SmtpPassword,
+	// 	env.SmtpHost,
+	// 	env.SmtpPort,
+	// )
 
-	pigeon := pigeon.Pigeon{
-		Auth: smtp.PlainAuth(
-			"pigeon",
-			env.SmtpUsername,
-			env.SmtpPassword,
-			env.SmtpHost,
-		),
-		From: env.SmtpUsername,
-		Addr: net.JoinHostPort(env.SmtpHost, env.SmtpPort),
-	}
-
-	cHelper := &cryptor.Cryptor{
-		AccessExpiry:  env.AccessExpiry,
-		AccessSecret:  env.AccessSecret,
-		RefreshExpiry: env.RefreshExpiry,
-		RefreshSecret: env.RefreshSecret,
-	}
+	cHelper := cryptor.New(
+		env.AccessExpiry,
+		env.AccessSecret,
+		env.RefreshExpiry,
+		env.RefreshSecret,
+	)
 
 	logger.Info("opening a database connection...")
 
 	dbClient, err := config.GetConnection(ctx, env)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	logger.Info("connected to ", slog.String("dbName", env.DBName))
 
 	db := dbClient.Database(env.DBName)
 
-	userService := &user.Service{
-		Hasher: cHelper,
-		Db:     db,
-	}
+	// Services
+	userService := user.NewService(cHelper, db)
+	authService := auth.NewService(
+		userService,
+		env.RefreshSecret,
+		cHelper,
+		logger,
+		env.MASTER_EMAIL,
+		env.MASTER_PWD,
+	)
 
-	authController := &auth.Controller{
-		UserService:   userService,
-		Logger:        logger,
-		CHelper:       cHelper,
-		MASTER_EMAIL:  env.MASTER_EMAIL,
-		MASTER_PWD:    env.MASTER_PWD,
-		RefreshSecret: env.RefreshSecret,
-	}
+	// Controllers
+	userController := user.NewController(userService, logger)
+	authController := auth.NewController(
+		authService,
+		logger,
+		cHelper,
+	)
 
-	server := &setup.Server{
-		Authenticator: authController,
-		UserManager: &user.Controller{
-			UserService: userService,
-			Logger:      logger,
-		},
-		PasswordManager: &forgotPwd.Controller{
-			UserService: userService,
-			Pigeon:      pigeon,
-			Logger:      logger,
-		},
-		AuthMiddleware: jwtverify.JwtVerify{
-			Logger:        logger,
-			CHelper:       cHelper,
-			AccessSecret:  env.AccessSecret,
-			RefreshSecret: env.RefreshSecret,
-		},
-	}
+	// Middlewares
+	jwtVerif := jwtverify.New(
+		env.AccessSecret,
+		env.RefreshSecret,
+		logger,
+		cHelper,
+	)
 
-	envPort := server.EnvConfig.Port
+	// Server setup
+	server := setup.NewServer(
+		env,
+		authController,
+		userController,
+		jwtVerif,
+	)
 
+	// Mux setup
 	server.ApplyMiddleWares(mux)
 
 	server.MountHandlers(mux)
 
-	authController.InitOwner(ctx)
+	if err := authService.CreateOwnerAccount(ctx); err != nil {
+		return err
+	}
 
-	logger.Info("listening", slog.Int64("port", envPort))
+	logger.Info("listening", slog.Int64("port", env.Port))
 
-	return server, nil
+	return nil
 }
 
 // Entry point, setting up chi and graceful shutdown <3
@@ -136,20 +127,26 @@ func run() int {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
-	mux := chi.NewRouter()
-
 	logHandler := slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{})
 
 	l := slog.New(logHandler)
 
-	app, err := startService(ctx, mux, l)
+	env, err := config.LoadEnv()
 	if err != nil {
-		l.Error("error with server startup", slog.String("err", err.Error()))
+		l.Error("reading from env", slog.String("err", err.Error()))
+		return -1
+	}
+
+	mux := chi.NewRouter()
+
+	err = startService(ctx, mux, env, l)
+	if err != nil {
+		l.Error("server setup", slog.String("err", err.Error()))
 		return -1
 	}
 
 	server := &http.Server{
-		Addr:     fmt.Sprintf(":%d", app.EnvConfig.Port),
+		Addr:     fmt.Sprintf(":%d", env.Port),
 		Handler:  mux,
 		ErrorLog: slog.NewLogLogger(l.Handler(), slog.LevelError),
 	}
@@ -171,7 +168,7 @@ func run() int {
 
 	err = server.Shutdown(shutdownCtx)
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
-		l.Error("something went wrong during shutdown",
+		l.Error("shutdown",
 			slog.Any("error", err),
 		)
 

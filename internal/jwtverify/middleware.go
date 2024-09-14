@@ -16,10 +16,24 @@ import (
 type AuthCtxKey struct{}
 
 type JwtVerify struct {
-	AccessSecret  string
-	RefreshSecret string
-	Logger        *slog.Logger
-	CHelper       cryptor.CryptoHelper
+	accessKey  string
+	refreshKey string
+	logger     *slog.Logger
+	hasher     cryptor.CryptoHelper
+}
+
+func New(
+	accessKey string,
+	refreshKey string,
+	logger *slog.Logger,
+	hasher cryptor.CryptoHelper,
+) *JwtVerify {
+	return &JwtVerify{
+		accessKey:  accessKey,
+		refreshKey: refreshKey,
+		logger:     logger,
+		hasher:     hasher,
+	}
 }
 
 func (j JwtVerify) AccessVerify(next http.Handler) http.Handler {
@@ -28,7 +42,7 @@ func (j JwtVerify) AccessVerify(next http.Handler) http.Handler {
 		tokenFromHeader, err := retrieveTokenFromHeader(r)
 
 		if err != nil {
-			j.Logger.Error("header corrupted", slog.String("err", err.Error()))
+			j.logger.Error("header corrupted", slog.String("err", err.Error()))
 			utils.JsonResponse(w,
 				http.StatusUnauthorized,
 				utils.DtoResponse{Error: "Invalid token."},
@@ -38,13 +52,13 @@ func (j JwtVerify) AccessVerify(next http.Handler) http.Handler {
 
 		token, err := validateToken(
 			tokenFromHeader,
-			j.AccessSecret,
-			j.CHelper.ParseToken,
-			j.CHelper.ExtractExpiryFromClaims,
+			j.accessKey,
+			j.hasher.ParseToken,
+			j.hasher.ExtractExpiryFromClaims,
 		)
 
 		if err != nil {
-			j.Logger.Error("invalid token", slog.String("err", err.Error()))
+			j.logger.Error("invalid token", slog.String("err", err.Error()))
 			utils.JsonResponse(w,
 				http.StatusUnauthorized,
 				utils.DtoResponse{Error: "Invalid token."},
@@ -52,9 +66,9 @@ func (j JwtVerify) AccessVerify(next http.Handler) http.Handler {
 			return
 		}
 
-		userId, err := j.CHelper.ExtractSubFromClaims(token)
+		userId, err := j.hasher.ExtractSubFromClaims(token)
 		if err != nil {
-			j.Logger.Error("corrupted sub", slog.String("err", err.Error()))
+			j.logger.Error("corrupted sub", slog.String("err", err.Error()))
 			utils.JsonResponse(w,
 				http.StatusUnauthorized,
 				utils.DtoResponse{Error: "Invalid token."},
@@ -75,7 +89,7 @@ func (j JwtVerify) RefreshVerify(next http.Handler) http.Handler {
 		tokenFromHeader, err := retrieveTokenFromHeader(r)
 
 		if err != nil {
-			j.Logger.Error("header corrupted", slog.String("err", err.Error()))
+			j.logger.Error("header corrupted", slog.String("err", err.Error()))
 			utils.JsonResponse(w,
 				http.StatusUnauthorized,
 				utils.DtoResponse{Error: "Invalid token."},
@@ -85,9 +99,9 @@ func (j JwtVerify) RefreshVerify(next http.Handler) http.Handler {
 
 		_, err = validateToken(
 			tokenFromHeader,
-			j.RefreshSecret,
-			j.CHelper.ParseToken,
-			j.CHelper.ExtractExpiryFromClaims,
+			j.refreshKey,
+			j.hasher.ParseToken,
+			j.hasher.ExtractExpiryFromClaims,
 		)
 
 		if err != nil {

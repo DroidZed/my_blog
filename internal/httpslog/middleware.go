@@ -11,6 +11,8 @@ func New(l *slog.Logger) func(next http.Handler) http.Handler {
 			l.Info("incoming request ",
 				slog.String("remoteAddr", r.RemoteAddr),
 			)
+			next.ServeHTTP(w, r)
+
 		})
 	}
 }

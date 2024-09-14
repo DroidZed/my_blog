@@ -21,10 +21,24 @@ type CryptoHelper interface {
 }
 
 type Cryptor struct {
-	AccessExpiry  string
-	AccessSecret  string
-	RefreshExpiry string
-	RefreshSecret string
+	accessExp  string
+	accessKey  string
+	refreshExp string
+	refreshKey string
+}
+
+func New(
+	accessExp string,
+	accessKey string,
+	refreshExp string,
+	refreshKey string,
+) Cryptor {
+	return Cryptor{
+		accessExp:  accessExp,
+		accessKey:  accessKey,
+		refreshExp: refreshExp,
+		refreshKey: refreshKey,
+	}
 }
 
 func (c Cryptor) HashPlain(txt string) (string, error) {
@@ -46,16 +60,16 @@ func (c Cryptor) CompareSecureToPlain(secure string, plain string) bool {
 	return bcrypt.CompareHashAndPassword(secBytes, plainBytes) == nil
 }
 
-func (c *Cryptor) GenerateAccessToken(sub string) (string, error) {
+func (c Cryptor) GenerateAccessToken(sub string) (string, error) {
 
-	daysToAdd, _ := strconv.ParseInt(c.AccessExpiry, 10, 64)
+	daysToAdd, _ := strconv.ParseInt(c.accessExp, 10, 64)
 
 	exp := getExpiration(daysToAdd)
 
 	tokenString, err := createToken(
 		exp,
 		sub,
-		c.AccessSecret,
+		c.accessKey,
 	)
 	if err != nil {
 		return "", err
@@ -64,16 +78,16 @@ func (c *Cryptor) GenerateAccessToken(sub string) (string, error) {
 	return tokenString, nil
 }
 
-func (c *Cryptor) GenerateRefreshToken() (string, error) {
+func (c Cryptor) GenerateRefreshToken() (string, error) {
 
-	daysToAdd, _ := strconv.ParseInt(c.RefreshExpiry, 10, 64)
+	daysToAdd, _ := strconv.ParseInt(c.refreshExp, 10, 64)
 
 	exp := getExpiration(daysToAdd)
 
 	tokenString, err := createToken(
 		exp,
 		utils.GenUUID(),
-		c.RefreshSecret,
+		c.refreshKey,
 	)
 	if err != nil {
 		return "", err
@@ -82,21 +96,21 @@ func (c *Cryptor) GenerateRefreshToken() (string, error) {
 	return tokenString, nil
 }
 
-func (c *Cryptor) ExtractExpiryFromClaims(token *jwt.Token) (int64, error) {
+func (c Cryptor) ExtractExpiryFromClaims(token *jwt.Token) (int64, error) {
 
 	x, err := extractXFromClaims[int64]("exp", token)
 
 	return *x, err
 }
 
-func (c *Cryptor) ExtractSubFromClaims(token *jwt.Token) (string, error) {
+func (c Cryptor) ExtractSubFromClaims(token *jwt.Token) (string, error) {
 
 	x, err := extractXFromClaims[string]("sub", token)
 
 	return *x, err
 }
 
-func (c *Cryptor) ParseToken(token string, secret string) (*jwt.Token, error) {
+func (c Cryptor) ParseToken(token string, secret string) (*jwt.Token, error) {
 	return jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {

@@ -2,6 +2,7 @@ package pigeon
 
 import (
 	"fmt"
+	"net"
 	"net/smtp"
 )
 
@@ -15,9 +16,27 @@ type SMTPRequest struct {
 }
 
 type Pigeon struct {
-	Auth smtp.Auth
-	From string
-	Addr string
+	smtpAuth smtp.Auth
+	from     string
+	addr     string
+}
+
+func New(
+	smtpUsername,
+	smtpPwd,
+	smtpHost,
+	smtpPort string,
+) *Pigeon {
+	return &Pigeon{
+		smtpAuth: smtp.PlainAuth(
+			"pigeon",
+			smtpUsername,
+			smtpPwd,
+			smtpHost,
+		),
+		from: smtpUsername,
+		addr: net.JoinHostPort(smtpHost, smtpPort),
+	}
 }
 
 func (p Pigeon) NewRequest(to []string, subject, body string) *SMTPRequest {
@@ -26,7 +45,7 @@ func (p Pigeon) NewRequest(to []string, subject, body string) *SMTPRequest {
 		to:      to,
 		subject: fmt.Sprintf("Subject: %s", subject),
 		body:    body,
-		from:    p.From,
+		from:    p.from,
 	}
 }
 
@@ -36,7 +55,7 @@ func (r *SMTPRequest) SendEmail() error {
 
 	msg := []byte(fmt.Sprintf("%s\n", r.subject) + mime + r.body)
 
-	if err := smtp.SendMail(r.pigeon.Addr, r.pigeon.Auth, r.from, r.to, msg); err != nil {
+	if err := smtp.SendMail(r.pigeon.addr, r.pigeon.smtpAuth, r.from, r.to, msg); err != nil {
 		return err
 	}
 	return nil

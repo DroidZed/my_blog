@@ -10,16 +10,25 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
+
+
 type Controller struct {
-	srv    UserProvider
+	service    UserProvider
 	logger *slog.Logger
 }
 
-func (c *Controller) GetUserById(w http.ResponseWriter, r *http.Request) {
+func NewController(up UserProvider, l *slog.Logger) Controller {
+	return Controller{
+		service:    up,
+		logger: l,
+	}
+}
+
+func (c Controller) GetUserById(w http.ResponseWriter, r *http.Request) {
 
 	id := r.Context().Value(jwtverify.AuthCtxKey{}).(string)
 
-	user, err := c.srv.GetByIdProj(
+	user, err := c.service.GetByIdProj(
 		r.Context(),
 		id,
 		bson.D{{Key: "password", Value: 0}},
@@ -33,4 +42,3 @@ func (c *Controller) GetUserById(w http.ResponseWriter, r *http.Request) {
 
 	utils.JsonResponse(w, http.StatusOK, user)
 }
-

@@ -11,36 +11,23 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type UserProvider interface {
-	Add(ctx context.Context, e *User) error
-	GetByIdProj(ctx context.Context, id string, proj interface{}) (*User, error)
-	GetById(ctx context.Context, id string) (*User, error)
-	GetOne(ctx context.Context, in GetInput) (*User, error)
-	Validate(ctx context.Context, email, password string) (*User, error)
-}
-
 type Service struct {
 	hasher cryptor.CryptoHelper
-	db     *mongo.Database
+	client *mongo.Client
+	dbName string
 }
 
-func NewService(hasher cryptor.CryptoHelper, db *mongo.Database) *Service {
+func NewService(hasher cryptor.CryptoHelper, db *mongo.Client, dbName string) *Service {
 	return &Service{
 		hasher: hasher,
-		db:     db,
+		client: db,
+		dbName: dbName,
 	}
 }
 
-func (s *Service) Add(ctx context.Context, entity *User) error {
+func (s *Service) Add(ctx context.Context, entity User) error {
 
-	modified, err := s.hasher.HashPlain(entity.Password)
-	if err != nil {
-		return err
-	}
-
-	entity.Password = modified
-
-	coll := s.db.Collection("users")
+	coll := s.client.Database(s.dbName).Collection("users")
 
 	_, insertErr := coll.InsertOne(ctx, entity)
 	if insertErr != nil {
@@ -83,7 +70,7 @@ func (s *Service) GetById(ctx context.Context, id string) (*User, error) {
 
 func (s *Service) GetOne(ctx context.Context, input GetInput) (*User, error) {
 
-	coll := s.db.Collection("users")
+	coll := s.client.Database(s.dbName).Collection("users")
 
 	result := &User{}
 

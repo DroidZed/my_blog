@@ -1,12 +1,19 @@
 package auth
 
 import (
+	"context"
 	"log/slog"
 	"net/http"
 
 	"github.com/DroidZed/my_blog/internal/cryptor"
 	"github.com/DroidZed/my_blog/internal/utils"
 )
+
+type AuthService interface {
+	GenerateNewTokens(expiredToken string) (string, string, error)
+	CreateLoginResponse(ctx context.Context, body LoginBody) (LoginResponse, error)
+	CreateOwnerAccount(ctx context.Context) error
+}
 
 type Controller struct {
 	authSrv AuthService
@@ -20,9 +27,9 @@ func NewController(
 	hasher cryptor.CryptoHelper,
 ) *Controller {
 	return &Controller{
-		authSrv:    authSrv,
-		logger:     logger,
-		hasher:     hasher,
+		authSrv: authSrv,
+		logger:  logger,
+		hasher:  hasher,
 	}
 }
 

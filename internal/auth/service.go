@@ -10,13 +10,16 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type AuthService interface {
-	GenerateNewTokens(expiredToken string) (string, string, error)
-	CreateLoginResponse(ctx context.Context, body LoginBody) (LoginResponse, error)
+type userProvider interface {
+	Add(ctx context.Context, u user.User) error
+	GetByIdProj(ctx context.Context, id string, proj interface{}) (*user.User, error)
+	GetById(ctx context.Context, id string) (*user.User, error)
+	GetOne(ctx context.Context, in user.GetInput) (*user.User, error)
+	Validate(ctx context.Context, email, password string) (*user.User, error)
 }
 
 type Service struct {
-	userSrv    user.UserProvider
+	userSrv    userProvider
 	refreshKey string
 	hasher     cryptor.CryptoHelper
 	logger     *slog.Logger
@@ -26,7 +29,7 @@ type Service struct {
 }
 
 func NewService(
-	userSrv user.UserProvider,
+	userSrv userProvider,
 	refreshKey string,
 	hasher cryptor.CryptoHelper,
 	logger *slog.Logger,
@@ -34,10 +37,11 @@ func NewService(
 	password string,
 ) *Service {
 	return &Service{
-		userSrv:      userSrv,
-		refreshKey:   refreshKey,
-		hasher:       hasher,
-		logger:       logger,
+		userSrv:    userSrv,
+		refreshKey: refreshKey,
+		hasher:     hasher,
+		logger:     logger,
+
 		contactEmail: contactEmail,
 		password:     password,
 	}
@@ -97,29 +101,37 @@ func (s Service) CreateLoginResponse(ctx context.Context, body LoginBody) (Login
 }
 
 func (s Service) CreateOwnerAccount(ctx context.Context) error {
-	u := &user.User{
+
+	// Hash the password before proceeding
+	modified, err := s.hasher.HashPlain(s.password)
+	if err != nil {
+		return err
+	}
+
+	u := user.User{
 		ID:       primitive.NewObjectID(),
 		FullName: "Aymen DHAHRI",
 		Email:    s.contactEmail,
-		Password: s.password,
+		Password: modified,
 		Photo:    "https://github.com/DroidZed.png",
 	}
 
-	found, err := s.userSrv.GetOne(
+	s.logger.Debug("body", slog.Any("here", u))
+
+	// GetOne when no doc fount: return back an err indicating no doc found
+	found, _ := s.userSrv.GetOne(
 		ctx,
 		user.GetInput{
 			Filter: bson.M{"email": u.Email},
 		},
 	)
 
-	if err != nil {
-		return err
-	}
-
+	// if the doc has been found, ignore and return
 	if found != nil {
 		return nil
 	}
 
+	// Else we insert the user on an empty collection
 	if err := s.userSrv.Add(ctx, u); err != nil {
 		return err
 	}

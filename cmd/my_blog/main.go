@@ -15,6 +15,7 @@ import (
 	"github.com/DroidZed/my_blog/internal/config"
 	"github.com/DroidZed/my_blog/internal/cryptor"
 	"github.com/DroidZed/my_blog/internal/jwtverify"
+	"github.com/DroidZed/my_blog/internal/prettyslogger"
 	"github.com/DroidZed/my_blog/internal/setup"
 	"github.com/DroidZed/my_blog/internal/user"
 	"github.com/go-chi/chi/v5"
@@ -48,12 +49,10 @@ func startService(
 		return err
 	}
 
-	logger.Info("connected to ", slog.String("dbName", env.DBName))
-
-	db := dbClient.Database(env.DBName)
+	logger.Info("connected to", slog.String("dbName", env.DBName))
 
 	// Services
-	userService := user.NewService(cHelper, db)
+	userService := user.NewService(cHelper, dbClient, env.DBName)
 	authService := auth.NewService(
 		userService,
 		env.RefreshSecret,
@@ -127,9 +126,7 @@ func run() int {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
-	logHandler := slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{})
-
-	l := slog.New(logHandler)
+	l := slog.New(prettyslogger.NewHandler(nil))
 
 	env, err := config.LoadEnv()
 	if err != nil {

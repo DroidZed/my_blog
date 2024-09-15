@@ -1,6 +1,7 @@
 package user
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -11,16 +12,23 @@ import (
 )
 
 
+type UserProvider interface {
+	Add(ctx context.Context, u User) error
+	GetByIdProj(ctx context.Context, id string, proj interface{}) (*User, error)
+	GetById(ctx context.Context, id string) (*User, error)
+	GetOne(ctx context.Context, in GetInput) (*User, error)
+	Validate(ctx context.Context, email, password string) (*User, error)
+}
 
 type Controller struct {
-	service    UserProvider
-	logger *slog.Logger
+	service UserProvider
+	logger  *slog.Logger
 }
 
 func NewController(up UserProvider, l *slog.Logger) Controller {
 	return Controller{
-		service:    up,
-		logger: l,
+		service: up,
+		logger:  l,
 	}
 }
 

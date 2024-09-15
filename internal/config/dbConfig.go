@@ -8,9 +8,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func GetConnection(baseCtx context.Context, env *EnvConfig) (*mongo.Client, error) {
+func GetConnection(ctx context.Context, env *EnvConfig) (*mongo.Client, error) {
 
-	ctx, cancel := context.WithTimeout(baseCtx, 1*time.Minute)
+	ctx, cancel := context.WithTimeout(ctx, 1*time.Minute)
 	defer cancel()
 
 	clientOptions := options.

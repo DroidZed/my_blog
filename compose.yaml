@@ -1,0 +1,49 @@
+version: "3.8"
+services:
+  blog_api:
+    build:
+      context: .
+      target: final
+    image: droidzed/blog:${IMAGE_TAG}
+    container_name: blog-api
+    environment:
+      - DB_URI=${DB_URI}
+      - PORT=${PORT}
+      - DB_NAME=${DB_NAME}
+      - ACCESS_SECRET=${ACCESS_SECRET}
+      - ACCESS_EXPIRY=${ACCESS_EXPIRY}
+      - REFRESH_SECRET=${REFRESH_SECRET}
+      - REFRESH_EXPIRY=${REFRESH_EXPIRY}
+    ports:
+      - "${PORT}:${PORT}"
+    networks:
+      - blogNetwork
+    depends_on:
+      blog_db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "http://localhost:8000/health"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+  blog_db:
+    image: mongo
+    container_name: blog-db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", \"db.runCommand('ping').ok\" --quiet"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+    ports:
+      - "27012:27017"
+    networks:
+      - blogNetwork
+    volumes:
+      - database:/var/lib/mongo/data
+volumes:
+  database:
+networks:
+  blogNetwork:
+    driver: bridge

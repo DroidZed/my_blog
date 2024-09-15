@@ -1,111 +1,52 @@
 package user
 
-// CRUD: user
-
 import (
-	"encoding/json"
+	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 
-	"github.com/DroidZed/go_lance/internal/config"
-	"github.com/DroidZed/go_lance/internal/utils"
-	"github.com/ggicci/httpin"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"github.com/DroidZed/my_blog/internal/jwtverify"
+	"github.com/DroidZed/my_blog/internal/utils"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
-type UserController interface {
-	GetAllUsers(w http.ResponseWriter, _ *http.Request)
-	GetUserById(w http.ResponseWriter, _ *http.Request)
-	DeleteUserById(w http.ResponseWriter, r *http.Request)
-	UpdateUserById(w http.ResponseWriter, r *http.Request)
-	CreateUser(w http.ResponseWriter, r *http.Request)
+
+type UserProvider interface {
+	Add(ctx context.Context, u User) error
+	GetByIdProj(ctx context.Context, id string, proj interface{}) (*User, error)
+	GetById(ctx context.Context, id string) (*User, error)
+	GetOne(ctx context.Context, in GetInput) (*User, error)
+	Validate(ctx context.Context, email, password string) (*User, error)
 }
 
-func CreateUser(w http.ResponseWriter, r *http.Request) {
-
-	log := config.InitializeLogger().LogHandler
-
-	user := &User{ID: primitive.NewObjectID()}
-
-	if err := json.NewDecoder(r.Body).Decode(user); err != nil {
-		log.Fatal(err)
-	}
-
-	userId, err := SaveOne(user)
-	if err != nil {
-		utils.JsonResponse(w, http.StatusBadRequest, utils.DtoResponse{Error: fmt.Sprintf("Error creating the user!\n%s", err.Error())})
-		return
-	}
-
-	utils.JsonResponse(w, http.StatusCreated, userId)
-
+type Controller struct {
+	service UserProvider
+	logger  *slog.Logger
 }
 
-func GetAllUsers(w http.ResponseWriter, _ *http.Request) {
-
-	log := config.InitializeLogger().LogHandler
-
-	users, err := FindAllUsers()
-
-	if err != nil {
-		log.Error(err)
-		utils.JsonResponse(w, http.StatusOK, []User{})
-		return
+func NewController(up UserProvider, l *slog.Logger) Controller {
+	return Controller{
+		service: up,
+		logger:  l,
 	}
-
-	utils.JsonResponse(w, http.StatusOK, users)
 }
 
-func GetUserById(w http.ResponseWriter, r *http.Request) {
+func (c Controller) GetUserById(w http.ResponseWriter, r *http.Request) {
 
-	id := r.Context().Value(httpin.Input).(*utils.UserIdPath).UserId
+	id := r.Context().Value(jwtverify.AuthCtxKey{}).(string)
 
-	log := config.InitializeLogger().LogHandler
-
-	log.Infof("id: %s", id)
-
-	user, err := FindUserByID(id)
+	user, err := c.service.GetByIdProj(
+		r.Context(),
+		id,
+		bson.D{{Key: "password", Value: 0}},
+	)
 
 	if err != nil {
-		log.Error(err)
+		c.logger.Error("failed to find user", slog.String("err", err.Error()))
 		utils.JsonResponse(w, http.StatusNotFound, utils.DtoResponse{Error: fmt.Sprintf("User with id %s could not be found.", id)})
 		return
 	}
 
 	utils.JsonResponse(w, http.StatusOK, user)
-}
-
-func DeleteUserById(w http.ResponseWriter, r *http.Request) {
-	id := r.Context().Value(httpin.Input).(*utils.UserIdPath).UserId
-
-	result := DeleteOne(id)
-
-	if !result {
-		utils.JsonResponse(w, http.StatusNotFound, utils.DtoResponse{Error: fmt.Sprintf("User with id %s could not be found.", id)})
-		return
-	}
-
-	utils.JsonResponse(w, http.StatusOK, utils.DtoResponse{Message: fmt.Sprintf("User with id: %s has been deleted successfully!", id)})
-}
-
-func UpdateUser(w http.ResponseWriter, r *http.Request) {
-
-	log := config.InitializeLogger().LogHandler
-
-	user := &User{}
-
-	if err := json.NewDecoder(r.Body).Decode(user); err != nil {
-		utils.JsonResponse(w, http.StatusBadRequest, utils.DtoResponse{Error: "Invalid JSON payload"})
-		return
-	}
-
-	log.Debug(*user)
-
-	err := UpdateOneUser(*user)
-	if err != nil {
-		utils.JsonResponse(w, http.StatusNotFound, utils.DtoResponse{Error: fmt.Sprintf("Invalid update!\n %s", err.Error())})
-		return
-	}
-
-	utils.JsonResponse(w, http.StatusOK, utils.DtoResponse{Message: "Success !!"})
 }

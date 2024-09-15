@@ -1,0 +1,18 @@
+meta {
+  name: login
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://127.0.0.1:8000/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+      "email": "aymen.dhahri@isticbc.org",
+      "password": "AymenGam3r7!!"
+  }
+}

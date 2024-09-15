@@ -1,9 +1,45 @@
 {
-    "cSpell.words": [
-        "bson",
-        "ggicci",
-        "httpin",
-        "httplog",
-        "Upsert"
-    ]
+  "cSpell.words": [
+    "bson",
+    "cryptor",
+    "Debugf",
+    "devcontainer",
+    "ggicci",
+    "Gochi",
+    "godotenv",
+    "golance",
+    "httplog",
+    "httpslog",
+    "Infof",
+    "jwtauth",
+    "nums",
+    "prettyslogger",
+    "signup",
+    "swaggo",
+    "tailwindcss",
+    "templ",
+    "tmpl",
+    "Tokenor",
+    "Upsert",
+    "Vars",
+    "withmandala"
+  ],
+  "editor.formatOnSave": true,
+  "[javascript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "editor.quickSuggestions": {
+    "strings": true
+  },
+  "[templ]": {
+    "editor.defaultFormatter": "a-h.templ"
+  },
+  "tailwindCSS.includeLanguages": {
+    "templ": "html"
+  },
+  "emmet.includeLanguages": {
+    "templ": "html"
+  },
+  "editor.formatOnSaveMode": "modifications",
+  "files.autoSave": "afterDelay"
 }

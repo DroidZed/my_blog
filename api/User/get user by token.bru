@@ -1,0 +1,15 @@
+meta {
+  name: get user by token
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://127.0.0.1:8000/api/user
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjU2MzY1MjksImlhdCI6MTcyNTExODEyOSwic3ViIjoiNjZiYTc3MzA3MzVkODg3MmExY2ExZGMzIn0.dTPYHD1rnf9z8ok31NogZKLxqpt8FwGYkG5VdPpVXlc
+}

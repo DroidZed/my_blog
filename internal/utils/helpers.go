@@ -2,20 +2,15 @@ package utils
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
-	"strings"
 
-	"github.com/DroidZed/go_lance/internal/config"
-	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 )
 
 type DtoResponse struct {
-	Message string `json:"message"`
-	Error   string `json:"error"`
+	Message string `json:"message,omitempty"`
+	Error   string `json:"error,omitempty"`
 }
-
-func SetupHostWithPort(host string, port int64) string { return fmt.Sprintf("%s:%d", host, port) }
 
 func JsonResponse(w http.ResponseWriter, code int, payload interface{}) {
 	response, _ := json.Marshal(payload)
@@ -27,17 +22,23 @@ func JsonResponse(w http.ResponseWriter, code int, payload interface{}) {
 	}
 }
 
-func LogAllRoutes(r chi.Routes) {
+func GenUUID() string {
 
-	log := config.InitializeLogger().LogHandler
+	code, err := uuid.NewRandom()
 
-	walkFunc := func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
-		route = strings.Replace(route, "/*/", "/", -1)
-		log.Debugf("%s %s\n", method, route)
-		return nil
+	if err != nil {
+		panic(err)
 	}
 
-	if err := chi.Walk(r, walkFunc); err != nil {
-		log.Errorf("Logging err: %s\n", err.Error())
+	return code.String()
+}
+
+/*
+Decode the body to the appropriate format, infers type from usage.
+*/
+func DecodeBody[T interface{}](r *http.Request, out *T) error {
+	if err := json.NewDecoder(r.Body).Decode(out); err != nil {
+		return err
 	}
+	return nil
 }

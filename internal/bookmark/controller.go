@@ -1,3 +1,0 @@
-package bookmark
-
-// CRUD bookmark

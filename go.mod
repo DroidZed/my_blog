@@ -9,6 +9,8 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.0
 	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
+	github.com/lmittmann/tint v1.0.5
+	github.com/mattn/go-isatty v0.0.20
 	github.com/stretchr/testify v1.8.4
 	github.com/swaggo/http-swagger v1.3.4
 	github.com/swaggo/swag v1.16.3
@@ -37,6 +39,7 @@ require (
 	github.com/youmark/pkcs8 v0.0.0-20201027041543-1326539a0a0a // indirect
 	golang.org/x/net v0.28.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
+	golang.org/x/sys v0.23.0 // indirect
 	golang.org/x/text v0.17.0 // indirect
 	golang.org/x/tools v0.24.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

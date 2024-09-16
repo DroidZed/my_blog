@@ -3,7 +3,9 @@ package setup
 import (
 	"fmt"
 	"log/slog"
+	"net"
 	"net/http"
+	"strconv"
 
 	_ "github.com/DroidZed/my_blog/docs"
 	"github.com/DroidZed/my_blog/internal/config"
@@ -35,7 +37,8 @@ type JwtMiddleware interface {
 }
 
 type Server struct {
-	env *config.EnvConfig
+	env    *config.EnvConfig
+	logger *slog.Logger
 
 	authProvider Authenticator
 	userProvider UserManager
@@ -46,12 +49,14 @@ type Server struct {
 func NewServer(
 	env *config.EnvConfig,
 	auth Authenticator,
+	logger *slog.Logger,
 	userProvider UserManager,
 	authMiddleware JwtMiddleware,
 ) *Server {
 	return &Server{
 		env:            env,
 		authProvider:   auth,
+		logger:         logger,
 		userProvider:   userProvider,
 		authMiddleware: authMiddleware,
 	}
@@ -73,9 +78,11 @@ func (s *Server) MountHandlers(r *chi.Mux) {
 
 	r.Get("/api/swagger/*", httpSwagger.Handler(
 		httpSwagger.URL(
-			fmt.Sprintf("http://%s:%d/api/swagger/doc.json",
-				s.env.Host,
-				s.env.Port,
+			fmt.Sprintf("http://%s/api/swagger/doc.json",
+				net.JoinHostPort(
+					s.env.Host,
+					strconv.FormatInt(s.env.Port, 10),
+				),
 			)),
 	))
 
@@ -103,8 +110,7 @@ func (s *Server) ApplyMiddleWares(r *chi.Mux) {
 
 	r.Use(middleware.CleanPath)
 
-	// r.Use(httplog.LoggerWithName("GoLance-Log"))
-	r.Use(httpslog.New(slog.Default()))
+	r.Use(httpslog.New(s.logger))
 
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"https://*", "http://*"},

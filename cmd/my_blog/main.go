@@ -15,10 +15,11 @@ import (
 	"github.com/DroidZed/my_blog/internal/config"
 	"github.com/DroidZed/my_blog/internal/cryptor"
 	"github.com/DroidZed/my_blog/internal/jwtverify"
-	"github.com/DroidZed/my_blog/internal/prettyslogger"
 	"github.com/DroidZed/my_blog/internal/setup"
 	"github.com/DroidZed/my_blog/internal/user"
 	"github.com/go-chi/chi/v5"
+	"github.com/lmittmann/tint"
+	"github.com/mattn/go-isatty"
 )
 
 func startService(
@@ -82,6 +83,7 @@ func startService(
 	server := setup.NewServer(
 		env,
 		authController,
+		logger,
 		userController,
 		jwtVerif,
 	)
@@ -95,7 +97,7 @@ func startService(
 		return err
 	}
 
-	logger.Info("listening", slog.Int64("port", env.Port))
+	logger.Info("listening on", slog.Int64("port", env.Port))
 
 	return nil
 }
@@ -126,7 +128,14 @@ func run() int {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
-	l := slog.New(prettyslogger.NewHandler(nil))
+	w := os.Stderr
+
+	l := slog.New(
+		tint.NewHandler(w, &tint.Options{
+			TimeFormat: time.Kitchen,
+			NoColor:    !isatty.IsTerminal(w.Fd()),
+		}),
+	)
 
 	env, err := config.LoadEnv()
 	if err != nil {

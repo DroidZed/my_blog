@@ -6,6 +6,7 @@ services:
       target: final
     image: droidzed/blog:${IMAGE_TAG}
     container_name: blog-api
+    user: "1000:1000"
     environment:
       - DB_URI=${DB_URI}
       - PORT=${PORT}
@@ -36,7 +37,7 @@ services:
       retries: 5
       start_period: 30s
     volumes:
-      - blog:/home/blog
+      - blog:/home/my_blog
 
   blog_db:
     image: mongo:latest

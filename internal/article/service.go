@@ -96,7 +96,7 @@ func (s *Service) Add(ctx context.Context, entity Article) error {
 
 func (s *Service) ReadFileContents(filename string) ([]byte, error) {
 
-	b, err := os.ReadFile(fmt.Sprintf("/home/blog/%s", filename))
+	b, err := os.ReadFile(fmt.Sprintf("/home/my_blog/%s", filename))
 
 	if err != nil {
 		return nil, err
@@ -123,7 +123,7 @@ func (s *Service) ConvertMarkdownToHTML(md []byte) []byte {
 
 func (s *Service) WriteFile(filename string, contents []byte) error {
 
-	file, err := os.Create(fmt.Sprintf("/home/blog/%s", filename))
+	file, err := os.Create(fmt.Sprintf("/home/my_blog/%s", filename))
 
 	if err != nil {
 		return err

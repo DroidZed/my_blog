@@ -5,7 +5,18 @@ meta {
 }
 
 post {
-  url: http://localhost:8000/articles/post
-  body: none
-  auth: none
+  url: http://localhost:8000/articles
+  body: multipartForm
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3Mjc0NTQ1NTQsImlhdCI6MTcyNjkzNjE1NCwic3ViIjoiNjZlZWYzZmFjOTE1ZDgwZWRhZDgzYzQ5In0.vDwMZa2UcvkLExmfP-ffhZeG3RFxOPAG1s8_ECn6mFs
+}
+
+body:multipart-form {
+  title: Why You Should Consider Adopting Serverless Architecture
+  tags: Serverless Architecture,Cloud Computing,AWS Lambda,Google Cloud Functions,Microsoft Azure Functions,Serverless Benefits,Automatic Scaling,Cost Efficiency in Serverless,Cold Starts,Vendor Lock-In,Real-Time Processing,Event-Driven Architecture,Serverless vs Traditional Servers,Cloud Infrastructure,DevOps in Serverless
+  poster: @file(C:\Users\DroidZed\Downloads\DALL·E 2024-09-21 16.28.39 - A futuristic cloud architecture concept, with glowing digital clouds interconnected through vibrant data streams. Sleek, modern data centers or server.webp)
+  file: @file(C:\Users\DroidZed\Downloads\test.md)
 }

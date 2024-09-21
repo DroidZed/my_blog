@@ -6,15 +6,16 @@ import (
 
 	"github.com/DroidZed/my_blog/internal/cryptor"
 	"github.com/DroidZed/my_blog/internal/user"
+	"github.com/DroidZed/my_blog/internal/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type userProvider interface {
 	Add(ctx context.Context, u user.User) error
-	GetByIDProj(ctx context.Context, id string, proj interface{}) (*user.User, error)
+	GetByIDProj(ctx context.Context, id string, in utils.GetInput) (*user.User, error)
 	GetByID(ctx context.Context, id string) (*user.User, error)
-	GetOne(ctx context.Context, in user.GetInput) (*user.User, error)
+	GetOne(ctx context.Context, in utils.GetInput) (*user.User, error)
 	Validate(ctx context.Context, email, password string) (*user.User, error)
 }
 
@@ -47,7 +48,7 @@ func NewService(
 	}
 }
 
-func (s Service) GenerateNewTokens(expiredToken string) (string, string, error) {
+func (s *Service) GenerateNewTokens(expiredToken string) (string, string, error) {
 	access, err := s.hasher.ParseToken(expiredToken, s.refreshKey)
 	if err != nil {
 		return "", "", err
@@ -71,7 +72,7 @@ func (s Service) GenerateNewTokens(expiredToken string) (string, string, error) 
 	return newAcc, newRef, nil
 }
 
-func (s Service) CreateLoginResponse(ctx context.Context, body LoginBody) (LoginResponse, error) {
+func (s *Service) CreateLoginResponse(ctx context.Context, body LoginBody) (LoginResponse, error) {
 
 	user, err := s.userSrv.Validate(ctx, body.Email, body.Password)
 
@@ -100,7 +101,7 @@ func (s Service) CreateLoginResponse(ctx context.Context, body LoginBody) (Login
 	return LoginResponse{Jwt: access, Refresh: refresh}, nil
 }
 
-func (s Service) CreateOwnerAccount(ctx context.Context) error {
+func (s *Service) CreateOwnerAccount(ctx context.Context) error {
 
 	// Hash the password before proceeding
 	modified, err := s.hasher.HashPlain(s.password)
@@ -121,7 +122,7 @@ func (s Service) CreateOwnerAccount(ctx context.Context) error {
 	// GetOne when no doc fount: return back an err indicating no doc found
 	found, _ := s.userSrv.GetOne(
 		ctx,
-		user.GetInput{
+		utils.GetInput{
 			Filter: bson.M{"email": u.Email},
 		},
 	)

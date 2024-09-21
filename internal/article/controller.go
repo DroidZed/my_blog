@@ -5,28 +5,29 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"os"
+	"strings"
 
 	"github.com/DroidZed/my_blog/internal/utils"
 	"github.com/go-chi/chi/v5"
-	"github.com/gomarkdown/markdown"
-	"github.com/gomarkdown/markdown/html"
-	"github.com/gomarkdown/markdown/parser"
-	"github.com/microcosm-cc/bluemonday"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type ArticleManager interface {
+type ArticleService interface {
 	GetOneByIDProj(ctx context.Context, id string, in utils.GetInput) (*Article, error)
 	GetByID(ctx context.Context, id string) (*Article, error)
 	GetOne(ctx context.Context, input utils.GetInput) (*Article, error)
+	ReadFileContents(filename string) ([]byte, error)
+	ConvertMarkdownToHTML(md []byte) []byte
+	WriteFile(filename string, contents []byte) error
+	Add(ctx context.Context, entity Article) error
 }
 
 type Controller struct {
-	service ArticleManager
+	service ArticleService
 	logger  *slog.Logger
 }
 
-func New(service ArticleManager, logger *slog.Logger) *Controller {
+func NewController(service ArticleService, logger *slog.Logger) *Controller {
 	return &Controller{
 		service: service,
 		logger:  logger,
@@ -45,7 +46,7 @@ func (c Controller) GetArticle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fileContents, err := readFileContents(article.FileID)
+	fileContents, err := c.service.ReadFileContents(article.FileID)
 
 	if err != nil {
 		c.logger.Error("failed to find article", slog.String("err", err.Error()))
@@ -53,35 +54,97 @@ func (c Controller) GetArticle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	converted := convertMarkdownToHTML(fileContents)
+	converted := c.service.ConvertMarkdownToHTML(fileContents)
 
 	ArticleOne(string(converted), *article).Render(r.Context(), w)
 
 }
 
-func readFileContents(filename string) ([]byte, error) {
+func (c *Controller) AddArticle(w http.ResponseWriter, r *http.Request) {
 
-	b, err := os.ReadFile(filename)
-
-	if err != nil {
-		return nil, err
+	if err := r.ParseForm(); err != nil {
+		c.logger.Error("send article", slog.String("err", err.Error()))
+		utils.JsonResponse(w, http.StatusNotFound, utils.DtoResponse{Error: "Invalid body"})
+		return
 	}
 
-	return b, nil
-}
+	title := r.PostForm.Get("title")
+	tags := strings.Split(r.PostForm.Get("tags"), ",")
 
-func convertMarkdownToHTML(md []byte) []byte {
-	// create markdown parser with extensions
-	extensions := parser.CommonExtensions | parser.AutoHeadingIDs | parser.NoEmptyLineBeforeBlock
-	p := parser.NewWithExtensions(extensions)
-	doc := p.Parse(md)
+	fileId := fmt.Sprintf("%s.html", utils.GenUUID())
+	photoId := fmt.Sprintf("%s.webp", utils.GenUUID())
 
-	// create HTML renderer with extensions
-	htmlFlags := html.CommonFlags | html.HrefTargetBlank
-	opts := html.RendererOptions{Flags: htmlFlags}
-	renderer := html.NewRenderer(opts)
+	authorId := r.PostForm.Get("authorId")
 
-	html := markdown.Render(doc, renderer)
+	article := &Article{
+		ID:       primitive.NewObjectID(),
+		Title:    title,
+		Photo:    photoId,
+		Tags:     tags,
+		FileID:   fileId,
+		AuthorId: authorId,
+	}
 
-	return bluemonday.UGCPolicy().SanitizeBytes(html)
+	if err := r.ParseMultipartForm(10 << 20); err != nil {
+		c.logger.Error("send article", slog.String("err", err.Error()))
+		utils.JsonResponse(w, http.StatusNotFound, utils.DtoResponse{Error: "Invalid multipart"})
+		return
+	}
+
+	articleFile, _, err1 := r.FormFile("file")
+	if err1 != nil {
+		c.logger.Error("getting article from file", slog.String("err", err1.Error()))
+		utils.JsonResponse(w, http.StatusNotFound, utils.DtoResponse{Error: "Invalid file"})
+		return
+	}
+	posterFile, _, err2 := r.FormFile("poster")
+	if err2 != nil {
+		c.logger.Error("getting image from file", slog.String("err", err2.Error()))
+		utils.JsonResponse(w, http.StatusNotFound, utils.DtoResponse{Error: "Invalid image"})
+		return
+	}
+
+	var (
+		fileContents   []byte
+		posterContents []byte
+	)
+
+	// reading and saving article markdown
+	_, err3 := articleFile.Read(fileContents)
+	if err3 != nil {
+		c.logger.Error("reading article", slog.String("err", err3.Error()))
+		utils.JsonResponse(w, http.StatusNotFound, utils.DtoResponse{Error: "Unable to read file contents"})
+		return
+	}
+	converted := c.service.ConvertMarkdownToHTML(fileContents)
+	err4 := c.service.WriteFile(fileId, converted)
+	if err4 != nil {
+		c.logger.Error("writing article", slog.String("err", err4.Error()))
+		utils.JsonResponse(w, http.StatusNotFound, utils.DtoResponse{Error: "Unable to save image"})
+		return
+	}
+
+
+	// reading and saving article img
+	_, err5 := posterFile.Read(posterContents)
+	if err5 != nil {
+		c.logger.Error("reading image", slog.String("err", err5.Error()))
+		utils.JsonResponse(w, http.StatusNotFound, utils.DtoResponse{Error: "Unable to read file contents"})
+		return
+	}
+	err6 := c.service.WriteFile(photoId, posterContents)
+	if err6 != nil {
+		c.logger.Error("writing image", slog.String("err", err6.Error()))
+		utils.JsonResponse(w, http.StatusNotFound, utils.DtoResponse{Error: "Unable to save image"})
+		return
+	}
+
+	c.service.Add(r.Context(), *article)
+
+	utils.JsonResponse(
+		w,
+		http.StatusCreated,
+		utils.DtoResponse{Message: "Article saved!"},
+	)
+
 }

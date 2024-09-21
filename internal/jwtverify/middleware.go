@@ -50,12 +50,7 @@ func (j JwtVerify) AccessVerify(next http.Handler) http.Handler {
 			return
 		}
 
-		token, err := validateToken(
-			tokenFromHeader,
-			j.accessKey,
-			j.hasher.ParseToken,
-			j.hasher.ExtractExpiryFromClaims,
-		)
+		token, err := j.validateToken(tokenFromHeader, j.accessKey)
 
 		if err != nil {
 			j.logger.Error("invalid token", slog.String("err", err.Error()))
@@ -97,12 +92,7 @@ func (j JwtVerify) RefreshVerify(next http.Handler) http.Handler {
 			return
 		}
 
-		_, err = validateToken(
-			tokenFromHeader,
-			j.refreshKey,
-			j.hasher.ParseToken,
-			j.hasher.ExtractExpiryFromClaims,
-		)
+		_, err = j.validateToken(tokenFromHeader, j.refreshKey)
 
 		if err != nil {
 			utils.JsonResponse(w,
@@ -127,17 +117,13 @@ func retrieveTokenFromHeader(r *http.Request) (string, error) {
 	return segments[1], nil
 }
 
-func validateToken(
-	headerValue, secret string,
-	ParseToken func(token string, secret string) (*jwt.Token, error),
-	ExtractExpiryFromClaims func(token *jwt.Token) (int64, error),
-) (*jwt.Token, error) {
-	token, err := ParseToken(headerValue, secret)
+func (j JwtVerify) validateToken(headerValue, secret string) (*jwt.Token, error) {
+	token, err := j.hasher.ParseToken(headerValue, secret)
 	if err != nil {
 		return nil, err
 	}
 
-	exp, err := ExtractExpiryFromClaims(token)
+	exp, err := j.hasher.ExtractExpiryFromClaims(token)
 	if err != nil {
 		return nil, err
 	}

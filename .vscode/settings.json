@@ -5,9 +5,9 @@
     "cryptor",
     "Debugf",
     "devcontainer",
+    "formstream",
     "ggicci",
     "Gochi",
-    "godotenv",
     "golance",
     "gomarkdown",
     "httplog",
@@ -19,6 +19,7 @@
     "markdowner",
     "Markdowner",
     "mattn",
+    "mazrean",
     "nums",
     "prettyslogger",
     "signup",
@@ -29,7 +30,9 @@
     "tmpl",
     "Tokenor",
     "Upsert",
+    "uuid",
     "Vars",
+    "webp",
     "withmandala"
   ],
   "[javascript]": {

@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/DroidZed/my_blog/internal/article"
 	"github.com/DroidZed/my_blog/internal/auth"
 	"github.com/DroidZed/my_blog/internal/config"
 	"github.com/DroidZed/my_blog/internal/cryptor"
@@ -62,6 +63,7 @@ func startService(
 		env.MASTER_EMAIL,
 		env.MASTER_PWD,
 	)
+	articleService := article.NewService(cHelper, dbClient, env.DBName)
 
 	// Controllers
 	userController := user.NewController(userService, logger)
@@ -70,6 +72,7 @@ func startService(
 		logger,
 		cHelper,
 	)
+	articleController := article.NewController(articleService, logger)
 
 	// Middlewares
 	jwtVerif := jwtverify.New(
@@ -82,10 +85,11 @@ func startService(
 	// Server setup
 	server := setup.NewServer(
 		env,
-		authController,
 		logger,
-		userController,
 		jwtVerif,
+		authController,
+		userController,
+		articleController,
 	)
 
 	// Mux setup

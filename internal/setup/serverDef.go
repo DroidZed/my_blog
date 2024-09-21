@@ -22,6 +22,11 @@ type ServerDefinition interface {
 	MountHandlers()
 }
 
+type ArticleManager interface {
+	GetArticle(w http.ResponseWriter, r *http.Request)
+	AddArticle(w http.ResponseWriter, r *http.Request)
+}
+
 type Authenticator interface {
 	LoginReq(w http.ResponseWriter, r *http.Request)
 	RefreshTheAccessToken(w http.ResponseWriter, r *http.Request)
@@ -40,18 +45,20 @@ type Server struct {
 	env    *config.EnvConfig
 	logger *slog.Logger
 
-	authProvider Authenticator
-	userProvider UserManager
+	authProvider   Authenticator
+	userProvider   UserManager
+	articleManager ArticleManager
 
 	authMiddleware JwtMiddleware
 }
 
 func NewServer(
 	env *config.EnvConfig,
-	auth Authenticator,
 	logger *slog.Logger,
-	userProvider UserManager,
 	authMiddleware JwtMiddleware,
+	auth Authenticator,
+	userProvider UserManager,
+	articleManager ArticleManager,
 ) *Server {
 	return &Server{
 		env:            env,
@@ -59,6 +66,7 @@ func NewServer(
 		logger:         logger,
 		userProvider:   userProvider,
 		authMiddleware: authMiddleware,
+		articleManager: articleManager,
 	}
 }
 
@@ -98,6 +106,13 @@ func (s *Server) MountHandlers(r *chi.Mux) {
 	r.Route("/api/user", func(r chi.Router) {
 		r.Use(s.authMiddleware.AccessVerify)
 		r.Get("/", s.userProvider.GetUserByID)
+	})
+
+	// Article
+	r.Route("/articles", func(r chi.Router) {
+		// r.With(s.authMiddleware.AccessVerify).Group(func(r chi.Router) {})
+		r.Post("/", s.articleManager.AddArticle)
+		r.Get("/{id}", s.articleManager.GetArticle)
 	})
 }
 

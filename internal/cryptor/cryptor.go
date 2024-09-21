@@ -32,8 +32,8 @@ func New(
 	accessKey string,
 	refreshExp string,
 	refreshKey string,
-) Cryptor {
-	return Cryptor{
+) *Cryptor {
+	return &Cryptor{
 		accessExp:  accessExp,
 		accessKey:  accessKey,
 		refreshExp: refreshExp,

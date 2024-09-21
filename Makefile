@@ -8,7 +8,7 @@ deps:
 	go mod tidy
 
 build:
-	docker build -t droidzed/golance:$(IMAGE_TAG) .
+	docker build -t droidzed/blog:$(IMAGE_TAG) .
 
 doc:
 	swag init -g cmd/my_blog/main.go

@@ -6,7 +6,7 @@
 
 ################################################################################
 # Create a stage for building the application.
-ARG GO_VERSION=1.22.4
+ARG GO_VERSION=1.23.1
 FROM golang:${GO_VERSION} AS build
 WORKDIR /src
 
@@ -60,6 +60,7 @@ RUN adduser \
     --no-create-home \
     --uid "${UID}" \
     appuser
+RUN chmod 
 USER appuser
 
 # Copy the executable from the "build" stage.
@@ -69,4 +70,4 @@ COPY --from=build /bin/server /bin/
 EXPOSE 8000
 
 # What the container should run when it is started.
-ENTRYPOINT [ "/bin/server" ]
+CMD [ "/bin/server" ]

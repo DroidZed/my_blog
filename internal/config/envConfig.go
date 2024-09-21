@@ -1,11 +1,8 @@
 package config
 
 import (
-	"fmt"
 	"os"
 	"strconv"
-
-	"github.com/joho/godotenv"
 )
 
 type EnvConfig struct {
@@ -28,19 +25,10 @@ type EnvConfig struct {
 
 func LoadEnv() (*EnvConfig, error) {
 
-	if err := godotenv.Load(".env"); err != nil {
-		return nil, err
-	}
-
 	port, err := strconv.ParseInt(os.Getenv("PORT"), 10, 64)
 
 	if err != nil {
 		return nil, err
-	}
-
-	if err := loadVarsPerEnv(); err != nil {
-		return nil, err
-
 	}
 
 	config := &EnvConfig{
@@ -62,35 +50,4 @@ func LoadEnv() (*EnvConfig, error) {
 	}
 
 	return config, nil
-
-}
-
-func loadVarsPerEnv() (err error) {
-
-	env, ok := os.LookupEnv("ENV")
-
-	if !ok {
-		return fmt.Errorf("environment not set")
-	}
-
-	switch env {
-	case "dev":
-
-		if err := godotenv.Load(".env.dev"); err != nil {
-			return err
-		}
-
-	case "prod":
-
-		if err := godotenv.Load(".env.prod"); err != nil {
-			return err
-		}
-
-	default:
-
-		return fmt.Errorf("environment not set")
-
-	}
-
-	return nil
 }

@@ -18,7 +18,6 @@ type GetInput struct {
 	Projection any
 }
 
-
 func JsonResponse(w http.ResponseWriter, code int, payload interface{}) {
 	response, _ := json.Marshal(payload)
 	w.Header().Set("Content-Type", "application/json")

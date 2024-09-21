@@ -12,8 +12,8 @@ import (
 
 type userProvider interface {
 	Add(ctx context.Context, u user.User) error
-	GetByIdProj(ctx context.Context, id string, proj interface{}) (*user.User, error)
-	GetById(ctx context.Context, id string) (*user.User, error)
+	GetByIDProj(ctx context.Context, id string, proj interface{}) (*user.User, error)
+	GetByID(ctx context.Context, id string) (*user.User, error)
 	GetOne(ctx context.Context, in user.GetInput) (*user.User, error)
 	Validate(ctx context.Context, email, password string) (*user.User, error)
 }
@@ -53,12 +53,12 @@ func (s Service) GenerateNewTokens(expiredToken string) (string, string, error) 
 		return "", "", err
 	}
 
-	userId, err := s.hasher.ExtractSubFromClaims(access)
+	userID, err := s.hasher.ExtractSubFromClaims(access)
 	if err != nil {
 		return "", "", err
 	}
 
-	newAcc, err := s.hasher.GenerateAccessToken(userId)
+	newAcc, err := s.hasher.GenerateAccessToken(userID)
 	if err != nil {
 		return "", "", err
 	}
@@ -81,9 +81,9 @@ func (s Service) CreateLoginResponse(ctx context.Context, body LoginBody) (Login
 		return errLogin, err
 	}
 
-	userId := user.ID.Hex()
+	userID := user.ID.Hex()
 
-	access, err := s.hasher.GenerateAccessToken(userId)
+	access, err := s.hasher.GenerateAccessToken(userID)
 	if err != nil {
 		return errLogin, err
 	}

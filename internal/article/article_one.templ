@@ -1,0 +1,13 @@
+package article
+
+import "github.com/DroidZed/my_blog/internal/views/layouts"
+
+templ ArticleOne(contents string, metadata Article) {
+	@layouts.BaseLayout() {
+		<p class="text-lg text-center bg-red-950">{ metadata.Title }</p>
+		<p class="font-bold font-mono to-blue-950 underline">article id: { metadata.ID.String() }</p>
+		<div>
+			@templ.Raw(contents)
+		</div>
+	}
+}

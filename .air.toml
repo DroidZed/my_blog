@@ -5,7 +5,7 @@ tmp_dir = "tmp"
 [build]
 args_bin = []
 bin = "./tmp/main"
-cmd = "templ generate && go build -o ./tmp/main ."
+cmd = "templ generate && go build -o ./tmp/main.exe ./cmd/my_blog/"
 delay = 1000
 exclude_dir = ["assets", "tmp", "testdata"]
 exclude_file = []
@@ -30,7 +30,7 @@ include_ext = [
 include_file = ["cmd/my_blog/main.go"]
 kill_delay = "0s"
 log = "build-errors.log"
-poll = false
+poll = true
 poll_interval = 0
 post_cmd = []
 pre_cmd = []

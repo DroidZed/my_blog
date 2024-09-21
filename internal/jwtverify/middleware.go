@@ -66,7 +66,7 @@ func (j JwtVerify) AccessVerify(next http.Handler) http.Handler {
 			return
 		}
 
-		userId, err := j.hasher.ExtractSubFromClaims(token)
+		userID, err := j.hasher.ExtractSubFromClaims(token)
 		if err != nil {
 			j.logger.Error("corrupted sub", slog.String("err", err.Error()))
 			utils.JsonResponse(w,
@@ -76,7 +76,7 @@ func (j JwtVerify) AccessVerify(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), AuthCtxKey{}, userId)
+		ctx := context.WithValue(r.Context(), AuthCtxKey{}, userID)
 		req := r.WithContext(ctx)
 
 		next.ServeHTTP(w, req)

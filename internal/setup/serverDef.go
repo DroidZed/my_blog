@@ -28,7 +28,7 @@ type Authenticator interface {
 }
 
 type UserManager interface {
-	GetUserById(w http.ResponseWriter, r *http.Request)
+	GetUserByID(w http.ResponseWriter, r *http.Request)
 }
 
 type JwtMiddleware interface {
@@ -97,7 +97,7 @@ func (s *Server) MountHandlers(r *chi.Mux) {
 	// User
 	r.Route("/api/user", func(r chi.Router) {
 		r.Use(s.authMiddleware.AccessVerify)
-		r.Get("/", s.userProvider.GetUserById)
+		r.Get("/", s.userProvider.GetUserByID)
 	})
 }
 

@@ -11,12 +11,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-
 type UserProvider interface {
 	Add(ctx context.Context, u User) error
-	GetByIdProj(ctx context.Context, id string, proj interface{}) (*User, error)
-	GetById(ctx context.Context, id string) (*User, error)
-	GetOne(ctx context.Context, in GetInput) (*User, error)
+	GetByIDProj(ctx context.Context, id string, in utils.GetInput) (*User, error)
+	GetByID(ctx context.Context, id string) (*User, error)
+	GetOne(ctx context.Context, in utils.GetInput) (*User, error)
 	Validate(ctx context.Context, email, password string) (*User, error)
 }
 
@@ -32,14 +31,18 @@ func NewController(up UserProvider, l *slog.Logger) Controller {
 	}
 }
 
-func (c Controller) GetUserById(w http.ResponseWriter, r *http.Request) {
+func (c Controller) GetUserByID(w http.ResponseWriter, r *http.Request) {
 
 	id := r.Context().Value(jwtverify.AuthCtxKey{}).(string)
 
-	user, err := c.service.GetByIdProj(
+	user, err := c.service.GetByIDProj(
 		r.Context(),
 		id,
-		bson.D{{Key: "password", Value: 0}},
+		utils.GetInput{
+			Projection: bson.D{
+				{Key: "password", Value: 0},
+			},
+		},
 	)
 
 	if err != nil {

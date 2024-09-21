@@ -5,12 +5,19 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type DtoResponse struct {
 	Message string `json:"message,omitempty"`
 	Error   string `json:"error,omitempty"`
 }
+
+type GetInput struct {
+	Filter     bson.M
+	Projection any
+}
+
 
 func JsonResponse(w http.ResponseWriter, code int, payload interface{}) {
 	response, _ := json.Marshal(payload)

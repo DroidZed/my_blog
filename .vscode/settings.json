@@ -1,5 +1,6 @@
 {
   "cSpell.words": [
+    "bluemonday",
     "bson",
     "cryptor",
     "Debugf",
@@ -8,24 +9,29 @@
     "Gochi",
     "godotenv",
     "golance",
+    "gomarkdown",
     "httplog",
     "httpslog",
     "Infof",
     "isatty",
     "jwtauth",
+    "lmittmann",
+    "markdowner",
+    "Markdowner",
+    "mattn",
     "nums",
     "prettyslogger",
     "signup",
     "swaggo",
     "tailwindcss",
     "templ",
+    "templruntime",
     "tmpl",
     "Tokenor",
     "Upsert",
     "Vars",
     "withmandala"
   ],
-  "editor.formatOnSave": true,
   "[javascript]": {
     "editor.defaultFormatter": "biomejs.biome"
   },

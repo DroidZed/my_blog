@@ -32,9 +32,8 @@ module:
 	echo "package ${DIR}" > ./internal/${DIR}/models.go
 
 templates:
-	templ generate
+	templ generate -lazy
 
-setup-dev-container:
-	sudo apt-get update && sudo apt-get upgrade -y
-	curl -fsSL https://bun.sh/install | bash
+tools:
 	go install github.com/a-h/templ/cmd/templ@latest
+	go install github.com/air-verse/air@latest

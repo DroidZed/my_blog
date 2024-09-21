@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/DroidZed/my_blog/internal/cryptor"
+	"github.com/DroidZed/my_blog/internal/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -37,38 +38,38 @@ func (s *Service) Add(ctx context.Context, entity User) error {
 	return nil
 }
 
-func (s *Service) GetByIdProj(
+func (s *Service) GetByIDProj(
 	ctx context.Context,
 	id string,
-	projection any,
+	in utils.GetInput,
 ) (*User, error) {
 
-	objectId, err := primitive.ObjectIDFromHex(id)
+	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return nil, err
 	}
 
 	return s.GetOne(
 		ctx,
-		GetInput{
-			Filter: bson.M{"_id": objectId},
+		utils.GetInput{
+			Filter: bson.M{"_id": objectID},
 			Projection: &options.FindOneOptions{
-				Projection: projection,
+				Projection: in.Projection,
 			},
 		})
 }
 
-func (s *Service) GetById(ctx context.Context, id string) (*User, error) {
+func (s *Service) GetByID(ctx context.Context, id string) (*User, error) {
 
-	objectId, err := primitive.ObjectIDFromHex(id)
+	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return nil, err
 	}
 
-	return s.GetOne(ctx, GetInput{Filter: bson.M{"_id": objectId}})
+	return s.GetOne(ctx, utils.GetInput{Filter: bson.M{"_id": objectID}})
 }
 
-func (s *Service) GetOne(ctx context.Context, input GetInput) (*User, error) {
+func (s *Service) GetOne(ctx context.Context, input utils.GetInput) (*User, error) {
 
 	coll := s.client.Database(s.dbName).Collection("users")
 
@@ -90,7 +91,7 @@ func (s *Service) Validate(ctx context.Context, email, password string) (*User, 
 
 	data, err := s.GetOne(
 		ctx,
-		GetInput{
+		utils.GetInput{
 			Filter: bson.M{"email": email},
 		},
 	)

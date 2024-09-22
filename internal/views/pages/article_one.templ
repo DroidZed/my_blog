@@ -1,0 +1,13 @@
+package pages
+
+import "github.com/DroidZed/my_blog/internal/views/layouts"
+
+templ ArticleOne(contents string, title, photo string) {
+	@layouts.BaseLayout(title) {
+		<p class="text-lg text-center bg-red-950">{ title }</p>
+		<div>
+			@templ.Raw(contents)
+		</div>
+		<img src={ photo }/>
+	}
+}

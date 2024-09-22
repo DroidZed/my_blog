@@ -8,9 +8,10 @@ import (
 	"strconv"
 
 	_ "github.com/DroidZed/my_blog/docs"
+	"github.com/DroidZed/my_blog/internal/asset"
 	"github.com/DroidZed/my_blog/internal/config"
 	"github.com/DroidZed/my_blog/internal/httpslog"
-	"github.com/DroidZed/my_blog/internal/views"
+	"github.com/DroidZed/my_blog/internal/views/pages"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -27,45 +28,21 @@ type ArticleManager interface {
 	AddArticle(w http.ResponseWriter, r *http.Request)
 }
 
-type Authenticator interface {
-	LoginReq(w http.ResponseWriter, r *http.Request)
-	RefreshTheAccessToken(w http.ResponseWriter, r *http.Request)
-}
-
-type UserManager interface {
-	GetUserByID(w http.ResponseWriter, r *http.Request)
-}
-
-type JwtMiddleware interface {
-	AccessVerify(next http.Handler) http.Handler
-	RefreshVerify(next http.Handler) http.Handler
-}
-
 type Server struct {
 	env    *config.EnvConfig
 	logger *slog.Logger
 
-	authProvider   Authenticator
-	userProvider   UserManager
 	articleManager ArticleManager
-
-	authMiddleware JwtMiddleware
 }
 
 func NewServer(
 	env *config.EnvConfig,
 	logger *slog.Logger,
-	authMiddleware JwtMiddleware,
-	auth Authenticator,
-	userProvider UserManager,
 	articleManager ArticleManager,
 ) *Server {
 	return &Server{
 		env:            env,
-		authProvider:   auth,
 		logger:         logger,
-		userProvider:   userProvider,
-		authMiddleware: authMiddleware,
 		articleManager: articleManager,
 	}
 }
@@ -73,16 +50,18 @@ func NewServer(
 func (s *Server) MountHandlers(r *chi.Mux) {
 
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
-		views.NotFound().Render(r.Context(), w)
+		pages.NotFound().Render(r.Context(), w)
 	})
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		views.Index().Render(r.Context(), w)
+		pages.Index().Render(r.Context(), w)
 	})
 
 	r.Get("/login", func(w http.ResponseWriter, r *http.Request) {
-		views.Login().Render(r.Context(), w)
+		pages.Login().Render(r.Context(), w)
 	})
+
+	asset.Mount(r)
 
 	r.Get("/api/swagger/*", httpSwagger.Handler(
 		httpSwagger.URL(
@@ -94,25 +73,9 @@ func (s *Server) MountHandlers(r *chi.Mux) {
 			)),
 	))
 
-	// Auth
-	r.Route("/api/auth", func(r chi.Router) {
-		r.Post("/login", s.authProvider.LoginReq)
-		r.With(s.authMiddleware.RefreshVerify).Group(func(r chi.Router) {
-			r.Post("/refresh-token", s.authProvider.RefreshTheAccessToken)
-		})
-	})
-
-	// User
-	r.Route("/api/user", func(r chi.Router) {
-		r.Use(s.authMiddleware.AccessVerify)
-		r.Get("/", s.userProvider.GetUserByID)
-	})
-
 	// Article
 	r.Route("/articles", func(r chi.Router) {
-		// r.With(s.authMiddleware.AccessVerify).Group(func(r chi.Router) {})
-		r.Post("/", s.articleManager.AddArticle)
-		r.Get("/{id}", s.articleManager.GetArticle)
+		r.Get("/{title}", s.articleManager.GetArticle)
 	})
 }
 

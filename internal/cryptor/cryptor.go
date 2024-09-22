@@ -98,16 +98,32 @@ func (c Cryptor) GenerateRefreshToken() (string, error) {
 
 func (c Cryptor) ExtractExpiryFromClaims(token *jwt.Token) (int64, error) {
 
-	x, err := extractXFromClaims[int64]("exp", token)
+	if !token.Valid {
+		return 0, fmt.Errorf("no claims")
+	}
 
-	return *x, err
+	x, err := token.Claims.GetExpirationTime()
+
+	if err != nil {
+		return 0, err
+	}
+
+	return x.Unix(), nil
 }
 
 func (c Cryptor) ExtractSubFromClaims(token *jwt.Token) (string, error) {
 
-	x, err := extractXFromClaims[string]("sub", token)
+	if !token.Valid {
+		return "", fmt.Errorf("no claims")
+	}
 
-	return *x, err
+	x, err := token.Claims.GetSubject()
+
+	if err != nil {
+		return "", err
+	}
+
+	return x, nil
 }
 
 func (c Cryptor) ParseToken(token string, secret string) (*jwt.Token, error) {
@@ -143,23 +159,4 @@ func createToken(expiry int64, sub, sec string) (string, error) {
 	}
 
 	return tokenString, nil
-}
-
-func extractXFromClaims[T interface{}](claimId string, token *jwt.Token) (*T, error) {
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok || !token.Valid {
-		return nil, fmt.Errorf("no claims")
-	}
-
-	claim, ok := claims[claimId]
-	if !ok {
-		return nil, fmt.Errorf("no sub, claims corrupted")
-	}
-
-	x, ok := claim.(T)
-	if !ok {
-		return nil, fmt.Errorf("claim type assertion failed")
-	}
-
-	return &x, nil
 }

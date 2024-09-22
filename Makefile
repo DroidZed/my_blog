@@ -8,22 +8,16 @@ deps:
 	go mod tidy
 
 build:
-	docker build -t droidzed/blog:$(IMAGE_TAG) .
+	templ generate && go build -o ./bin/out.exe ./cmd/my_blog/
 
 doc:
 	swag init -g cmd/my_blog/main.go
 
-compose:
-	docker compose up -d
-
-decompose:
-	docker compose down
-
 dev:
 	air
 
-prod:
-	./bin/golance
+clean:
+	rm ./bin/out.exe
 
 module:
 	mkdir ./internal/${DIR}
@@ -32,7 +26,8 @@ module:
 	echo "package ${DIR}" > ./internal/${DIR}/models.go
 
 templates:
-	templ generate -lazy
+	npx tailwindcss -i ./internal/asset/tailwind.css -o ./internal/asset/static/styles.css
+	go generate ./...
 
 tools:
 	go install github.com/a-h/templ/cmd/templ@latest

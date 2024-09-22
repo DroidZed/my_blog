@@ -14,14 +14,17 @@
     "httpslog",
     "Infof",
     "isatty",
+    "joho",
     "jwtauth",
     "lmittmann",
     "markdowner",
     "Markdowner",
     "mattn",
     "mazrean",
+    "mdtohtml",
     "nums",
     "prettyslogger",
+    "rctx",
     "signup",
     "swaggo",
     "tailwindcss",
@@ -50,6 +53,4 @@
   "emmet.includeLanguages": {
     "templ": "html"
   },
-  "editor.formatOnSaveMode": "modifications",
-  "files.autoSave": "afterDelay"
 }

@@ -3,27 +3,23 @@ package config
 import (
 	"os"
 	"strconv"
+
+	"github.com/joho/godotenv"
 )
 
 type EnvConfig struct {
-	Port          int64
-	Env           string
-	Host          string
-	DBUri         string
-	DBName        string
-	AccessSecret  string
-	AccessExpiry  string
-	RefreshSecret string
-	RefreshExpiry string
-	SmtpHost      string
-	SmtpPort      string
-	SmtpUsername  string
-	SmtpPassword  string
-	MASTER_PWD    string
-	MASTER_EMAIL  string
+	Port   int64
+	Env    string
+	Host   string
+	DBUri  string
+	DBName string
 }
 
 func LoadEnv() (*EnvConfig, error) {
+
+	if err := godotenv.Load(".env"); err != nil {
+		return nil, err
+	}
 
 	port, err := strconv.ParseInt(os.Getenv("PORT"), 10, 64)
 
@@ -32,21 +28,11 @@ func LoadEnv() (*EnvConfig, error) {
 	}
 
 	config := &EnvConfig{
-		Port:          port,
-		DBUri:         os.Getenv("DB_URI"),
-		Env:           os.Getenv("ENV"),
-		Host:          os.Getenv("HOST"),
-		DBName:        os.Getenv("DB_NAME"),
-		AccessSecret:  os.Getenv("ACCESS_SECRET"),
-		AccessExpiry:  os.Getenv("ACCESS_EXPIRY"),
-		RefreshSecret: os.Getenv("REFRESH_SECRET"),
-		RefreshExpiry: os.Getenv("REFRESH_EXPIRY"),
-		SmtpHost:      os.Getenv("SMTP_HOST"),
-		SmtpPort:      os.Getenv("SMTP_PORT"),
-		SmtpUsername:  os.Getenv("SMTP_USERNAME"),
-		SmtpPassword:  os.Getenv("SMTP_PASSWORD"),
-		MASTER_PWD:    os.Getenv("MASTER_PWD"),
-		MASTER_EMAIL:  os.Getenv("MASTER_EMAIL"),
+		Port:   port,
+		DBUri:  os.Getenv("DB_URI"),
+		Env:    os.Getenv("APP_ENV"),
+		Host:   os.Getenv("HOST"),
+		DBName: os.Getenv("DB_NAME"),
 	}
 
 	return config, nil

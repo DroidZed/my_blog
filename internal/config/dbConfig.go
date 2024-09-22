@@ -8,14 +8,14 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func GetConnection(ctx context.Context, env *EnvConfig) (*mongo.Client, error) {
+func GetConnection(ctx context.Context, dbUri string) (*mongo.Client, error) {
 
 	ctx, cancel := context.WithTimeout(ctx, 1*time.Minute)
 	defer cancel()
 
 	clientOptions := options.
 		Client().
-		ApplyURI(env.DBUri)
+		ApplyURI(dbUri)
 
 	dbConnection, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {

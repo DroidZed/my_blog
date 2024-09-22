@@ -4,32 +4,33 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
+	"runtime"
 
-	"github.com/DroidZed/my_blog/internal/cryptor"
 	"github.com/DroidZed/my_blog/internal/utils"
-	"github.com/gomarkdown/markdown"
-	"github.com/gomarkdown/markdown/html"
-	"github.com/gomarkdown/markdown/parser"
-	"github.com/microcosm-cc/bluemonday"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+var (
+	_, b, _, _ = runtime.Caller(0)
+
+	// Root folder of this project
+	projectRoot = filepath.Join(filepath.Dir(b), "../..")
+)
+
 type Service struct {
-	hasher cryptor.CryptoHelper
 	client *mongo.Client
 	dbName string
 }
 
 func NewService(
-	hasher cryptor.CryptoHelper,
 	client *mongo.Client,
 	dbName string,
 ) *Service {
 	return &Service{
-		hasher: hasher,
 		client: client,
 		dbName: dbName,
 	}
@@ -94,46 +95,19 @@ func (s *Service) Add(ctx context.Context, entity Article) error {
 	return nil
 }
 
-func (s *Service) ReadFileContents(filename string) ([]byte, error) {
+func (s *Service) GetByTitle(ctx context.Context, title string) (*Article, error) {
+	return s.GetOne(ctx, utils.GetInput{
+		Filter: bson.M{"title": title},
+	})
+}
 
-	b, err := os.ReadFile(fmt.Sprintf("/home/my_blog/%s", filename))
+func (s *Service) ReadFileContents(articleId string) ([]byte, error) {
+
+	b, err := os.ReadFile(fmt.Sprintf("%s/asset/markdown/%s", projectRoot, articleId))
 
 	if err != nil {
 		return nil, err
 	}
 
 	return b, nil
-}
-
-func (s *Service) ConvertMarkdownToHTML(md []byte) []byte {
-	// create markdown parser with extensions
-	extensions := parser.CommonExtensions | parser.AutoHeadingIDs | parser.NoEmptyLineBeforeBlock
-	p := parser.NewWithExtensions(extensions)
-	doc := p.Parse(md)
-
-	// create HTML renderer with extensions
-	htmlFlags := html.CommonFlags | html.HrefTargetBlank
-	opts := html.RendererOptions{Flags: htmlFlags}
-	renderer := html.NewRenderer(opts)
-
-	html := markdown.Render(doc, renderer)
-
-	return bluemonday.UGCPolicy().SanitizeBytes(html)
-}
-
-func (s *Service) WriteFile(filename string, contents []byte) error {
-
-	file, err := os.Create(fmt.Sprintf("/home/my_blog/%s", filename))
-
-	if err != nil {
-		return err
-	}
-
-	_, err2 := file.Write(contents)
-
-	if err2 != nil {
-		return err2
-	}
-
-	return nil
 }

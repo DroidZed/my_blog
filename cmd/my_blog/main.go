@@ -12,12 +12,8 @@ import (
 	"time"
 
 	"github.com/DroidZed/my_blog/internal/article"
-	"github.com/DroidZed/my_blog/internal/auth"
 	"github.com/DroidZed/my_blog/internal/config"
-	"github.com/DroidZed/my_blog/internal/cryptor"
-	"github.com/DroidZed/my_blog/internal/jwtverify"
 	"github.com/DroidZed/my_blog/internal/setup"
-	"github.com/DroidZed/my_blog/internal/user"
 	"github.com/go-chi/chi/v5"
 	"github.com/lmittmann/tint"
 	"github.com/mattn/go-isatty"
@@ -30,23 +26,9 @@ func startService(
 	logger *slog.Logger,
 ) error {
 
-	// pigeon := pigeon.New(
-	// 	env.SmtpUsername,
-	// 	env.SmtpPassword,
-	// 	env.SmtpHost,
-	// 	env.SmtpPort,
-	// )
-
-	cHelper := cryptor.New(
-		env.AccessExpiry,
-		env.AccessSecret,
-		env.RefreshExpiry,
-		env.RefreshSecret,
-	)
-
 	logger.Info("opening a database connection...")
 
-	dbClient, err := config.GetConnection(ctx, env)
+	dbClient, err := config.GetConnection(ctx, env.DBUri)
 	if err != nil {
 		return err
 	}
@@ -54,41 +36,15 @@ func startService(
 	logger.Info("connected to", slog.String("dbName", env.DBName))
 
 	// Services
-	userService := user.NewService(cHelper, dbClient, env.DBName)
-	authService := auth.NewService(
-		userService,
-		env.RefreshSecret,
-		cHelper,
-		logger,
-		env.MASTER_EMAIL,
-		env.MASTER_PWD,
-	)
-	articleService := article.NewService(cHelper, dbClient, env.DBName)
+	articleService := article.NewService(dbClient, env.DBName)
 
 	// Controllers
-	userController := user.NewController(userService, logger)
-	authController := auth.NewController(
-		authService,
-		logger,
-		cHelper,
-	)
 	articleController := article.NewController(articleService, logger)
-
-	// Middlewares
-	jwtVerif := jwtverify.New(
-		env.AccessSecret,
-		env.RefreshSecret,
-		logger,
-		cHelper,
-	)
 
 	// Server setup
 	server := setup.NewServer(
 		env,
 		logger,
-		jwtVerif,
-		authController,
-		userController,
 		articleController,
 	)
 
@@ -96,10 +52,6 @@ func startService(
 	server.ApplyMiddleWares(mux)
 
 	server.MountHandlers(mux)
-
-	if err := authService.CreateOwnerAccount(ctx); err != nil {
-		return err
-	}
 
 	logger.Info("listening on", slog.Int64("port", env.Port))
 

@@ -5,7 +5,7 @@ tmp_dir = "tmp"
 [build]
 args_bin = []
 bin = "./tmp/main"
-cmd = "templ generate && go build -o ./tmp/main.exe ./cmd/my_blog/"
+cmd = "make templates && go build -o ./tmp/main.exe ./cmd/my_blog/"
 delay = 1000
 exclude_dir = ["assets", "tmp", "testdata"]
 exclude_file = []

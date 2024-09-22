@@ -2,23 +2,16 @@ package article
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"path/filepath"
-	"runtime"
 
 	"github.com/DroidZed/my_blog/internal/utils"
+	"github.com/gomarkdown/markdown"
+	"github.com/microcosm-cc/bluemonday"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-)
-
-var (
-	_, b, _, _ = runtime.Caller(0)
-
-	// Root folder of this project
-	projectRoot = filepath.Join(filepath.Dir(b), "../..")
 )
 
 type Service struct {
@@ -102,12 +95,17 @@ func (s *Service) GetByTitle(ctx context.Context, title string) (*Article, error
 }
 
 func (s *Service) ReadFileContents(articleId string) ([]byte, error) {
+	workDir, _ := os.Getwd()
 
-	b, err := os.ReadFile(fmt.Sprintf("%s/asset/markdown/%s", projectRoot, articleId))
+	b, err := os.ReadFile(string(filepath.Join(workDir, "internal/asset/static/markdown", articleId)))
 
 	if err != nil {
 		return nil, err
 	}
 
-	return b, nil
+	parsed := markdown.ToHTML(b, nil, nil)
+
+	html := bluemonday.UGCPolicy().SanitizeBytes(parsed)
+
+	return html, nil
 }

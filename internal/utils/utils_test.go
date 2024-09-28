@@ -4,14 +4,11 @@ import (
 	"testing"
 
 	"github.com/DroidZed/my_blog/internal/utils"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestGenApiKey(t *testing.T) {
 
 	code := utils.GenUUID()
-
-	assert.NotEmpty(t, code)
 
 	if code == "" {
 		t.Errorf("GenerateAPICode() got %v, want not empty", code)

@@ -1,31 +1,28 @@
 package article
 
 import (
+	"bytes"
 	"context"
 	"os"
 	"path/filepath"
 
+	"github.com/DroidZed/my_blog/internal/database"
 	"github.com/DroidZed/my_blog/internal/utils"
-	"github.com/gomarkdown/markdown"
-	"github.com/microcosm-cc/bluemonday"
+	"github.com/yuin/goldmark"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Service struct {
-	client *mongo.Client
-	dbName string
+	db *database.Service
+	md goldmark.Markdown
 }
 
-func NewService(
-	client *mongo.Client,
-	dbName string,
-) *Service {
+func NewService(db *database.Service, md goldmark.Markdown) *Service {
 	return &Service{
-		client: client,
-		dbName: dbName,
+		db: db,
+		md: md,
 	}
 }
 
@@ -60,7 +57,7 @@ func (s *Service) GetByID(ctx context.Context, id string) (*Article, error) {
 
 func (s *Service) GetOne(ctx context.Context, input utils.GetInput) (*Article, error) {
 
-	coll := s.client.Database(s.dbName).Collection("articles")
+	coll := s.db.Client.Database(s.db.Name).Collection("articles")
 
 	result := &Article{}
 
@@ -69,7 +66,8 @@ func (s *Service) GetOne(ctx context.Context, input utils.GetInput) (*Article, e
 		&options.FindOneOptions{
 			Projection: input.Projection,
 		},
-	).Decode(result); err != nil {
+	).
+		Decode(result); err != nil {
 		return nil, err
 	}
 
@@ -78,7 +76,7 @@ func (s *Service) GetOne(ctx context.Context, input utils.GetInput) (*Article, e
 
 func (s *Service) Add(ctx context.Context, entity Article) error {
 
-	coll := s.client.Database(s.dbName).Collection("articles")
+	coll := s.db.Client.Database(s.db.Name).Collection("articles")
 
 	_, insertErr := coll.InsertOne(ctx, entity)
 	if insertErr != nil {
@@ -94,18 +92,19 @@ func (s *Service) GetByTitle(ctx context.Context, title string) (*Article, error
 	})
 }
 
-func (s *Service) ReadFileContents(articleId string) ([]byte, error) {
+func (s *Service) ReadFileContents(articleId string) (*bytes.Buffer, error) {
 	workDir, _ := os.Getwd()
 
-	b, err := os.ReadFile(string(filepath.Join(workDir, "internal/asset/static/markdown", articleId)))
+	b, err := os.ReadFile(string(filepath.Join(workDir, "cmd/web/assets/articles", articleId)))
 
 	if err != nil {
 		return nil, err
 	}
 
-	parsed := markdown.ToHTML(b, nil, nil)
+	var buf *bytes.Buffer
+	if err := s.md.Convert(b, buf); err != nil {
+		panic(err)
+	}
 
-	html := bluemonday.UGCPolicy().SanitizeBytes(parsed)
-
-	return html, nil
+	return buf, nil
 }

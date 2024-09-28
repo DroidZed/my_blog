@@ -5,7 +5,7 @@ tmp_dir = "tmp"
 [build]
 args_bin = []
 bin = "./tmp/main"
-cmd = "make templates && go build -o ./tmp/main.exe ./cmd/my_blog/"
+cmd = "make templates && go build -o ./tmp/main.exe ./cmd/api/"
 delay = 1000
 exclude_dir = ["assets", "tmp", "testdata"]
 exclude_file = []
@@ -27,7 +27,7 @@ include_ext = [
   "tpl",
   "tmpl",
 ]
-include_file = ["cmd/my_blog/main.go"]
+include_file = ["cmd/api/main.go"]
 kill_delay = "0s"
 log = "build-errors.log"
 poll = true

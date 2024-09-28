@@ -24,8 +24,8 @@ type Controller struct {
 	logger  *slog.Logger
 }
 
-func NewController(up UserProvider, l *slog.Logger) Controller {
-	return Controller{
+func NewController(up UserProvider, l *slog.Logger) *Controller {
+	return &Controller{
 		service: up,
 		logger:  l,
 	}

@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"log/slog"
+	"os"
 
 	"github.com/DroidZed/my_blog/internal/cryptor"
 	"github.com/DroidZed/my_blog/internal/user"
@@ -19,6 +20,12 @@ type userProvider interface {
 	Validate(ctx context.Context, email, password string) (*user.User, error)
 }
 
+var (
+	refreshKey   string = os.Getenv("REFRESH_KEY")
+	contactEmail string = os.Getenv("OWNER_EMAIL")
+	password     string = os.Getenv("OWNER_PWD")
+)
+
 type Service struct {
 	userSrv    userProvider
 	refreshKey string
@@ -31,18 +38,15 @@ type Service struct {
 
 func NewService(
 	userSrv userProvider,
-	refreshKey string,
 	hasher cryptor.CryptoHelper,
 	logger *slog.Logger,
-	contactEmail string,
-	password string,
 ) *Service {
 	return &Service{
-		userSrv:    userSrv,
-		refreshKey: refreshKey,
-		hasher:     hasher,
-		logger:     logger,
+		userSrv: userSrv,
+		hasher:  hasher,
+		logger:  logger,
 
+		refreshKey:   refreshKey,
 		contactEmail: contactEmail,
 		password:     password,
 	}

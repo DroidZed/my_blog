@@ -5,34 +5,36 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/DroidZed/my_blog/internal/cryptor"
 	"github.com/DroidZed/my_blog/internal/utils"
+	_ "github.com/joho/godotenv/autoload"
+
 	"github.com/golang-jwt/jwt/v5"
+)
+
+var (
+	accessKey  string = os.Getenv("ACCESS_KEY")
+	refreshKey string = os.Getenv("REFRESH_KEY")
 )
 
 type AuthCtxKey struct{}
 
 type JwtVerify struct {
-	accessKey  string
-	refreshKey string
-	logger     *slog.Logger
-	hasher     cryptor.CryptoHelper
+	logger *slog.Logger
+	hasher cryptor.CryptoHelper
 }
 
 func New(
-	accessKey string,
-	refreshKey string,
 	logger *slog.Logger,
 	hasher cryptor.CryptoHelper,
 ) *JwtVerify {
 	return &JwtVerify{
-		accessKey:  accessKey,
-		refreshKey: refreshKey,
-		logger:     logger,
-		hasher:     hasher,
+		logger: logger,
+		hasher: hasher,
 	}
 }
 
@@ -50,7 +52,7 @@ func (j JwtVerify) AccessVerify(next http.Handler) http.Handler {
 			return
 		}
 
-		token, err := j.validateToken(tokenFromHeader, j.accessKey)
+		token, err := j.validateToken(tokenFromHeader, accessKey)
 
 		if err != nil {
 			j.logger.Error("invalid token", slog.String("err", err.Error()))
@@ -92,7 +94,7 @@ func (j JwtVerify) RefreshVerify(next http.Handler) http.Handler {
 			return
 		}
 
-		_, err = j.validateToken(tokenFromHeader, j.refreshKey)
+		_, err = j.validateToken(tokenFromHeader, refreshKey)
 
 		if err != nil {
 			utils.JsonResponse(w,

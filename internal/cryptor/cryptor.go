@@ -2,10 +2,13 @@ package cryptor
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"time"
 
 	"github.com/DroidZed/my_blog/internal/utils"
+	_ "github.com/joho/godotenv/autoload"
+
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -20,25 +23,18 @@ type CryptoHelper interface {
 	ParseToken(token string, secret string) (*jwt.Token, error)
 }
 
-type Cryptor struct {
-	accessExp  string
-	accessKey  string
-	refreshExp string
-	refreshKey string
-}
+var (
+	accessKey string = os.Getenv("ACCESS_KEY")
+	accessExp string = os.Getenv("ACCESS_EXP")
 
-func New(
-	accessExp string,
-	accessKey string,
-	refreshExp string,
-	refreshKey string,
-) *Cryptor {
-	return &Cryptor{
-		accessExp:  accessExp,
-		accessKey:  accessKey,
-		refreshExp: refreshExp,
-		refreshKey: refreshKey,
-	}
+	refreshKey string = os.Getenv("REFRESH_KEY")
+	refreshExp string = os.Getenv("REFRESH_EXP")
+)
+
+type Cryptor struct{}
+
+func New() *Cryptor {
+	return &Cryptor{}
 }
 
 func (c Cryptor) HashPlain(txt string) (string, error) {
@@ -62,14 +58,14 @@ func (c Cryptor) CompareSecureToPlain(secure string, plain string) bool {
 
 func (c Cryptor) GenerateAccessToken(sub string) (string, error) {
 
-	daysToAdd, _ := strconv.ParseInt(c.accessExp, 10, 64)
+	daysToAdd, _ := strconv.ParseInt(accessExp, 10, 64)
 
 	exp := getExpiration(daysToAdd)
 
 	tokenString, err := createToken(
 		exp,
 		sub,
-		c.accessKey,
+		accessKey,
 	)
 	if err != nil {
 		return "", err
@@ -80,14 +76,14 @@ func (c Cryptor) GenerateAccessToken(sub string) (string, error) {
 
 func (c Cryptor) GenerateRefreshToken() (string, error) {
 
-	daysToAdd, _ := strconv.ParseInt(c.refreshExp, 10, 64)
+	daysToAdd, _ := strconv.ParseInt(refreshExp, 10, 64)
 
 	exp := getExpiration(daysToAdd)
 
 	tokenString, err := createToken(
 		exp,
 		utils.GenUUID(),
-		c.refreshKey,
+		refreshKey,
 	)
 	if err != nil {
 		return "", err

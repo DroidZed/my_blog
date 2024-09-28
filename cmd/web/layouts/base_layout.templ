@@ -1,0 +1,13 @@
+package layouts
+
+import "github.com/DroidZed/my_blog/cmd/web/components"
+
+templ BaseLayout(title string) {
+	<!DOCTYPE html>
+	@components.Head(title)
+	<html lang="en" class="h-full">
+		<body x-data="{theme: 'dark'}" :class="theme h-full" lang="en">
+			{ children... }
+		</body>
+	</html>
+}

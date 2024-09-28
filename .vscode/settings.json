@@ -9,6 +9,7 @@
     "ggicci",
     "Gochi",
     "golance",
+    "goldmark",
     "gomarkdown",
     "httplog",
     "httpslog",
@@ -22,6 +23,7 @@
     "mattn",
     "mazrean",
     "mdtohtml",
+    "mvdan",
     "nums",
     "prettyslogger",
     "rctx",
@@ -36,7 +38,9 @@
     "uuid",
     "Vars",
     "webp",
-    "withmandala"
+    "withmandala",
+    "xurls",
+    "yuin"
   ],
   "[javascript]": {
     "editor.defaultFormatter": "biomejs.biome"

@@ -1,0 +1,16 @@
+package components
+
+import "fmt"
+
+templ Head(title string) {
+	<head>
+		<link rel="manifest" href="/static/manifest.json"/>
+		@Title(fmt.Sprintf("Aymen Dhahri's Blog - %s", title))
+		<link rel="icon" type="image/x-icon" href="/static/favicon.ico"/>
+		<link rel="stylesheet" href="/static/output.css"/>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<script src="/static/htmx.min.js"></script>
+		<script src="/static/app.js"></script>
+	</head>
+}

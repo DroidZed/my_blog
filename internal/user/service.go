@@ -5,30 +5,28 @@ import (
 	"fmt"
 
 	"github.com/DroidZed/my_blog/internal/cryptor"
+	"github.com/DroidZed/my_blog/internal/database"
 	"github.com/DroidZed/my_blog/internal/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Service struct {
 	hasher cryptor.CryptoHelper
-	client *mongo.Client
-	dbName string
+	db     *database.Service
 }
 
-func NewService(hasher cryptor.CryptoHelper, db *mongo.Client, dbName string) *Service {
+func NewService(hasher cryptor.CryptoHelper, db *database.Service) *Service {
 	return &Service{
+		db:     db,
 		hasher: hasher,
-		client: db,
-		dbName: dbName,
 	}
 }
 
 func (s *Service) Add(ctx context.Context, entity User) error {
 
-	coll := s.client.Database(s.dbName).Collection("users")
+	coll := s.db.Client.Database(s.db.Name).Collection("users")
 
 	_, insertErr := coll.InsertOne(ctx, entity)
 	if insertErr != nil {
@@ -71,7 +69,7 @@ func (s *Service) GetByID(ctx context.Context, id string) (*User, error) {
 
 func (s *Service) GetOne(ctx context.Context, input utils.GetInput) (*User, error) {
 
-	coll := s.client.Database(s.dbName).Collection("users")
+	coll := s.db.Client.Database(s.db.Name).Collection("users")
 
 	result := &User{}
 

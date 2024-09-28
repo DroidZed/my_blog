@@ -5,13 +5,16 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
-	"strconv"
+	"os"
 
+	"github.com/DroidZed/my_blog/cmd/web"
+	"github.com/DroidZed/my_blog/cmd/web/pages"
 	_ "github.com/DroidZed/my_blog/docs"
-	"github.com/DroidZed/my_blog/internal/asset"
-	"github.com/DroidZed/my_blog/internal/config"
+	"github.com/a-h/templ"
+	_ "github.com/joho/godotenv/autoload"
+
+	"github.com/DroidZed/my_blog/internal/database"
 	"github.com/DroidZed/my_blog/internal/httpslog"
-	"github.com/DroidZed/my_blog/internal/views/pages"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -25,50 +28,75 @@ type ServerDefinition interface {
 
 type ArticleManager interface {
 	GetArticle(w http.ResponseWriter, r *http.Request)
+	GetArticleInfo(w http.ResponseWriter, r *http.Request)
 	AddArticle(w http.ResponseWriter, r *http.Request)
 }
 
+type UserManager interface {
+	GetUserByID(w http.ResponseWriter, r *http.Request)
+}
+
+type AuthManager interface {
+	LoginReq(w http.ResponseWriter, r *http.Request)
+	RefreshTheAccessToken(w http.ResponseWriter, r *http.Request)
+}
+
+type JwtMiddleware interface {
+	AccessVerify(next http.Handler) http.Handler
+	RefreshVerify(next http.Handler) http.Handler
+}
+
 type Server struct {
-	env    *config.EnvConfig
 	logger *slog.Logger
 
 	articleManager ArticleManager
+	userManager    UserManager
+	authManager    AuthManager
+
+	authMiddleware JwtMiddleware
+
+	database *database.Service
 }
 
+var (
+	port string = os.Getenv("PORT")
+	host string = os.Getenv("HOST")
+)
+
 func NewServer(
-	env *config.EnvConfig,
 	logger *slog.Logger,
 	articleManager ArticleManager,
+	userManager UserManager,
+	authManager AuthManager,
+	authMiddleware JwtMiddleware,
+	database *database.Service,
 ) *Server {
 	return &Server{
-		env:            env,
 		logger:         logger,
 		articleManager: articleManager,
+		authManager:    authManager,
+		userManager:    userManager,
+		authMiddleware: authMiddleware,
+		database:       database,
 	}
 }
 
 func (s *Server) MountHandlers(r *chi.Mux) {
 
-	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
-		pages.NotFound().Render(r.Context(), w)
-	})
+	r.NotFound(templ.Handler(pages.NotFound()).ServeHTTP)
 
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		pages.Index().Render(r.Context(), w)
-	})
+	r.Get("/", templ.Handler(pages.Index()).ServeHTTP)
 
-	r.Get("/login", func(w http.ResponseWriter, r *http.Request) {
-		pages.Login().Render(r.Context(), w)
-	})
+	r.Get("/login", templ.Handler(pages.Login()).ServeHTTP)
 
-	asset.Mount(r)
+	r.Handle("/static/*", http.FileServer(http.FS(web.Files)))
 
 	r.Get("/api/swagger/*", httpSwagger.Handler(
 		httpSwagger.URL(
 			fmt.Sprintf("http://%s/api/swagger/doc.json",
 				net.JoinHostPort(
-					s.env.Host,
-					strconv.FormatInt(s.env.Port, 10),
+					host,
+					port,
 				),
 			)),
 	))
@@ -76,6 +104,21 @@ func (s *Server) MountHandlers(r *chi.Mux) {
 	// Article
 	r.Route("/articles", func(r chi.Router) {
 		r.Get("/{title}", s.articleManager.GetArticle)
+		r.Get("/info/{id}", s.articleManager.GetArticleInfo)
+	})
+
+	// Auth
+	r.Route("/api/auth", func(r chi.Router) {
+		r.Post("/login", s.authManager.LoginReq)
+		r.With(s.authMiddleware.RefreshVerify).Group(func(r chi.Router) {
+			r.Post("/refresh-token", s.authManager.RefreshTheAccessToken)
+		})
+	})
+
+	// User
+	r.Route("/api/user", func(r chi.Router) {
+		r.Use(s.authMiddleware.AccessVerify)
+		r.Get("/", s.userManager.GetUserByID)
 	})
 }
 

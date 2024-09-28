@@ -1,0 +1,13 @@
+package pages
+
+import "github.com/DroidZed/my_blog/cmd/web/layouts"
+
+templ Index() {
+	@layouts.BaseLayout("Home") {
+		<h1>HELLO HTMX !</h1>
+		<div>
+			<p>This is a phrase lol</p>
+			<p>this will trigger a live reload !</p>
+		</div>
+	}
+}

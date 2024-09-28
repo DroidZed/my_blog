@@ -2,18 +2,16 @@
 include .env
 
 run:
-	go run cmd/my_blog/main.go
+	go run cmd/api/main.go
 
 deps:
 	go mod tidy
 
 build:
-	npx tailwindcss -i ./internal/asset/tailwind.css -o ./internal/asset/static/
-	go-generate-fast
-	go build -o ./bin/out.exe ./cmd/my_blog/
+	go build -o ./bin/out.exe ./cmd/api/
 
 doc:
-	swag init -g cmd/my_blog/main.go
+	swag init -g cmd/api/main.go
 
 dev:
 	air
@@ -28,7 +26,7 @@ module:
 	echo "package ${DIR}" > ./internal/${DIR}/models.go
 
 templates:
-	npx tailwindcss -i ./internal/asset/tailwind.css -o ./internal/asset/static/styles.css
+	npx tailwindcss -i ./cmd/web/assets/css/input.css -o ./cmd/web/assets/css/output.css
 	go-generate-fast
 
 tools:

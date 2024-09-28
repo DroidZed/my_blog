@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"net/smtp"
+	"os"
 )
 
 type SMTPRequest struct {
@@ -21,12 +22,14 @@ type Pigeon struct {
 	addr     string
 }
 
-func New(
-	smtpUsername,
-	smtpPwd,
-	smtpHost,
-	smtpPort string,
-) *Pigeon {
+var (
+	smtpUsername string = os.Getenv("SMTP_USERNAME")
+	smtpPwd      string = os.Getenv("SMTP_PWD")
+	smtpHost     string = os.Getenv("SMTP_HOST")
+	smtpPort     string = os.Getenv("SMTP_PORT")
+)
+
+func New() *Pigeon {
 	return &Pigeon{
 		smtpAuth: smtp.PlainAuth(
 			"pigeon",

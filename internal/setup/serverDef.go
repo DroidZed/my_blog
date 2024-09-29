@@ -89,7 +89,7 @@ func (s *Server) MountHandlers(r *chi.Mux) {
 
 	r.Get("/login", templ.Handler(pages.Login()).ServeHTTP)
 
-	r.Handle("/static/*", http.FileServer(http.FS(web.Files)))
+	r.Handle("/assets/*", http.FileServer(http.FS(web.Assets)))
 
 	r.Get("/api/swagger/*", httpSwagger.Handler(
 		httpSwagger.URL(

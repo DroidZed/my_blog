@@ -101,10 +101,10 @@ func (s *Service) ReadFileContents(articleId string) (*bytes.Buffer, error) {
 		return nil, err
 	}
 
-	var buf *bytes.Buffer
-	if err := s.md.Convert(b, buf); err != nil {
+	var buf bytes.Buffer
+	if err := s.md.Convert(b, &buf); err != nil {
 		panic(err)
 	}
 
-	return buf, nil
+	return &buf, nil
 }

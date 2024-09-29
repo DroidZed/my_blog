@@ -4,13 +4,13 @@ import "fmt"
 
 templ Head(title string) {
 	<head>
-		<link rel="manifest" href="/static/manifest.json"/>
+		<link rel="manifest" href="/assets/manifest.json"/>
 		@Title(fmt.Sprintf("Aymen Dhahri's Blog - %s", title))
-		<link rel="icon" type="image/x-icon" href="/static/favicon.ico"/>
-		<link rel="stylesheet" href="/static/output.css"/>
+		<link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico"/>
+		<link rel="stylesheet" href="/assets/css/output.css"/>
 		<meta charset="UTF-8"/>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-		<script src="/static/htmx.min.js"></script>
-		<script src="/static/app.js"></script>
+		<script src="/assets/js/htmx.min.js"></script>
+		<script src="/assets/js/app.js"></script>
 	</head>
 }

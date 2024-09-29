@@ -1,3 +1,3 @@
 package web
 
-//go:generate templ generate
+//go:generate templ generate -lazy

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/DroidZed/my_blog/internal/jwtverify"
 	"github.com/DroidZed/my_blog/internal/user"
 	"github.com/DroidZed/my_blog/internal/utils"
+	"github.com/a-h/templ"
 	"github.com/go-chi/chi/v5"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -70,7 +72,10 @@ func (c Controller) GetArticle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pages.ArticleOne(buf.String(), article.Title, article.Photo).Render(r.Context(), w)
+	// Create an unsafe component containing raw HTML.
+	content := Unsafe(buf.String())
+
+	pages.ArticleOne(content, article.Title, article.Photo).Render(r.Context(), w)
 
 }
 
@@ -123,4 +128,11 @@ func (c *Controller) GetArticleInfo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.JsonResponse(w, http.StatusOK, data)
+}
+
+func Unsafe(html string) templ.Component {
+	return templ.ComponentFunc(func(ctx context.Context, w io.Writer) (err error) {
+		_, err = io.WriteString(w, html)
+		return
+	})
 }

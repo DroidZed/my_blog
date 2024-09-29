@@ -25,11 +25,12 @@ module:
 	echo "package ${DIR}" > ./internal/${DIR}/service.go
 	echo "package ${DIR}" > ./internal/${DIR}/models.go
 
-templates:
-	npx tailwindcss -i ./cmd/web/assets/css/input.css -o ./cmd/web/assets/css/output.css
-	go-generate-fast
+gen:
+	go generate ./...
+
+css:
+	npx tailwindcss -i ./cmd/web/assets/css/input.css -o ./cmd/web/assets/css/output.css --watch
 
 tools:
 	go install github.com/a-h/templ/cmd/templ@latest
 	go install github.com/air-verse/air@latest
-	go install github.com/oNaiPs/go-generate-fast@latest
